@@ -172,7 +172,9 @@
     border: 1px solid var(--border); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 600;
     cursor: pointer; white-space: nowrap; color: var(--text-2); display: inline-flex; align-items: center; gap: 6px; min-height: 34px;
   }
-  .chip[aria-pressed="true"] { background: var(--text); color: var(--page); border-color: transparent; }
+  .chip { text-decoration: none; }
+  .chip[aria-pressed="true"], .chip[aria-current="page"] { background: var(--text); color: var(--page); border-color: transparent; }
+  .chip .n { opacity: .6; font-weight: 500; }
   .summary-strip { display: flex; gap: 18px; flex-wrap: wrap; color: var(--text-2); font-size: 13.5px; margin: -2px 2px 14px; }
   .summary-strip b { color: var(--text); }
   .group { margin-bottom: 14px; padding: 6px 0 !important; }
@@ -296,7 +298,7 @@
     dialog { width: 100vw; max-width: 100vw; margin: auto 0 0; border-radius: 20px 20px 0 0; max-height: 92dvh; padding-bottom: env(safe-area-inset-bottom); border-bottom: 0; }
     @keyframes pop { from { transform: translateY(40px); opacity: .6; } to { transform: none; opacity: 1; } }
     .bottom-nav {
-      display: grid; grid-template-columns: repeat(4, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+      display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
       background: color-mix(in srgb, var(--surface) 90%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
       border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom);
     }
@@ -308,6 +310,25 @@
     .toast { bottom: calc(140px + env(safe-area-inset-bottom)); }
   }
   @media (min-width: 641px) { .fab { display: none; } }
+  .g-2 { grid-template-columns: 1fr 1fr; }
+  .cat-detail { margin-bottom: 14px; }
+  .big { font-size: 32px; font-weight: 750; letter-spacing: -0.035em; line-height: 1.15; margin-top: 4px; }
+  .kv { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 14px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .kv .k, .k { color: var(--muted); font-size: 12.5px; }
+  .kv .v { font-weight: 650; font-size: 16px; margin-top: 2px; }
+  .mini-chart { margin-top: 16px; min-height: 140px; }
+  .meter-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: -6px; }
+  .callout { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; font-size: 14px; margin-top: 14px; display: block; color: var(--text); text-decoration: none; }
+  a.callout:hover { filter: brightness(1.1); }
+  .callout.warnbox { background: color-mix(in srgb, var(--warn) 16%, transparent); }
+  .callout .sub { color: var(--text-2); font-size: 12.5px; margin-top: 4px; }
+  .note { font-size: 12px; color: var(--muted); margin: 12px 0 0; line-height: 1.55; }
+  .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .form-grid .span2 { grid-column: span 2; }
+  a.alloc-row { text-decoration: none; color: inherit; border-radius: 8px; margin: 0 -6px; padding: 7px 6px; }
+  a.alloc-row:hover { background: var(--hover); }
+  @media (max-width: 900px) { .g-2 { grid-template-columns: 1fr; } }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr 1fr; } .big { font-size: 28px; } }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 </style>
 </head>
@@ -317,6 +338,7 @@
   <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="3"/><path d="M3 9h18M8 14h4"/></symbol>
   <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16M5 15l4-4 3 3 6-7"/></symbol>
   <symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+  <symbol id="i-pension" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 0 1 9 9H3a9 9 0 0 1 9-9zM12 12v7a2 2 0 0 0 4 0"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
   <symbol id="i-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6M3 3l18 18M9.9 9.9a3 3 0 0 0 4.2 4.2"/></symbol>
@@ -338,6 +360,7 @@
     <nav class="tabs" aria-label="메뉴">
       <a class="tab" href="#home" data-tab="home"><svg aria-hidden="true"><use href="#i-home"/></svg>홈</a>
       <a class="tab" href="#assets" data-tab="assets"><svg aria-hidden="true"><use href="#i-list"/></svg>자산</a>
+      <a class="tab" href="#pension" data-tab="pension"><svg aria-hidden="true"><use href="#i-pension"/></svg>연금</a>
       <a class="tab" href="#history" data-tab="history"><svg aria-hidden="true"><use href="#i-chart"/></svg>기록</a>
       <a class="tab" href="#settings" data-tab="settings"><svg aria-hidden="true"><use href="#i-gear"/></svg>설정</a>
     </nav>
@@ -397,9 +420,35 @@
         <input type="search" id="q" placeholder="이름·메모 검색" autocomplete="off" enterkeyhint="search"></label>
       <button class="btn" id="pasteBtn2"><svg aria-hidden="true"><use href="#i-paste"/></svg>엑셀 붙여넣기</button>
     </div>
-    <div class="chips" id="catChips" role="group" aria-label="분류 필터"></div>
+    <nav class="chips" id="catChips" aria-label="분류별 보기"></nav>
     <div class="summary-strip num" id="assetSummary"></div>
     <div id="assetList"></div>
+  </section>
+
+  <!-- PENSION -->
+  <section class="view" id="view-pension" aria-label="연금">
+    <div class="grid g-2">
+      <div class="card" id="pnSummary"></div>
+      <div class="card" id="pnTax"></div>
+    </div>
+    <div class="grid g-2" style="margin-top:14px">
+      <div class="card" id="pnRetire"></div>
+      <div class="card">
+        <div class="card-h"><div><h2>연금 계획 설정</h2><p>은퇴 예상과 세액공제 계산에 사용돼요</p></div></div>
+        <div class="form-grid">
+          <label class="f">현재 나이<input type="number" inputmode="numeric" id="pnAge" min="18" max="100"></label>
+          <label class="f">연금 개시 나이<input type="number" inputmode="numeric" id="pnStart" min="55" max="100"></label>
+          <label class="f">수령 기간 (년)<input type="number" inputmode="numeric" id="pnYears" min="1" max="40"></label>
+          <label class="f">예상 연수익률 (%)<input type="number" inputmode="decimal" id="pnRate" min="0" max="20" step="0.5"></label>
+          <label class="f span2">국민연금 예상 월액 (원)<input type="text" inputmode="numeric" class="money" id="pnNps" autocomplete="off" placeholder="국민연금공단 ‘내 연금 알아보기’에서 확인"><span class="hint" id="pnNpsHint"></span></label>
+        </div>
+        <fieldset style="margin-top:14px"><legend class="f">총급여 (세액공제율)</legend><div class="radio-chips">
+          <label><input type="radio" name="pnSalary" value="low"><span class="c">5,500만원 이하 · 16.5%</span></label>
+          <label><input type="radio" name="pnSalary" value="high"><span class="c">5,500만원 초과 · 13.2%</span></label></div></fieldset>
+        <p class="note">연금저축·IRP는 55세부터 연금으로 받을 수 있고, 10년 이상 나눠 받으면 세금이 줄어들어요.</p>
+      </div>
+    </div>
+    <div style="margin-top:14px" id="pnList"></div>
   </section>
 
   <!-- HISTORY -->
@@ -445,7 +494,7 @@
           <button id="resetAll" class="danger"><span class="ai"><svg aria-hidden="true"><use href="#i-trash"/></svg></span><span><b>전체 초기화</b><small>모든 자산 · 기록 · 설정 삭제</small></span></button>
         </div>
         <input type="file" id="importFile" accept="application/json,.json" hidden>
-        <p class="hint hide-sm" style="margin:16px 0 0">단축키 · <kbd class="kbd">N</kbd> 자산 추가 · <kbd class="kbd">/</kbd> 검색 · <kbd class="kbd">H</kbd> 금액 숨기기 · <kbd class="kbd">1</kbd>–<kbd class="kbd">4</kbd> 탭 이동</p>
+        <p class="hint hide-sm" style="margin:16px 0 0">단축키 · <kbd class="kbd">N</kbd> 자산 추가 · <kbd class="kbd">/</kbd> 검색 · <kbd class="kbd">H</kbd> 금액 숨기기 · <kbd class="kbd">1</kbd>–<kbd class="kbd">5</kbd> 탭 이동</p>
       </div>
     </div>
   </section>
@@ -456,6 +505,7 @@
 <nav class="bottom-nav" aria-label="메뉴">
   <a href="#home" data-tab="home"><svg aria-hidden="true"><use href="#i-home"/></svg>홈</a>
   <a href="#assets" data-tab="assets"><svg aria-hidden="true"><use href="#i-list"/></svg>자산</a>
+  <a href="#pension" data-tab="pension"><svg aria-hidden="true"><use href="#i-pension"/></svg>연금</a>
   <a href="#history" data-tab="history"><svg aria-hidden="true"><use href="#i-chart"/></svg>기록</a>
   <a href="#settings" data-tab="settings"><svg aria-hidden="true"><use href="#i-gear"/></svg>설정</a>
 </nav>
@@ -467,6 +517,13 @@
     <div class="dlg-b">
       <label class="f">이름<input type="text" name="title" required maxlength="40" placeholder="예: 미국 S&P500 ETF, 전세대출" autocomplete="off"></label>
       <fieldset><legend class="f">분류</legend><div class="radio-chips" id="catRadios"></div></fieldset>
+      <div id="pensionWrap" style="display:grid;gap:16px" hidden>
+        <fieldset><legend class="f">연금 종류</legend><div class="radio-chips" id="ptypeRadios"></div></fieldset>
+        <div class="row2">
+          <label class="f" id="contribWrap">올해 본인 납입액 (원)<input type="text" inputmode="numeric" name="contrib" class="money" autocomplete="off" placeholder="세액공제 계산용"><span class="hint" data-hint="contrib"></span></label>
+          <label class="f">월 적립액 (원)<input type="text" inputmode="numeric" name="monthly" class="money" autocomplete="off" placeholder="자동이체·회사 적립"><span class="hint" data-hint="monthly"></span></label>
+        </div>
+      </div>
       <div class="row2">
         <fieldset><legend class="f">통화</legend><div class="radio-chips">
           <label><input type="radio" name="cur" value="KRW" checked><span class="c">원화 ₩</span></label>
@@ -549,6 +606,11 @@ const CATS = [
 ];
 const DEBT = { id: 'debt', name: '부채', short: '부채', color: '--muted', alias: ['부채', '대출', '빚', 'debt', '카드', '마이너스'] };
 const ALL = [...CATS, DEBT];
+const PTYPES = [
+  { id: 'savings', name: '연금저축' }, { id: 'irp', name: 'IRP' }, { id: 'dc', name: '퇴직연금 DC' },
+  { id: 'db', name: '퇴직연금 DB' }, { id: 'other', name: '기타 연금' },
+];
+const ptName = id => (PTYPES.find(p => p.id === id) || PTYPES[0]).name;
 const KEY = 'asset-dashboard-v2', OLD_KEY = 'asset-dashboard-v1';
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const catOf = id => ALL.find(c => c.id === id) || CATS[5];
@@ -559,7 +621,8 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 
 const defaultSettings = () => ({ fx: 1400, expense: 3000000, goal: 1000000000, hide: false, range: 12 });
 const defaultTargets = () => ({ cash: 10, stock: 30, bond: 10, real: 40, pension: 8, alt: 2 });
-const emptyState = () => ({ version: 2, holdings: [], targets: defaultTargets(), settings: defaultSettings(), history: [] });
+const defaultPension = () => ({ age: 40, startAge: 60, years: 20, rate: 4, nps: 0, salary: 'low' });
+const emptyState = () => ({ version: 2, holdings: [], targets: defaultTargets(), settings: defaultSettings(), pension: defaultPension(), history: [] });
 
 /* ============ Calculations ============ */
 const fxOf = (h, s) => (h.cur === 'USD' ? (+s.settings.fx || 0) : 1);
@@ -577,11 +640,11 @@ const netOf = e => e.assets - e.debt;
 function series() {
   const cur = monthKey(), t = totals();
   const past = state.history.filter(e => e.month < cur).sort((a, b) => a.month.localeCompare(b.month));
-  return state.holdings.length || past.length ? [...past, { month: cur, assets: t.assets, debt: t.debt, live: true }] : [];
+  return state.holdings.length || past.length ? [...past, { month: cur, assets: t.assets, debt: t.debt, byCat: t.byCat, live: true }] : [];
 }
 
 function sampleState() {
-  const H = (name, cat, amount, extra = {}) => ({ id: uid(), name, cat, cur: 'KRW', mode: 'amount', amount, qty: null, price: null, cost: null, memo: '', ...extra });
+  const H = (name, cat, amount, extra = {}) => ({ id: uid(), name, cat, cur: 'KRW', mode: 'amount', amount, qty: null, price: null, cost: null, memo: '', pType: 'savings', contrib: null, monthly: 0, ...extra });
   const s = emptyState();
   s.holdings = [
     H('파킹통장', 'cash', 18000000, { memo: '토스뱅크' }),
@@ -590,7 +653,9 @@ function sampleState() {
     H('미국 S&P500 ETF', 'stock', 0, { cur: 'USD', mode: 'qty', qty: 80, price: 560, cost: 38000, memo: 'VOO' }),
     H('국채 ETF', 'bond', 25000000, { cost: 24500000 }),
     H('아파트', 'real', 320000000, { memo: '지분 기준' }),
-    H('연금저축·IRP', 'pension', 38000000, { cost: 31000000 }),
+    H('연금저축펀드', 'pension', 23000000, { pType: 'savings', cost: 19000000, contrib: 4000000, monthly: 500000, memo: '미래에셋' }),
+    H('IRP', 'pension', 15000000, { pType: 'irp', cost: 12500000, contrib: 1500000, monthly: 300000, memo: '삼성증권' }),
+    H('퇴직연금 DC', 'pension', 32000000, { pType: 'dc', cost: 28000000, contrib: 0, monthly: 450000, memo: '회사 적립' }),
     H('금 현물', 'alt', 9000000, { cost: 7200000 }),
     H('주택담보대출', 'debt', 180000000, { memo: '금리 3.9%' }),
   ];
@@ -598,8 +663,11 @@ function sampleState() {
   let a = t.assets, d = t.debt;
   for (let i = 1; i <= 14; i++) {
     a = a / (1 + (drift[i - 1] + 0.5) / 100) - 1200000; d = d + 600000;
-    s.history.push({ month: monthsAgo(i), assets: Math.round(a / 1e4) * 1e4, debt: Math.round(d / 1e4) * 1e4 });
+    const ratio = a / t.assets, byCat = {};
+    CATS.forEach(c => (byCat[c.id] = Math.round(t.byCat[c.id] * ratio * (c.id === 'pension' ? Math.pow(0.988, i) : 1) / 1e4) * 1e4));
+    s.history.push({ month: monthsAgo(i), assets: Object.values(byCat).reduce((x, y) => x + y, 0), debt: Math.round(d / 1e4) * 1e4, byCat });
   }
+  s.pension = { ...defaultPension(), age: 38, nps: 1100000 };
   return s;
 }
 
@@ -607,14 +675,18 @@ function normalize(s) {
   const out = emptyState();
   out.targets = { ...out.targets, ...(s.targets || {}) };
   out.settings = { ...out.settings, ...(s.settings || {}) };
+  out.pension = { ...out.pension, ...(s.pension || {}) };
   out.holdings = (s.holdings || []).map(h => ({
     id: String(h.id ?? uid()), name: String(h.name || '이름 없음'), cat: ALL.some(c => c.id === h.cat) ? h.cat : 'alt',
     cur: h.cur === 'USD' ? 'USD' : 'KRW', mode: h.mode === 'qty' ? 'qty' : 'amount',
     amount: +h.amount || 0, qty: h.qty == null ? null : +h.qty, price: h.price == null ? null : +h.price,
     cost: h.cost == null || h.cost === '' ? null : +h.cost, memo: String(h.memo || ''),
+    pType: PTYPES.some(p => p.id === h.pType) ? h.pType : 'savings',
+    contrib: h.contrib == null || h.contrib === '' ? null : +h.contrib, monthly: +h.monthly || 0,
   }));
   out.history = (s.history || []).filter(e => /^\d{4}-\d{2}$/.test(e.month)).map(e =>
-    e.assets != null ? { month: e.month, assets: +e.assets || 0, debt: +e.debt || 0 } : { month: e.month, assets: +e.net || 0, debt: 0 });
+    Object.assign(e.assets != null ? { month: e.month, assets: +e.assets || 0, debt: +e.debt || 0 } : { month: e.month, assets: +e.net || 0, debt: 0 },
+      e.byCat && typeof e.byCat === 'object' ? { byCat: e.byCat } : {}));
   return out;
 }
 
@@ -656,20 +728,24 @@ const unitHint = n => (n ? '= ' + korPlain(n) : '');
 function save() {
   const cur = monthKey(), t = totals();
   state.history = state.history.filter(e => e.month !== cur);
-  if (state.holdings.length) state.history.push({ month: cur, assets: Math.round(t.assets), debt: Math.round(t.debt) });
+  if (state.holdings.length) state.history.push({ month: cur, assets: Math.round(t.assets), debt: Math.round(t.debt), byCat: Object.fromEntries(CATS.map(c => [c.id, Math.round(t.byCat[c.id])])) });
   try { localStorage.setItem(KEY, JSON.stringify(state)); } catch { toast('저장 공간이 부족해 저장하지 못했어요'); }
 }
 
 /* ============ Router ============ */
-const TABS = ['home', 'assets', 'history', 'settings'];
-const currentTab = () => (TABS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'home');
+const TABS = ['home', 'assets', 'pension', 'history', 'settings'];
+function parseHash() { const [t, sub = ''] = location.hash.slice(1).split('/'); return { tab: TABS.includes(t) ? t : 'home', sub }; }
+function ctxCat() { const { tab, sub } = parseHash(); if (tab === 'pension') return 'pension'; if (tab === 'assets' && ALL.some(c => c.id === sub)) return sub; return 'cash'; }
+let lastTab = null;
 function route() {
-  const tab = currentTab();
+  const { tab, sub } = parseHash();
   $$('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + tab));
   $$('[data-tab]').forEach(a => (a.dataset.tab === tab ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')));
-  document.title = { home: '홈', assets: '자산', history: '기록', settings: '설정' }[tab] + ' · 자산관리 대시보드';
-  if (tab === 'home') renderTrend();
-  window.scrollTo({ top: 0 });
+  filterCat = tab === 'assets' && ALL.some(c => c.id === sub) ? sub : 'all';
+  document.title = (tab === 'assets' && filterCat !== 'all' ? catOf(filterCat).name : { home: '홈', assets: '자산', pension: '연금', history: '기록', settings: '설정' }[tab]) + ' · 자산관리 대시보드';
+  if (tab === 'home') renderTrend(); else if (tab === 'assets') renderAssets(); else if (tab === 'pension') renderPension();
+  if (tab !== lastTab) window.scrollTo({ top: 0 });
+  lastTab = tab;
 }
 window.addEventListener('hashchange', route);
 
@@ -693,9 +769,9 @@ function renderHome() {
   $('#sRatio').textContent = t.assets ? (t.debt / t.assets * 100).toFixed(1) + '%' : '—';
   renderGoal(t, s); renderTrend(); renderAlloc(t); renderInsights(t);
 }
-function deltaPill(d, base, label) {
-  const p = base ? d / Math.abs(base) * 100 : 0, up = d >= 0;
-  return `<span class="pill ${up ? 'up' : 'down'}"><span aria-hidden="true">${up ? '▲' : '▼'}</span><span class="sr-only">${up ? '증가' : '감소'}</span>${short(Math.abs(d), { won: true })} · ${pct(p)} <span style="color:var(--muted);font-weight:500">${label}</span></span>`;
+function deltaPill(d, base, label, invert = false) {
+  const p = base ? d / Math.abs(base) * 100 : 0, up = d >= 0, good = invert ? d <= 0 : up;
+  return `<span class="pill ${good ? 'up' : 'down'}"><span aria-hidden="true">${up ? '▲' : '▼'}</span><span class="sr-only">${up ? '증가' : '감소'}</span>${short(Math.abs(d), { won: true })} · ${pct(p)} <span style="color:var(--muted);font-weight:500">${label}</span></span>`;
 }
 function avgMonthly(s, n = 6) {
   if (s.length < 2) return null;
@@ -733,20 +809,14 @@ function niceTicks(min, max, count = 4) {
   for (let v = lo; v <= hi + step / 2; v += step) out.push(v);
   return out;
 }
-function renderTrend() {
-  const el = $('#trend'), tip = $('#trendTip');
-  if (!el.offsetParent) return;
-  el.querySelectorAll('svg, .empty-chart').forEach(n => n.remove()); tip.style.display = 'none';
-  const range = +state.settings.range;
-  $$('#rangeSeg button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.range === range)));
-  let data = series(); if (range) data = data.slice(-range);
-  if (data.length < 2) {
-    el.insertAdjacentHTML('beforeend', `<div class="empty-chart"><div>${data.length ? '다음 달부터 추이 그래프가 그려져요.<br>지난 기록이 있다면 <a href="#history">기록 탭</a>에서 추가하세요.' : '자산을 추가하면 매달 자동으로 기록돼요.'}</div></div>`);
-    return;
-  }
-  const W = el.clientWidth, H = W < 500 ? 200 : 240, m = { l: hidden() ? 8 : 46, r: 12, t: 12, b: 26 };
-  const vals = data.map(netOf), ticks = niceTicks(Math.min(...vals), Math.max(...vals));
-  const y0 = ticks[0], y1 = ticks[ticks.length - 1], li = data.length - 1;
+let chartSeq = 0;
+function lineChart(el, data, { H: Hset, label = '', empty = '기록이 2개월 이상 쌓이면 그래프가 그려져요.' } = {}) {
+  if (!el || !el.clientWidth) return;
+  el.innerHTML = '<div class="tooltip"></div>'; const tip = el.firstChild;
+  if (data.length < 2) { el.insertAdjacentHTML('beforeend', `<div class="empty-chart" style="height:${Hset || 220}px"><div>${empty}</div></div>`); return; }
+  const W = el.clientWidth, H = Hset || (W < 500 ? 200 : 240), m = { l: hidden() ? 8 : 46, r: 12, t: 12, b: 26 };
+  const vals = data.map(d => d.v), ticks = niceTicks(Math.min(...vals), Math.max(...vals), H < 180 ? 3 : 4);
+  const y0 = ticks[0], y1 = ticks[ticks.length - 1], li = data.length - 1, gid = 'g' + (++chartSeq);
   const x = i => m.l + i / li * (W - m.l - m.r);
   const y = v => m.t + (1 - (v - y0) / (y1 - y0 || 1)) * (H - m.t - m.b);
   let s = '';
@@ -756,22 +826,22 @@ function renderTrend() {
   });
   const every = Math.ceil(data.length / (W < 500 ? 4 : 7));
   data.forEach((d, i) => { if ((li - i) % every === 0) s += `<text x="${x(i)}" y="${H - 6}" text-anchor="middle">${d.month.slice(2).replace('-', '.')}</text>`; });
-  const path = data.map((d, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ',' + y(netOf(d)).toFixed(1)).join('');
-  s += `<defs><linearGradient id="g1" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity=".2"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>`;
-  s += `<path d="${path}L${x(li)},${y(y0)}L${x(0)},${y(y0)}Z" fill="url(#g1)"/>`;
+  const path = data.map((d, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ',' + y(d.v).toFixed(1)).join('');
+  s += `<defs><linearGradient id="${gid}" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity=".2"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>`;
+  s += `<path d="${path}L${x(li)},${y(y0)}L${x(0)},${y(y0)}Z" fill="url(#${gid})"/>`;
   s += `<path d="${path}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
   s += `<circle cx="${x(li)}" cy="${y(vals[li])}" r="4.5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>`;
-  s += `<line id="xh" y1="${m.t}" y2="${H - m.b}" stroke="var(--baseline)" visibility="hidden"/><circle id="xd" r="5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2" visibility="hidden"/>`;
+  s += `<line class="xh" y1="${m.t}" y2="${H - m.b}" stroke="var(--baseline)" visibility="hidden"/><circle class="xd" r="5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2" visibility="hidden"/>`;
   s += `<rect x="0" y="0" width="${W}" height="${H}" fill="transparent"/>`;
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('width', W); svg.setAttribute('height', H); svg.setAttribute('role', 'img');
-  svg.setAttribute('aria-label', `순자산 추이, ${data[0].month} ${hidden() ? '' : korPlain(vals[0])}에서 ${data[li].month} ${hidden() ? '' : korPlain(vals[li])}`);
+  svg.setAttribute('aria-label', `${label}, ${data[0].month} ${hidden() ? '' : korPlain(vals[0])}에서 ${data[li].month} ${hidden() ? '' : korPlain(vals[li])}`);
   svg.innerHTML = s; el.appendChild(svg);
-  const xh = svg.querySelector('#xh'), xd = svg.querySelector('#xd');
+  const xh = svg.querySelector('.xh'), xd = svg.querySelector('.xd');
   const show = e => {
     const r = svg.getBoundingClientRect();
     const i = Math.max(0, Math.min(li, Math.round((e.clientX - r.left - m.l) / ((W - m.l - m.r) / li))));
-    const d = data[i], v = netOf(d), ch = i ? v - netOf(data[i - 1]) : null;
+    const d = data[i], v = d.v, ch = i ? v - data[i - 1].v : null;
     xh.setAttribute('x1', x(i)); xh.setAttribute('x2', x(i)); xh.setAttribute('visibility', 'visible');
     xd.setAttribute('cx', x(i)); xd.setAttribute('cy', y(v)); xd.setAttribute('visibility', 'visible');
     tip.innerHTML = `<div class="t">${d.month.replace('-', '년 ')}월${d.live ? ' · 현재' : ''}</div><b>${kor(v)}</b>` +
@@ -784,6 +854,16 @@ function renderTrend() {
   const hide = () => { tip.style.display = 'none'; xh.setAttribute('visibility', 'hidden'); xd.setAttribute('visibility', 'hidden'); };
   svg.addEventListener('pointermove', show); svg.addEventListener('pointerdown', show); svg.addEventListener('pointerleave', hide);
 }
+function renderTrend() {
+  const el = $('#trend'); if (!el.offsetParent) return;
+  const range = +state.settings.range;
+  $$('#rangeSeg button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.range === range)));
+  const all = series(); let data = all.map(e => ({ month: e.month, v: netOf(e), live: e.live })); if (range) data = data.slice(-range);
+  lineChart(el, data, { label: '순자산 추이', empty: all.length ? '다음 달부터 추이 그래프가 그려져요.<br>지난 기록이 있다면 <a href="#history">기록 탭</a>에서 추가하세요.' : '자산을 추가하면 매달 자동으로 기록돼요.' });
+}
+function catSeries(id) {
+  return series().filter(e => e.live || e.byCat).map(e => ({ month: e.month, live: e.live, v: id === 'debt' ? e.debt : (e.byCat[id] || 0) }));
+}
 
 function renderAlloc(t) {
   if (!t.assets) { $('#stackbar').innerHTML = ''; $('#alloc').innerHTML = '<div class="empty" style="padding:28px 0">자산을 추가하면 배분이 표시돼요</div>'; return; }
@@ -792,11 +872,11 @@ function renderAlloc(t) {
   const max = Math.max(...rows.map(r => Math.max(r.p, r.tg)), 1);
   $('#stackbar').innerHTML = CATS.filter(c => t.byCat[c.id] > 0).map(c => `<div style="flex:${t.byCat[c.id]};background:var(${c.color})"></div>`).join('');
   $('#alloc').innerHTML = rows.map(r => `
-    <div class="alloc-row" title="${r.name}${hidden() ? '' : ' ' + korPlain(r.v)} · 현재 ${r.p.toFixed(1)}% / 목표 ${r.tg}%">
+    <a class="alloc-row" href="#${r.id === 'pension' ? 'pension' : 'assets/' + r.id}" title="${r.name}${hidden() ? '' : ' ' + korPlain(r.v)} · 현재 ${r.p.toFixed(1)}% / 목표 ${r.tg}% · 눌러서 자세히">
       <div class="name"><span class="swatch" style="background:var(${r.color})"></span>${r.name}</div>
       <div class="track"><div class="bar" style="width:${r.p / max * 100}%"></div><div class="tick" style="left:calc(${r.tg / max * 100}% - 1px)"></div></div>
       <div class="pct num">${r.p.toFixed(1)}%<small>목표 ${r.tg}%</small></div>
-    </div>`).join('');
+    </a>`).join('');
 }
 
 function renderInsights(t) {
@@ -827,6 +907,8 @@ function renderInsights(t) {
     const v = withCost.reduce((a, h) => a + valueKRW(h), 0), c = withCost.reduce((a, h) => a + costKRW(h), 0);
     add(v >= c ? 'good' : 'bad', v >= c ? '↗' : '↘', `투자 수익률 <b class="${v >= c ? 'up' : 'down'}">${pct((v - c) / c * 100)}</b>`, `원금을 입력한 ${withCost.length}개 자산 · 평가손익 ${short(v - c, { sign: true, won: true })}`);
   }
+  const pc = pensionCalc();
+  if (pc.hasContrib && pc.room > 0) add('info', '₩', `연금 세액공제 한도 <b>${short(pc.room, { won: true })}</b> 남음`, `채우면 최대 ${short(pc.room * pc.rate, { won: true })} 더 환급 · <a href="#pension">연금 탭</a>`);
   const past = state.history.filter(e => e.month < monthKey());
   if (past.length && !past.some(e => e.month === monthsAgo(1))) add('info', 'i', '지난달 기록이 비어 있어요', '<a href="#history">기록 탭</a>에서 직접 추가할 수 있어요');
   $('#insights').innerHTML = out.join('');
@@ -834,35 +916,144 @@ function renderInsights(t) {
 
 /* ============ Render: assets ============ */
 let filterCat = 'all';
-function renderAssets() {
-  const t = totals(), q = $('#q').value.trim().toLowerCase();
-  const counts = Object.fromEntries(ALL.map(c => [c.id, state.holdings.filter(h => h.cat === c.id).length]));
-  if (filterCat !== 'all' && !counts[filterCat]) filterCat = 'all';
-  $('#catChips').innerHTML = !state.holdings.length ? '' : [`<button class="chip" data-cat="all" aria-pressed="${filterCat === 'all'}">전체 ${state.holdings.length}</button>`,
-    ...ALL.filter(c => counts[c.id]).map(c => `<button class="chip" data-cat="${c.id}" aria-pressed="${filterCat === c.id}"><span class="swatch" style="background:var(${c.color})"></span>${c.short} ${counts[c.id]}</button>`)].join('');
-  $('#assetSummary').innerHTML = state.holdings.length ? `<span>자산 <b>${short(t.assets, { won: true })}</b></span><span>부채 <b>${short(t.debt, { won: true })}</b></span><span>순자산 <b>${short(t.net, { won: true })}</b></span>` : '';
-  if (!state.holdings.length) {
-    $('#assetList').innerHTML = `<div class="card empty"><h3>아직 등록된 자산이 없어요</h3><p>통장, 주식, 부동산, 대출까지 하나씩 추가해 보세요.</p>
-      <div class="btns"><button class="btn primary" data-act="add"><svg aria-hidden="true"><use href="#i-plus"/></svg>자산 추가</button><button class="btn" data-act="paste"><svg aria-hidden="true"><use href="#i-paste"/></svg>엑셀 붙여넣기</button><button class="btn ghost" data-act="sample">예시 보기</button></div></div>`;
-    return;
-  }
-  const list = state.holdings.filter(h => (filterCat === 'all' || h.cat === filterCat) && (!q || (h.name + ' ' + h.memo).toLowerCase().includes(q)));
-  if (!list.length) { $('#assetList').innerHTML = `<div class="card empty"><h3>검색 결과가 없어요</h3><p>‘${esc(q)}’와 일치하는 자산이 없어요.</p></div>`; return; }
-  $('#assetList').innerHTML = ALL.map(c => {
-    const items = list.filter(h => h.cat === c.id).sort((a, b) => valueKRW(b) - valueKRW(a));
+function groupsHtml(list, t, groups) {
+  return groups.map(g => {
+    const items = list.filter(g.match).sort((a, b) => valueKRW(b) - valueKRW(a));
     if (!items.length) return '';
-    const sum = items.reduce((a, h) => a + valueKRW(h), 0), isDebt = c.id === 'debt';
+    const sum = items.reduce((a, h) => a + valueKRW(h), 0), isDebt = g.debt;
     return `<div class="card group">
-      <div class="group-h"><div class="t"><span class="swatch" style="background:var(${c.color})"></span>${c.name}<span class="cnt">${items.length}</span></div>
+      <div class="group-h"><div class="t">${g.color ? `<span class="swatch" style="background:var(${g.color})"></span>` : ''}${g.name}<span class="cnt">${items.length}</span></div>
         <div class="sum num ${isDebt ? 'down' : ''}">${isDebt && !hidden() ? '-' : ''}${kor(sum)}${!isDebt && t.assets ? ` <span style="color:var(--muted);font-weight:500;font-size:12.5px">${(sum / t.assets * 100).toFixed(1)}%</span>` : ''}</div></div>
       ${items.map(h => itemRow(h, isDebt)).join('')}
     </div>`;
   }).join('');
 }
+const plusIcon = '<svg aria-hidden="true"><use href="#i-plus"/></svg>';
+function catDetailHtml(id, t) {
+  const c = catOf(id), hs = state.holdings.filter(h => h.cat === id), isDebt = id === 'debt';
+  const sum = hs.reduce((a, h) => a + valueKRW(h), 0), ser = catSeries(id), prev = ser.length > 1 ? ser[ser.length - 2] : null;
+  const wc = hs.filter(h => h.cost > 0), cv = wc.reduce((a, h) => a + valueKRW(h), 0), cc = wc.reduce((a, h) => a + costKRW(h), 0);
+  return `<div class="card cat-detail">
+    <div class="card-h" style="margin-bottom:0"><div><div class="eyebrow"><span class="swatch" style="background:var(${c.color})"></span>${c.name}</div>
+      <div class="big num ${isDebt ? 'down' : ''}">${isDebt && !hidden() ? '-' : ''}${kor(sum)}</div></div>
+      <button class="btn primary sm" data-act="add">${plusIcon}${c.short} 추가</button></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">${prev ? deltaPill(sum - prev.v, prev.v, '지난달보다', isDebt) : ''}</div>
+    <div class="kv">
+      ${isDebt ? `<div><div class="k">부채비율</div><div class="v num">${t.assets ? (sum / t.assets * 100).toFixed(1) + '%' : '—'}</div></div>`
+        : `<div><div class="k">자산 중 비중</div><div class="v num">${t.assets ? (sum / t.assets * 100).toFixed(1) : 0}% <span style="color:var(--muted);font-size:13px;font-weight:500">목표 ${state.targets[id] || 0}%</span></div></div>`}
+      ${cc ? `<div><div class="k">원금 대비</div><div class="v num ${cv >= cc ? 'up' : 'down'}">${pct((cv - cc) / cc * 100)} · ${short(cv - cc, { sign: true, won: true })}</div></div>` : ''}
+      <div><div class="k">항목</div><div class="v num">${hs.length}개</div></div>
+    </div>
+    ${id === 'pension' ? '<a class="callout" href="#pension">연금 탭에서 <b>세액공제 예상 환급액</b>과 <b>은퇴 후 월 수령액</b>을 확인하세요 →</a>' : ''}
+    <div class="chart mini-chart" id="catChart"></div>
+  </div>`;
+}
+function renderAssets() {
+  const t = totals(), q = $('#q').value.trim().toLowerCase();
+  const counts = Object.fromEntries(ALL.map(c => [c.id, state.holdings.filter(h => h.cat === c.id).length]));
+  $('#catChips').innerHTML = [`<a class="chip" href="#assets" ${filterCat === 'all' ? 'aria-current="page"' : ''}>전체 <span class="n">${state.holdings.length}</span></a>`,
+    ...ALL.map(c => `<a class="chip" href="#assets/${c.id}" ${filterCat === c.id ? 'aria-current="page"' : ''}><span class="swatch" style="background:var(${c.color})"></span>${c.short}${counts[c.id] ? ` <span class="n">${counts[c.id]}</span>` : ''}</a>`)].join('');
+  $('#assetSummary').innerHTML = filterCat === 'all' && state.holdings.length ? `<span>자산 <b>${short(t.assets, { won: true })}</b></span><span>부채 <b>${short(t.debt, { won: true })}</b></span><span>순자산 <b>${short(t.net, { won: true })}</b></span>` : '';
+  if (!state.holdings.length && filterCat === 'all') {
+    $('#assetList').innerHTML = `<div class="card empty"><h3>아직 등록된 자산이 없어요</h3><p>통장, 주식, 부동산, 대출까지 하나씩 추가해 보세요.</p>
+      <div class="btns"><button class="btn primary" data-act="add">${plusIcon}자산 추가</button><button class="btn" data-act="paste"><svg aria-hidden="true"><use href="#i-paste"/></svg>엑셀 붙여넣기</button><button class="btn ghost" data-act="sample">예시 보기</button></div></div>`;
+    return;
+  }
+  const list = state.holdings.filter(h => (filterCat === 'all' || h.cat === filterCat) && (!q || (h.name + ' ' + h.memo).toLowerCase().includes(q)));
+  let html = filterCat !== 'all' ? catDetailHtml(filterCat, t) : '';
+  if (!list.length) html += q ? `<div class="card empty"><h3>검색 결과가 없어요</h3><p>‘${esc(q)}’와 일치하는 자산이 없어요.</p></div>`
+    : `<div class="card empty"><h3>아직 ${catOf(filterCat).name} 항목이 없어요</h3><div class="btns"><button class="btn primary" data-act="add">${plusIcon}${catOf(filterCat).short} 추가</button></div></div>`;
+  else if (filterCat === 'pension') html += groupsHtml(list, t, PTYPES.map(p => ({ name: p.name, match: h => h.pType === p.id })));
+  else html += groupsHtml(list, t, ALL.map(c => ({ name: c.name, color: c.color, debt: c.id === 'debt', match: h => h.cat === c.id })));
+  $('#assetList').innerHTML = html;
+  const chip = $('#catChips [aria-current]'), bar = $('#catChips');
+  if (chip && bar.scrollWidth > bar.clientWidth) bar.scrollLeft = chip.offsetLeft - bar.clientWidth / 2 + chip.offsetWidth / 2;
+  if (filterCat !== 'all') lineChart($('#catChart'), catSeries(filterCat), { H: 150, label: catOf(filterCat).name + ' 추이', empty: '이 분류의 월별 기록이 2개월 이상 쌓이면 그래프가 그려져요.' });
+}
+
+/* ============ Pension ============ */
+const pensionHoldings = () => state.holdings.filter(h => h.cat === 'pension');
+function pensionCalc() {
+  const P = state.pension, hs = pensionHoldings();
+  const sum = (f, pred = () => true) => hs.filter(pred).reduce((a, h) => a + (+f(h) || 0), 0);
+  const value = sum(h => valueKRW(h));
+  const cost = sum(h => costKRW(h), h => h.cost > 0), valueWithCost = sum(h => valueKRW(h), h => h.cost > 0);
+  const savings = sum(h => h.contrib, h => h.pType === 'savings'), irp = sum(h => h.contrib, h => h.pType === 'irp' || h.pType === 'dc');
+  const LIM_S = 6e6, LIM_T = 9e6, rate = P.salary === 'high' ? 0.132 : 0.165;
+  const elig = (a, b) => Math.min(Math.min(a, LIM_S) + b, LIM_T);
+  const eligible = elig(savings, irp), left = 11 - new Date().getMonth();
+  const mS = sum(h => h.monthly, h => h.pType === 'savings'), mI = sum(h => h.monthly, h => h.pType === 'irp');
+  const projEligible = elig(savings + mS * left, irp + mI * left);
+  const monthlyAll = sum(h => h.monthly);
+  const n = Math.max(0, (+P.startAge || 0) - (+P.age || 0)), r = (+P.rate || 0) / 100, g = Math.pow(1 + r, n);
+  const fv = value * g + monthlyAll * 12 * (r ? (g - 1) / r : n);
+  const months = Math.max(1, +P.years || 1) * 12, mr = r / 12;
+  const payout = mr ? fv * mr / (1 - Math.pow(1 + mr, -months)) : fv / months;
+  const privShare = value ? sum(h => valueKRW(h), h => h.pType === 'savings' || h.pType === 'irp') / value : 0;
+  return { hs, value, cost, valueWithCost, savings, irp, eligible, refund: eligible * rate, rate, room: LIM_T - eligible, savingsRoom: Math.max(0, LIM_S - savings),
+    projEligible, projRefund: projEligible * rate, monthlyAll, n, fv, payout, privPayout: payout * privShare, nps: +P.nps || 0, hasContrib: hs.some(h => h.contrib != null && h.pType !== 'db') };
+}
+function renderPension() {
+  const c = pensionCalc(), P = state.pension, ser = catSeries('pension'), prev = ser.length > 1 ? ser[ser.length - 2] : null, W = { won: true };
+  $('#pnSummary').innerHTML = `
+    <div class="card-h" style="margin-bottom:0"><div><div class="eyebrow"><span class="swatch" style="background:var(--s5)"></span>연금 자산</div>
+      <div class="big num">${kor(c.value)}</div></div><button class="btn primary sm" data-act="add">${plusIcon}연금 계좌</button></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">${prev ? deltaPill(c.value - prev.v, prev.v, '지난달보다') : ''}${c.cost ? `<span class="pill ${c.valueWithCost >= c.cost ? 'up' : 'down'}">수익률 ${pct((c.valueWithCost - c.cost) / c.cost * 100)}</span>` : ''}</div>
+    <div class="kv">
+      <div><div class="k">월 적립액</div><div class="v num">${short(c.monthlyAll, W)}</div></div>
+      <div><div class="k">올해 본인 납입</div><div class="v num">${short(c.savings + c.irp, W)}</div></div>
+      <div><div class="k">계좌</div><div class="v num">${c.hs.length}개</div></div>
+    </div>
+    <div class="chart mini-chart" id="pnChart"></div>`;
+  const dday = Math.ceil((new Date(new Date().getFullYear(), 11, 31) - new Date()) / 864e5);
+  let msg;
+  if (c.room <= 0) msg = '🎉 올해 세액공제 한도 900만원을 모두 채웠어요';
+  else {
+    msg = `연말까지 <b>${short(c.room, W)}</b> 더 납입하면 최대 <b>${short(c.room * c.rate, W)}</b>을 더 돌려받아요`;
+    msg += c.savingsRoom > 0 ? `<div class="sub">연금저축은 ${short(Math.min(c.savingsRoom, c.room), W)}까지, 나머지는 IRP로 채우면 돼요</div>` : '<div class="sub">연금저축 한도(600만원)는 찼어요 · 나머지는 IRP로 납입하세요</div>';
+    if (c.projEligible > c.eligible) msg += `<div class="sub">지금 월 적립을 유지하면 연말 공제 대상 ${short(c.projEligible, W)} · 환급 약 ${short(c.projRefund, W)}</div>`;
+  }
+  $('#pnTax').innerHTML = `
+    <div class="card-h"><div><h2>올해 연금 세액공제</h2><p>${new Date().getFullYear()}년 납입분 · 연말까지 D-${dday}</p></div></div>
+    ${!c.hasContrib ? '<p style="color:var(--text-2);margin:0">연금 계좌에 <b>올해 본인 납입액</b>을 입력하면 예상 환급액을 계산해요.</p>' : `
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:8px"><div><div class="k">예상 환급액</div><div class="big num">${kor(c.refund)}</div></div>
+      <span class="pill">공제율 ${(c.rate * 100).toFixed(1)}%</span></div>
+    <div class="meter" role="progressbar" aria-label="세액공제 한도 사용률" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(c.eligible / 9e6 * 100)}"><div style="width:${Math.min(100, c.eligible / 9e6 * 100)}%"></div></div>
+    <div class="meter-labels num"><span>공제 대상 ${short(c.eligible, W)}</span><span>한도 900만원</span></div>
+    <div class="goal-meta" style="margin-top:12px"><span>연금저축 <b class="num">${short(c.savings, W)}</b> / 600만원</span><span>IRP·DC 본인 추가납입 <b class="num">${short(c.irp, W)}</b></span></div>
+    <div class="callout">${msg}</div>`}
+    <p class="note">세법 기준(2026년): 연금저축 연 600만원, IRP 포함 합산 900만원까지 공제 · 총급여 5,500만원 이하 16.5%, 초과 13.2%. 실제 환급액은 결정세액 등에 따라 달라질 수 있어요.</p>`;
+  const total = c.payout + c.nps;
+  $('#pnRetire').innerHTML = `
+    <div class="card-h"><div><h2>은퇴 후 연금 예상</h2><p>${P.startAge}세부터 ${P.years}년 수령 · 연 ${P.rate}% 가정 · 물가 미반영</p></div></div>
+    <div class="k">예상 월 수령액${c.nps ? ' (국민연금 포함)' : ''}</div>
+    <div class="big num">${kor(total)}</div>
+    <div class="kv">
+      <div><div class="k">개인·퇴직연금</div><div class="v num">${short(c.payout, W)}<span class="k"> /월</span></div></div>
+      <div><div class="k">국민연금</div><div class="v num">${c.nps ? short(c.nps, W) + '<span class="k"> /월</span>' : '<span class="k">미입력</span>'}</div></div>
+      <div><div class="k">${P.startAge}세 예상 적립금</div><div class="v num">${short(c.fv, W)}</div></div>
+    </div>
+    <p class="note">${c.n ? `앞으로 ${c.n}년 동안 월 ${short(c.monthlyAll, W)}씩 적립하고 ` : ''}연 ${P.rate}% 수익을 가정한 단순 계산이에요.</p>
+    ${c.privPayout * 12 > 15e6 ? '<div class="callout warnbox">연금저축·IRP 연 수령액이 1,500만원을 넘을 것 같아요. 넘으면 분리과세(16.5%)와 종합과세 중 골라야 하니, 수령 기간을 늘리는 것도 고려해 보세요.</div>' : ''}`;
+  const ae = document.activeElement, setv = (id, v) => { if ($(id) !== ae) $(id).value = v; };
+  setv('#pnAge', P.age); setv('#pnStart', P.startAge); setv('#pnYears', P.years); setv('#pnRate', P.rate); setv('#pnNps', fmtInput(P.nps || ''));
+  $('#pnNpsHint').textContent = unitHint(P.nps);
+  $$('input[name=pnSalary]').forEach(r => (r.checked = r.value === P.salary));
+  const t = totals();
+  $('#pnList').innerHTML = c.hs.length ? groupsHtml(c.hs, t, PTYPES.map(p => ({ name: p.name, match: h => h.pType === p.id })))
+    : `<div class="card empty"><h3>연금 계좌를 추가해 보세요</h3><p>연금저축, IRP, 퇴직연금을 등록하면 세액공제와 은퇴 후 수령액을 계산해 드려요.</p><div class="btns"><button class="btn primary" data-act="add">${plusIcon}연금 계좌 추가</button></div></div>`;
+  lineChart($('#pnChart'), ser, { H: 150, label: '연금 자산 추이', empty: '연금 기록이 2개월 이상 쌓이면 그래프가 그려져요.' });
+}
+
 function itemRow(h, isDebt) {
   const v = valueKRW(h), c = costKRW(h), meta = [];
   if (h.mode === 'qty') meta.push(`${(+h.qty).toLocaleString('ko-KR')}${h.cat === 'stock' ? '주' : '개'} × ${h.cur === 'USD' ? '$' + (+h.price).toLocaleString('en-US') : (hidden() ? MASK : (+h.price).toLocaleString('ko-KR') + '원')}`);
   else if (h.cur === 'USD') meta.push(hidden() ? MASK : '$' + (+h.amount).toLocaleString('en-US'));
+  if (h.cat === 'pension') {
+    meta.unshift(ptName(h.pType));
+    if (h.monthly) meta.push(`월 ${short(h.monthly)} 적립`);
+    if (h.contrib && h.pType !== 'db') meta.push(`올해 ${short(h.contrib)} 납입`);
+  }
   if (h.memo) meta.push(esc(h.memo));
   let sub = '';
   if (c && !isDebt) { const r = (v - c) / c * 100; sub = `<small class="${r >= 0 ? 'up' : 'down'}">${pct(r)} · ${short(v - c, { sign: true })}</small>`; }
@@ -917,7 +1108,7 @@ function renderChrome() {
   $('#themeBtn').setAttribute('aria-label', dark ? '밝은 테마로 전환' : '어두운 테마로 전환');
   document.querySelector('meta[name=theme-color]').content = dark ? '#0b0b0c' : '#f6f6f4';
 }
-function render() { renderChrome(); renderHome(); renderAssets(); renderHistory(); renderSettings(); }
+function render() { renderChrome(); renderHome(); renderAssets(); renderPension(); renderHistory(); renderSettings(); }
 function commit() { save(); render(); }
 
 /* ============ Toast ============ */
@@ -953,15 +1144,18 @@ document.addEventListener('input', e => {
 /* ============ Edit dialog ============ */
 let editingId = null;
 const EF = () => $('#editForm').elements;
+$('#ptypeRadios').innerHTML = PTYPES.map((p, i) => `<label><input type="radio" name="pType" value="${p.id}" ${i === 0 ? 'checked' : ''}><span class="c">${p.name}</span></label>`).join('');
 $('#catRadios').innerHTML = ALL.map((c, i) => `<label><input type="radio" name="cat" value="${c.id}" ${i === 0 ? 'checked' : ''}><span class="c"><span class="swatch" style="background:var(${c.color})"></span>${c.short}</span></label>`).join('');
-function openEdit(id = null) {
+function openEdit(id = null, cat = ctxCat()) {
   editingId = id;
-  const f = EF(), h = id ? state.holdings.find(x => x.id === id) : { name: '', cat: filterCat !== 'all' ? filterCat : 'cash', cur: 'KRW', mode: 'amount', amount: null, qty: null, price: null, cost: null, memo: '' };
+  const f = EF(), h = id ? state.holdings.find(x => x.id === id) : { name: '', cat, cur: 'KRW', mode: 'amount', amount: null, qty: null, price: null, cost: null, memo: '', pType: 'savings', contrib: null, monthly: 0 };
   if (!h) return;
   $('#editTitle').textContent = id ? '자산 수정' : '자산 추가';
   f.title.value = h.name; f.cat.value = h.cat; f.cur.value = h.cur; f.mode.value = h.mode;
   f.amount.value = h.mode === 'amount' ? fmtInput(h.amount) : ''; f.qty.value = fmtInput(h.qty); f.price.value = fmtInput(h.price);
   f.cost.value = fmtInput(h.cost); f.memo.value = h.memo;
+  f.pType.value = h.pType || 'savings'; f.contrib.value = fmtInput(h.contrib); f.monthly.value = fmtInput(h.monthly || '');
+  $('#editTitle').textContent = (h.cat === 'pension' ? (id ? '연금 계좌 수정' : '연금 계좌 추가') : (id ? '자산 수정' : '자산 추가'));
   $('#editDelete').hidden = !id;
   syncEdit(); $('#editDlg').showModal();
   if (!id) f.title.focus();
@@ -969,6 +1163,9 @@ function openEdit(id = null) {
 function syncEdit() {
   const f = EF(), usd = f.cur.value === 'USD', qty = f.mode.value === 'qty', debt = f.cat.value === 'debt', rate = +state.settings.fx || 0;
   $('#amountWrap').hidden = qty; $('#qtyWrap').hidden = !qty; $('#costWrap').hidden = debt;
+  const pen = f.cat.value === 'pension'; $('#pensionWrap').hidden = !pen; $('#contribWrap').hidden = f.pType.value === 'db';
+  $('[data-hint=contrib]').textContent = unitHint(parseNum(f.contrib.value)) || '세액공제 계산용';
+  $('[data-hint=monthly]').textContent = unitHint(parseNum(f.monthly.value)) || '자동이체·회사 적립 · 은퇴 예상용';
   $('#amountLabel').textContent = (debt ? '남은 금액' : '평가금액') + (usd ? ' ($)' : ' (원)');
   $('#priceLabel').textContent = '현재가' + (usd ? ' ($)' : ' (원)');
   $('#costLabel').textContent = '투자 원금 (선택' + (usd ? ', $' : '') + ')';
@@ -993,6 +1190,8 @@ $('#editForm').addEventListener('submit', e => {
     id: editingId || uid(), name, cat: f.cat.value, cur: f.cur.value, mode: f.mode.value,
     amount: qty ? 0 : parseNum(f.amount.value) || 0, qty: qty ? parseNum(f.qty.value) || 0 : null, price: qty ? parseNum(f.price.value) || 0 : null,
     cost: f.cat.value === 'debt' ? null : parseNum(f.cost.value), memo: f.memo.value.trim(),
+    pType: f.pType.value || 'savings', contrib: f.cat.value === 'pension' && f.pType.value !== 'db' ? parseNum(f.contrib.value) : null,
+    monthly: f.cat.value === 'pension' ? parseNum(f.monthly.value) || 0 : 0,
   };
   const wasEdit = !!editingId;
   if (wasEdit) state.holdings = state.holdings.map(x => x.id === editingId ? h : x); else state.holdings.push(h);
@@ -1024,7 +1223,7 @@ $('#histForm').addEventListener('submit', e => {
   if (!/^\d{4}-\d{2}$/.test(month) || month >= monthKey()) { toast('지난 달만 입력할 수 있어요 · 이번 달은 자동 기록'); return; }
   const old = state.history.find(x => x.month === month);
   state.history = state.history.filter(x => x.month !== month);
-  state.history.push({ month, assets: parseNum(f.assets.value) || 0, debt: parseNum(f.debt.value) || 0 });
+  state.history.push(Object.assign({ month, assets: parseNum(f.assets.value) || 0, debt: parseNum(f.debt.value) || 0 }, old && old.byCat && editingMonth ? { byCat: old.byCat } : {}));
   $('#histDlg').close(); commit();
   toast(old && !editingMonth ? `${month} 기록을 덮어썼어요` : `${month} 기록을 저장했어요`, old && !editingMonth ? () => { state.history = state.history.filter(x => x.month !== month).concat(old); commit(); } : null);
 });
@@ -1062,7 +1261,7 @@ $('#pasteForm').addEventListener('input', syncPaste);
 $('#pasteForm').addEventListener('submit', e => {
   e.preventDefault(); const ok = parsePaste($('#pasteForm').elements.paste.value).filter(Boolean); if (!ok.length) return;
   const before = state.holdings.length;
-  ok.forEach(r => state.holdings.push({ id: uid(), name: r.name, cat: r.cat, cur: 'KRW', mode: 'amount', amount: r.amount, qty: null, price: null, cost: null, memo: '' }));
+  ok.forEach(r => state.holdings.push({ id: uid(), name: r.name, cat: r.cat, cur: 'KRW', mode: 'amount', amount: r.amount, qty: null, price: null, cost: null, memo: '', pType: 'savings', contrib: null, monthly: 0 }));
   $('#pasteDlg').close(); commit(); location.hash = '#assets';
   toast(`${ok.length}개 항목을 추가했어요`, () => { state.holdings.length = before; commit(); });
 });
@@ -1077,7 +1276,16 @@ $('#assetList').addEventListener('click', e => {
   const act = e.target.closest('[data-act]')?.dataset.act;
   if (act === 'add') openEdit(); else if (act === 'paste') openPaste(); else if (act === 'sample') loadSample();
 });
-$('#catChips').addEventListener('click', e => { const c = e.target.closest('[data-cat]'); if (c) { filterCat = c.dataset.cat; renderAssets(); } });
+$('#view-pension').addEventListener('click', e => {
+  const item = e.target.closest('.item'); if (item) return openEdit(item.dataset.id);
+  if (e.target.closest('[data-act=add]')) openEdit(null, 'pension');
+});
+const pnBind = (id, key, parse = v => +v) => $(id).addEventListener('input', e => {
+  if (e.target.value === '') return; const v = parse(e.target.value);
+  if (v != null && isFinite(v) && v >= 0) { state.pension[key] = v; save(); renderPension(); renderInsights(totals()); }
+});
+pnBind('#pnAge', 'age'); pnBind('#pnStart', 'startAge'); pnBind('#pnYears', 'years'); pnBind('#pnRate', 'rate'); pnBind('#pnNps', 'nps', parseNum);
+$$('input[name=pnSalary]').forEach(r => r.addEventListener('change', e => { state.pension.salary = e.target.value; save(); renderPension(); renderInsights(totals()); }));
 $('#q').addEventListener('input', renderAssets);
 $('#rangeSeg').addEventListener('click', e => { const b = e.target.closest('[data-range]'); if (b) { state.settings.range = +b.dataset.range; save(); renderTrend(); } });
 $('#hideBtn').addEventListener('click', () => { state.settings.hide = !hidden(); save(); render(); toast(hidden() ? '금액을 숨겼어요' : '금액을 다시 보여드려요'); });
@@ -1136,9 +1344,9 @@ document.addEventListener('keydown', e => {
   if (e.key === 'n' || e.key === 'N') { e.preventDefault(); openEdit(); }
   else if (e.key === '/') { e.preventDefault(); location.hash = '#assets'; setTimeout(() => $('#q').focus(), 0); }
   else if (e.key === 'h' || e.key === 'H') $('#hideBtn').click();
-  else if ('1234'.includes(e.key) && e.key.length === 1) location.hash = '#' + TABS[+e.key - 1];
+  else if ('12345'.includes(e.key) && e.key.length === 1) location.hash = '#' + TABS[+e.key - 1];
 });
-let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(renderTrend, 120); });
+let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(route, 150); });
 
 /* ============ Boot ============ */
 save(); render(); route();
