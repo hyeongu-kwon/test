@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-theme="dark">
 <head>
+<script>document.documentElement.dataset.theme = localStorage.getItem('asset-dashboard-theme') || 'dark';</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>자산관리 대시보드</title>
@@ -441,6 +442,7 @@ document.getElementById('theme').addEventListener('click', () => {
   const root = document.documentElement;
   const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
   root.dataset.theme = dark ? 'light' : 'dark';
+  localStorage.setItem('asset-dashboard-theme', root.dataset.theme);
   render();
 });
 window.addEventListener('resize', renderTrend);
