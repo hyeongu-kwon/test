@@ -101,6 +101,15 @@
   details summary { cursor: pointer; color: var(--text-secondary); font-size: 13px; margin-top: 8px; }
   .insights { margin: 0; padding-left: 18px; }
   .insights li { margin: 4px 0; }
+  .cat-sub { display: none; color: var(--text-muted); font-size: 12px; }
+  @media (max-width: 600px) {
+    .viz-root { padding: 12px; }
+    .col-cat, .col-pct { display: none; }
+    .cat-sub { display: flex; }
+    td.num { white-space: nowrap; }
+    .row-actions button { padding: 2px 6px; }
+    form.add input[name=amount] { flex: 1 1 120px; width: auto; }
+  }
   @media (max-width: 860px) { .kpis { grid-template-columns: repeat(2, 1fr); } .grid2 { grid-template-columns: 1fr; } }
 </style>
 </head>
@@ -154,7 +163,7 @@
         <button class="primary" type="submit">추가</button>
       </form>
       <table>
-        <thead><tr><th>항목</th><th>분류</th><th class="num">금액</th><th class="num">비중</th><th></th></tr></thead>
+        <thead><tr><th>항목</th><th class="col-cat">분류</th><th class="num">금액</th><th class="num col-pct">비중</th><th></th></tr></thead>
         <tbody id="holdings"></tbody>
       </table>
     </div>
@@ -353,11 +362,11 @@ function renderHoldings() {
     const sw = c ? `<span class="swatch" style="background:var(${c.color})"></span>` : '<span class="swatch" style="background:var(--text-muted)"></span>';
     const pct = h.cat === 'debt' ? '—' : (t.assets ? (h.amount / t.assets * 100).toFixed(1) + '%' : '0%');
     return `<tr data-id="${h.id}">
-      <td>${esc(h.name)}</td>
-      <td><span class="tag">${sw}${catName(h.cat)}</span></td>
+      <td>${esc(h.name)}<span class="cat-sub tag">${sw}${catName(h.cat)} · ${pct}</span></td>
+      <td class="col-cat"><span class="tag">${sw}${catName(h.cat)}</span></td>
       <td class="num ${h.cat === 'debt' ? 'down' : ''}">${h.cat === 'debt' ? '-' : ''}${won(h.amount)}</td>
-      <td class="num">${pct}</td>
-      <td class="row-actions num"><button data-act="edit">수정</button> <button data-act="del" aria-label="삭제">삭제</button></td>
+      <td class="num col-pct">${pct}</td>
+      <td class="row-actions num" style="white-space:nowrap"><button data-act="edit">수정</button> <button data-act="del" aria-label="삭제">삭제</button></td>
     </tr>`;
   }).join('') || '<tr><td colspan="5" style="color:var(--text-muted)">항목을 추가하세요</td></tr>';
 }
