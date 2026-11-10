@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>자산관리 대시보드</title>
+<style>
+  .viz-root {
+    color-scheme: light;
+    --page: #f9f9f7;
+    --surface-1: #fcfcfb;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted: #898781;
+    --grid: #e1e0d9;
+    --baseline: #c3c2b7;
+    --border: rgba(11,11,11,0.10);
+    --series-1: #2a78d6;
+    --series-2: #eb6834;
+    --series-3: #1baf7a;
+    --series-4: #eda100;
+    --series-5: #e87ba4;
+    --series-6: #008300;
+    --up: #006300;
+    --down: #d03b3b;
+    --wash: rgba(11,11,11,0.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .viz-root {
+      color-scheme: dark;
+      --page: #0d0d0d; --surface-1: #1a1a19; --text-primary: #f0efec; --text-secondary: #c3c2b7;
+      --grid: #2c2c2a; --baseline: #383835; --border: rgba(255,255,255,0.10);
+      --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500;
+      --series-5: #d55181; --series-6: #008300; --up: #0ca30c; --down: #e66767; --wash: rgba(255,255,255,0.05);
+    }
+  }
+  :root[data-theme="dark"] .viz-root {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface-1: #1a1a19; --text-primary: #f0efec; --text-secondary: #c3c2b7;
+    --grid: #2c2c2a; --baseline: #383835; --border: rgba(255,255,255,0.10);
+    --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500;
+    --series-5: #d55181; --series-6: #008300; --up: #0ca30c; --down: #e66767; --wash: rgba(255,255,255,0.05);
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  .viz-root {
+    min-height: 100vh; background: var(--page); color: var(--text-primary);
+    font-family: system-ui, -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    font-size: 14px; line-height: 1.5; padding: 24px;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  h1 { font-size: 22px; margin: 0; }
+  h2 { font-size: 15px; margin: 0 0 2px; }
+  .sub { color: var(--text-secondary); font-size: 13px; margin: 0 0 14px; }
+  button, input, select {
+    font: inherit; color: var(--text-primary); background: var(--surface-1);
+    border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px;
+  }
+  button { cursor: pointer; }
+  button:hover { background: var(--wash); }
+  button.primary { background: var(--series-1); color: #fff; border-color: transparent; }
+  .card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 12px; }
+  .kpi .label { color: var(--text-secondary); font-size: 13px; }
+  .kpi .value { font-size: 24px; font-weight: 650; margin-top: 2px; }
+  .kpi.hero .value { font-size: 30px; }
+  .kpi .delta { font-size: 13px; color: var(--text-secondary); }
+  .up { color: var(--up); } .down { color: var(--down); }
+  .grid2 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .chart { position: relative; }
+  svg text { fill: var(--text-muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .tooltip {
+    position: absolute; pointer-events: none; background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    white-space: nowrap; display: none; z-index: 2;
+  }
+  .tooltip b { font-variant-numeric: tabular-nums; }
+  .alloc-row { display: grid; grid-template-columns: 92px 1fr 120px; align-items: center; gap: 10px; padding: 5px 0; }
+  .alloc-row .name { display: flex; align-items: center; gap: 6px; color: var(--text-secondary); }
+  .swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+  .track { height: 16px; position: relative; }
+  .bar { height: 16px; background: var(--series-1); border-radius: 0 4px 4px 0; min-width: 2px; }
+  .target-tick { position: absolute; top: -3px; width: 2px; height: 22px; background: var(--text-primary); border-radius: 1px; }
+  .alloc-row .amt { text-align: right; font-variant-numeric: tabular-nums; font-size: 13px; }
+  .alloc-row .amt small { color: var(--text-muted); display: block; font-size: 11px; }
+  .legend-note { color: var(--text-muted); font-size: 12px; margin-top: 10px; display: flex; gap: 6px; align-items: center; }
+  .stack { display: flex; gap: 2px; height: 8px; margin: 4px 0 14px; }
+  .stack div:first-child { border-radius: 4px 0 0 4px; } .stack div:last-child { border-radius: 0 4px 4px 0; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--grid); }
+  th { color: var(--text-secondary); font-weight: 500; font-size: 13px; }
+  td.num, th.num { text-align: right; }
+  .row-actions button { padding: 2px 8px; font-size: 12px; }
+  form.add { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  form.add input[name=name] { flex: 1 1 160px; }
+  form.add input[name=amount] { width: 160px; }
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tag { display: inline-flex; align-items: center; gap: 6px; }
+  details summary { cursor: pointer; color: var(--text-secondary); font-size: 13px; margin-top: 8px; }
+  .insights { margin: 0; padding-left: 18px; }
+  .insights li { margin: 4px 0; }
+  @media (max-width: 860px) { .kpis { grid-template-columns: repeat(2, 1fr); } .grid2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="viz-root">
+<div class="wrap">
+  <header>
+    <div>
+      <h1>자산관리 대시보드</h1>
+      <div class="sub" style="margin:0" id="asof"></div>
+    </div>
+    <div class="toolbar">
+      <button id="snapshot" title="현재 순자산을 이번 달 기록으로 저장">이번 달 기록</button>
+      <button id="export">내보내기(JSON)</button>
+      <label class="tag"><button type="button" id="importBtn">가져오기</button><input type="file" id="importFile" accept="application/json" hidden></label>
+      <button id="theme" aria-label="테마 전환">테마</button>
+    </div>
+  </header>
+
+  <section class="kpis">
+    <div class="card kpi hero"><div class="label">순자산</div><div class="value" id="kNet"></div><div class="delta" id="kNetDelta"></div></div>
+    <div class="card kpi"><div class="label">총자산</div><div class="value" id="kAssets"></div><div class="delta" id="kAssetsN"></div></div>
+    <div class="card kpi"><div class="label">총부채</div><div class="value" id="kDebt"></div><div class="delta" id="kDebtRatio"></div></div>
+    <div class="card kpi"><div class="label">순자산 12개월 변화</div><div class="value" id="kYoy"></div><div class="delta" id="kYoyAbs"></div></div>
+  </section>
+
+  <section class="grid2">
+    <div class="card">
+      <h2>순자산 추이</h2>
+      <p class="sub">월말 기준 · 최근 12개월</p>
+      <div class="chart" id="trend"><div class="tooltip" id="trendTip"></div></div>
+      <details><summary>표로 보기</summary><table id="trendTable"></table></details>
+    </div>
+    <div class="card">
+      <h2>자산 배분</h2>
+      <p class="sub">현재 비중 vs 목표 비중 · 부채 제외</p>
+      <div class="stack" id="stack" aria-hidden="true"></div>
+      <div id="alloc"></div>
+      <div class="legend-note"><span class="target-tick" style="position:static;height:12px"></span> 목표 비중</div>
+    </div>
+  </section>
+
+  <section class="grid2">
+    <div class="card">
+      <h2>보유 자산 · 부채</h2>
+      <p class="sub">항목을 추가·수정하면 모든 지표가 즉시 갱신됩니다 (브라우저에 저장)</p>
+      <form class="add" id="addForm">
+        <input name="name" placeholder="항목명 (예: 삼성전자, 주택담보대출)" required>
+        <select name="cat" id="catSelect"></select>
+        <input name="amount" type="number" min="0" step="1000" placeholder="금액(원)" required>
+        <button class="primary" type="submit">추가</button>
+      </form>
+      <table>
+        <thead><tr><th>항목</th><th>분류</th><th class="num">금액</th><th class="num">비중</th><th></th></tr></thead>
+        <tbody id="holdings"></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h2>리밸런싱 · 인사이트</h2>
+      <p class="sub">목표 비중과 ±5%p 이상 벌어진 분류를 알려줍니다</p>
+      <ul class="insights" id="insights"></ul>
+      <h2 style="margin-top:18px">목표 비중 설정</h2>
+      <p class="sub">합계 100%가 되도록 입력</p>
+      <table id="targets"></table>
+    </div>
+  </section>
+</div>
+</div>
+
+<script>
+const CATS = [
+  { id: 'cash',   name: '현금·예금', color: '--series-1' },
+  { id: 'stock',  name: '주식',      color: '--series-2' },
+  { id: 'bond',   name: '채권',      color: '--series-3' },
+  { id: 'real',   name: '부동산',    color: '--series-4' },
+  { id: 'pension',name: '연금',      color: '--series-5' },
+  { id: 'alt',    name: '기타·대체',  color: '--series-6' },
+];
+const DEBT = { id: 'debt', name: '부채' };
+const KEY = 'asset-dashboard-v1';
+
+function monthKey(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+
+function sampleState() {
+  const holdings = [
+    { id: 1, name: '파킹통장', cat: 'cash', amount: 18000000 },
+    { id: 2, name: '정기예금', cat: 'cash', amount: 30000000 },
+    { id: 3, name: '국내 주식', cat: 'stock', amount: 42000000 },
+    { id: 4, name: '미국 ETF', cat: 'stock', amount: 65000000 },
+    { id: 5, name: '국채 ETF', cat: 'bond', amount: 25000000 },
+    { id: 6, name: '아파트(지분)', cat: 'real', amount: 320000000 },
+    { id: 7, name: '연금저축·IRP', cat: 'pension', amount: 38000000 },
+    { id: 8, name: '금 현물', cat: 'alt', amount: 9000000 },
+    { id: 9, name: '주택담보대출', cat: 'debt', amount: 180000000 },
+  ];
+  const net = holdings.reduce((s, h) => s + (h.cat === 'debt' ? -h.amount : h.amount), 0);
+  const history = [];
+  const now = new Date();
+  const rnd = [0.4, -0.8, 1.6, 0.9, -1.2, 2.1, 1.0, 0.3, 1.8, -0.5, 1.4];
+  let v = net;
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    history.unshift({ month: monthKey(d), net: Math.round(v / 10000) * 10000 });
+    if (i < 11) v = v / (1 + (rnd[i] + 0.6) / 100) - 1500000;
+  }
+  return {
+    holdings,
+    targets: { cash: 10, stock: 30, bond: 10, real: 40, pension: 8, alt: 2 },
+    history,
+  };
+}
+
+let state;
+try { state = JSON.parse(localStorage.getItem(KEY)) || sampleState(); } catch { state = sampleState(); }
+const save = () => localStorage.setItem(KEY, JSON.stringify(state));
+
+const won = n => Math.round(n).toLocaleString('ko-KR') + '원';
+function compact(n) {
+  const a = Math.abs(n), s = n < 0 ? '-' : '';
+  if (a >= 1e8) return s + (a / 1e8).toFixed(a >= 1e10 ? 0 : 2).replace(/\.?0+$/, '') + '억';
+  if (a >= 1e4) return s + Math.round(a / 1e4).toLocaleString('ko-KR') + '만';
+  return s + a.toLocaleString('ko-KR');
+}
+const css = v => getComputedStyle(document.querySelector('.viz-root')).getPropertyValue(v).trim();
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const catName = id => (CATS.find(c => c.id === id) || DEBT).name;
+
+function totals() {
+  const byCat = Object.fromEntries(CATS.map(c => [c.id, 0]));
+  let debt = 0;
+  for (const h of state.holdings) { if (h.cat === 'debt') debt += h.amount; else byCat[h.cat] += h.amount; }
+  const assets = Object.values(byCat).reduce((a, b) => a + b, 0);
+  return { byCat, assets, debt, net: assets - debt };
+}
+
+function historyWithCurrent() {
+  const t = totals(), cur = monthKey(new Date());
+  const h = state.history.filter(x => x.month !== cur).slice(-11);
+  return [...h, { month: cur, net: t.net }];
+}
+
+function renderKpis() {
+  const t = totals(), hist = historyWithCurrent();
+  document.getElementById('asof').textContent = new Date().toLocaleDateString('ko-KR', { dateStyle: 'long' }) + ' 기준';
+  document.getElementById('kNet').textContent = compact(t.net) + '원';
+  document.getElementById('kAssets').textContent = compact(t.assets) + '원';
+  document.getElementById('kDebt').textContent = compact(t.debt) + '원';
+  document.getElementById('kAssetsN').textContent = state.holdings.filter(h => h.cat !== 'debt').length + '개 항목';
+  document.getElementById('kDebtRatio').textContent = '부채비율 ' + (t.assets ? (t.debt / t.assets * 100).toFixed(1) : '0') + '%';
+  const delta = (el, d, base, suffix) => {
+    const pct = base ? d / Math.abs(base) * 100 : 0;
+    el.className = 'delta ' + (d >= 0 ? 'up' : 'down');
+    el.textContent = (d >= 0 ? '▲ ' : '▼ ') + compact(Math.abs(d)) + '원 (' + (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%) ' + suffix;
+  };
+  const prev = hist.length > 1 ? hist[hist.length - 2].net : t.net;
+  delta(document.getElementById('kNetDelta'), t.net - prev, prev, '전월 대비');
+  const first = hist[0].net, yoy = first ? (t.net - first) / Math.abs(first) * 100 : 0;
+  const ky = document.getElementById('kYoy');
+  ky.textContent = (yoy >= 0 ? '+' : '') + yoy.toFixed(1) + '%';
+  ky.className = 'value ' + (yoy >= 0 ? 'up' : 'down');
+  document.getElementById('kYoyAbs').textContent = (t.net - first >= 0 ? '▲ ' : '▼ ') + compact(Math.abs(t.net - first)) + '원 · ' + hist[0].month + ' 대비';
+}
+
+function niceTicks(min, max, count = 4) {
+  const span = max - min || Math.abs(max) || 1;
+  const step0 = span / count, mag = Math.pow(10, Math.floor(Math.log10(step0)));
+  const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => s >= step0);
+  const lo = Math.floor(min / step) * step, hi = Math.ceil(max / step) * step;
+  const ticks = []; for (let v = lo; v <= hi + step / 2; v += step) ticks.push(v);
+  return ticks;
+}
+
+function renderTrend() {
+  const el = document.getElementById('trend'), tip = document.getElementById('trendTip');
+  el.querySelectorAll('svg').forEach(s => s.remove());
+  const data = historyWithCurrent();
+  const W = el.clientWidth || 600, H = 240, m = { l: 52, r: 16, t: 12, b: 26 };
+  const vals = data.map(d => d.net);
+  const ticks = niceTicks(Math.min(...vals), Math.max(...vals));
+  const y0 = ticks[0], y1 = ticks[ticks.length - 1];
+  const x = i => m.l + (data.length === 1 ? 0 : i / (data.length - 1)) * (W - m.l - m.r);
+  const y = v => m.t + (1 - (v - y0) / (y1 - y0 || 1)) * (H - m.t - m.b);
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('width', W); svg.setAttribute('height', H); svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-label', '최근 12개월 순자산 추이 선 그래프');
+  let s = '';
+  ticks.forEach(t => {
+    s += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(t)}" y2="${y(t)}" stroke="${css('--grid')}" stroke-width="1"/>`;
+    s += `<text x="${m.l - 8}" y="${y(t) + 4}" text-anchor="end">${compact(t)}</text>`;
+  });
+  data.forEach((d, i) => {
+    if (i % 2 === (data.length - 1) % 2) s += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle">${d.month.slice(2).replace('-', '.')}</text>`;
+  });
+  const path = data.map((d, i) => (i ? 'L' : 'M') + x(i) + ',' + y(d.net)).join('');
+  const c1 = css('--series-1');
+  s += `<path d="${path}L${x(data.length - 1)},${y(y0)}L${x(0)},${y(y0)}Z" fill="${c1}" opacity="0.1"/>`;
+  s += `<path d="${path}" fill="none" stroke="${c1}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  const last = data[data.length - 1];
+  s += `<circle cx="${x(data.length - 1)}" cy="${y(last.net)}" r="4" fill="${c1}" stroke="${css('--surface-1')}" stroke-width="2"/>`;
+  s += `<line id="xh" y1="${m.t}" y2="${H - m.b}" stroke="${css('--baseline')}" stroke-width="1" visibility="hidden"/>`;
+  s += `<circle id="xd" r="4" fill="${c1}" stroke="${css('--surface-1')}" stroke-width="2" visibility="hidden"/>`;
+  s += `<rect x="${m.l}" y="${m.t}" width="${W - m.l - m.r}" height="${H - m.t - m.b}" fill="transparent" id="hit"/>`;
+  svg.innerHTML = s;
+  el.appendChild(svg);
+  const hit = svg.querySelector('#hit'), xh = svg.querySelector('#xh'), xd = svg.querySelector('#xd');
+  hit.addEventListener('mousemove', e => {
+    const r = svg.getBoundingClientRect(), px = e.clientX - r.left;
+    let i = Math.round((px - m.l) / ((W - m.l - m.r) / Math.max(1, data.length - 1)));
+    i = Math.max(0, Math.min(data.length - 1, i));
+    const d = data[i], prev = data[i - 1];
+    xh.setAttribute('x1', x(i)); xh.setAttribute('x2', x(i)); xh.setAttribute('visibility', 'visible');
+    xd.setAttribute('cx', x(i)); xd.setAttribute('cy', y(d.net)); xd.setAttribute('visibility', 'visible');
+    const ch = prev ? d.net - prev.net : null;
+    tip.innerHTML = `${d.month}<br><b>${won(d.net)}</b>` +
+      (ch !== null ? `<br><span class="${ch >= 0 ? 'up' : 'down'}">${ch >= 0 ? '▲' : '▼'} ${compact(Math.abs(ch))}원</span>` : '');
+    tip.style.display = 'block';
+    const left = Math.min(x(i) + 12, W - tip.offsetWidth - 4);
+    tip.style.left = (x(i) + 12 + tip.offsetWidth > W ? x(i) - tip.offsetWidth - 12 : left) + 'px';
+    tip.style.top = Math.max(0, y(d.net) - 50) + 'px';
+  });
+  hit.addEventListener('mouseleave', () => { tip.style.display = 'none'; xh.setAttribute('visibility', 'hidden'); xd.setAttribute('visibility', 'hidden'); });
+  document.getElementById('trendTable').innerHTML =
+    '<tr><th>월</th><th class="num">순자산</th></tr>' + data.map(d => `<tr><td>${d.month}</td><td class="num">${won(d.net)}</td></tr>`).join('');
+}
+
+function renderAlloc() {
+  const t = totals();
+  const rows = CATS.map(c => ({ ...c, v: t.byCat[c.id], pct: t.assets ? t.byCat[c.id] / t.assets * 100 : 0, target: +state.targets[c.id] || 0 }))
+    .sort((a, b) => b.v - a.v);
+  const max = Math.max(...rows.map(r => Math.max(r.pct, r.target)), 1);
+  document.getElementById('stack').innerHTML = CATS.filter(c => t.byCat[c.id] > 0)
+    .map(c => `<div title="${c.name}" style="flex:${t.byCat[c.id]};background:var(${c.color})"></div>`).join('');
+  document.getElementById('alloc').innerHTML = rows.map(r => `
+    <div class="alloc-row" title="${r.name}: ${won(r.v)} · 현재 ${r.pct.toFixed(1)}% / 목표 ${r.target}%">
+      <div class="name"><span class="swatch" style="background:var(${r.color})"></span>${r.name}</div>
+      <div class="track">
+        <div class="bar" style="width:${r.pct / max * 100}%"></div>
+        <div class="target-tick" style="left:calc(${r.target / max * 100}% - 1px)"></div>
+      </div>
+      <div class="amt">${r.pct.toFixed(1)}%<small>${compact(r.v)}원 · 목표 ${r.target}%</small></div>
+    </div>`).join('');
+}
+
+function renderHoldings() {
+  const t = totals();
+  const sorted = [...state.holdings].sort((a, b) => (a.cat === 'debt') - (b.cat === 'debt') || b.amount - a.amount);
+  document.getElementById('holdings').innerHTML = sorted.map(h => {
+    const c = CATS.find(c => c.id === h.cat);
+    const sw = c ? `<span class="swatch" style="background:var(${c.color})"></span>` : '<span class="swatch" style="background:var(--text-muted)"></span>';
+    const pct = h.cat === 'debt' ? '—' : (t.assets ? (h.amount / t.assets * 100).toFixed(1) + '%' : '0%');
+    return `<tr data-id="${h.id}">
+      <td>${esc(h.name)}</td>
+      <td><span class="tag">${sw}${catName(h.cat)}</span></td>
+      <td class="num ${h.cat === 'debt' ? 'down' : ''}">${h.cat === 'debt' ? '-' : ''}${won(h.amount)}</td>
+      <td class="num">${pct}</td>
+      <td class="row-actions num"><button data-act="edit">수정</button> <button data-act="del" aria-label="삭제">삭제</button></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="5" style="color:var(--text-muted)">항목을 추가하세요</td></tr>';
+}
+
+function renderInsights() {
+  const t = totals(), out = [];
+  const sumT = CATS.reduce((s, c) => s + (+state.targets[c.id] || 0), 0);
+  if (Math.abs(sumT - 100) > 0.01) out.push(`⚠ 목표 비중 합계가 <b>${sumT}%</b>입니다. 100%로 맞춰 주세요.`);
+  CATS.forEach(c => {
+    const pct = t.assets ? t.byCat[c.id] / t.assets * 100 : 0, tg = +state.targets[c.id] || 0, gap = pct - tg;
+    if (Math.abs(gap) >= 5) {
+      const amt = Math.abs(gap) / 100 * t.assets;
+      out.push(`${gap > 0 ? '▲' : '▼'} <b>${c.name}</b> ${pct.toFixed(1)}% (목표 ${tg}%) → 약 <b>${compact(amt)}원</b> ${gap > 0 ? '매도/축소' : '매수/확대'} 검토`);
+    }
+  });
+  const cashMonths = t.byCat.cash / 3000000;
+  out.push(`ℹ 현금성 자산은 월 생활비 300만원 기준 약 <b>${cashMonths.toFixed(1)}개월</b>치 비상금입니다${cashMonths < 6 ? ' (6개월 이상 권장)' : ''}.`);
+  const dr = t.assets ? t.debt / t.assets * 100 : 0;
+  out.push(`ℹ 부채비율 <b>${dr.toFixed(1)}%</b>${dr > 40 ? ' — 높은 편입니다. 상환 계획을 점검하세요.' : ' — 양호한 수준입니다.'}`);
+  if (out.length === 2 && Math.abs(sumT - 100) <= 0.01) out.unshift('✓ 모든 분류가 목표 비중 ±5%p 이내입니다.');
+  document.getElementById('insights').innerHTML = out.map(s => `<li>${s}</li>`).join('');
+  document.getElementById('targets').innerHTML = CATS.map(c => `
+    <tr><td><span class="tag"><span class="swatch" style="background:var(${c.color})"></span>${c.name}</span></td>
+    <td class="num"><input type="number" min="0" max="100" step="1" value="${state.targets[c.id] || 0}" data-target="${c.id}" style="width:80px;text-align:right"> %</td></tr>`).join('') +
+    `<tr><td>합계</td><td class="num"><b>${sumT}%</b></td></tr>`;
+}
+
+function render() { renderKpis(); renderTrend(); renderAlloc(); renderHoldings(); renderInsights(); }
+
+document.getElementById('catSelect').innerHTML = [...CATS, DEBT].map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+document.getElementById('addForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const f = new FormData(e.target);
+  state.holdings.push({ id: Date.now(), name: f.get('name').trim(), cat: f.get('cat'), amount: +f.get('amount') });
+  save(); e.target.reset(); render();
+});
+document.getElementById('holdings').addEventListener('click', e => {
+  const btn = e.target.closest('button'); if (!btn) return;
+  const id = +btn.closest('tr').dataset.id, h = state.holdings.find(x => x.id === id);
+  if (btn.dataset.act === 'del' && confirm(`'${h.name}' 항목을 삭제할까요?`)) state.holdings = state.holdings.filter(x => x.id !== id);
+  if (btn.dataset.act === 'edit') {
+    const v = prompt(`'${h.name}' 금액(원)`, h.amount);
+    if (v !== null && !isNaN(+v) && +v >= 0) h.amount = +v;
+  }
+  save(); render();
+});
+document.getElementById('targets').addEventListener('change', e => {
+  const k = e.target.dataset.target; if (!k) return;
+  state.targets[k] = Math.max(0, +e.target.value || 0); save(); render();
+});
+document.getElementById('snapshot').addEventListener('click', () => {
+  const cur = monthKey(new Date()), net = totals().net;
+  state.history = state.history.filter(x => x.month !== cur).concat({ month: cur, net });
+  save(); render(); alert(`${cur} 순자산 ${won(net)} 기록 완료`);
+});
+document.getElementById('export').addEventListener('click', () => {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' }));
+  a.download = 'assets-' + monthKey(new Date()) + '.json'; a.click();
+});
+document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change', async e => {
+  const file = e.target.files[0]; if (!file) return;
+  try {
+    const s = JSON.parse(await file.text());
+    if (!Array.isArray(s.holdings) || !s.targets || !Array.isArray(s.history)) throw 0;
+    state = s; save(); render();
+  } catch { alert('올바른 대시보드 JSON 파일이 아닙니다.'); }
+  e.target.value = '';
+});
+document.getElementById('theme').addEventListener('click', () => {
+  const root = document.documentElement;
+  const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  root.dataset.theme = dark ? 'light' : 'dark';
+  render();
+});
+window.addEventListener('resize', renderTrend);
+render();
+</script>
+</body>
+</html>
