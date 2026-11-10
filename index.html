@@ -345,6 +345,18 @@
   .gift-list .gm { color: var(--muted); font-size: 12.5px; }
   .gift-list .icon-btn { width: 30px; height: 30px; border-radius: 8px; }
   .gift-list .icon-btn svg { width: 14px; height: 14px; }
+  .share-banner { max-width: 1160px; margin: 14px auto 0; padding: 0 20px; }
+  .share-banner > div { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); border-radius: 14px; padding: 12px 14px; }
+  .share-banner .t { flex: 1 1 240px; font-size: 14px; }
+  .share-banner .t small { display: block; color: var(--text-2); font-size: 12.5px; }
+  body.viewonly main { padding-top: 14px; }
+  body.viewonly #addBtn, body.viewonly #fab, body.viewonly #addChildBtn, body.viewonly #addHistBtn, body.viewonly #pasteBtn2,
+  body.viewonly [data-act=add], body.viewonly [data-kact^=add], body.viewonly [data-kact=edit-child], body.viewonly [data-gift],
+  body.viewonly [data-month], body.viewonly [data-tab=settings], body.viewonly #matchTargets { display: none !important; }
+  body.viewonly .bottom-nav { grid-template-columns: repeat(5, 1fr); }
+  .check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; cursor: pointer; }
+  .check input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--accent); flex: none; }
+  .check small { display: block; color: var(--muted); font-size: 12.5px; }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 </style>
 </head>
@@ -391,6 +403,11 @@
   </div>
 </header>
 
+<div class="share-banner" id="shareBanner" hidden><div>
+  <div class="t">🔗 <b id="shareFrom">공유받은 자산 현황</b> · 읽기 전용<small>내 기기에 저장된 데이터는 그대로 있어요. 이 화면에서 바꾼 내용은 저장되지 않아요.</small></div>
+  <button class="btn sm" id="shareImport">내 기기에 저장</button>
+  <button class="btn sm primary" id="shareClose">닫고 내 데이터 보기</button>
+</div></div>
 <main>
   <!-- HOME -->
   <section class="view" id="view-home" aria-label="홈">
@@ -513,6 +530,7 @@
       <div class="card">
         <div class="card-h"><div><h2>데이터</h2><p>모든 데이터는 이 기기의 브라우저에만 저장돼요. 다른 기기로 옮길 땐 백업 파일을 사용하세요.</p></div></div>
         <div class="action-list">
+          <button id="shareBtn"><span class="ai"><svg aria-hidden="true"><use href="#i-up"/></svg></span><span><b>공유 링크 만들기</b><small>지금 데이터를 담은 링크 · 받은 사람은 읽기 전용으로 봐요</small></span></button>
           <button id="exportJson"><span class="ai"><svg aria-hidden="true"><use href="#i-down"/></svg></span><span><b>백업 파일 저장</b><small>JSON · 다른 기기에서 복원할 수 있어요</small></span></button>
           <button id="importJson"><span class="ai"><svg aria-hidden="true"><use href="#i-up"/></svg></span><span><b>백업 파일 복원</b><small>현재 데이터를 백업 내용으로 바꿔요</small></span></button>
           <button id="exportCsv"><span class="ai"><svg aria-hidden="true"><use href="#i-table"/></svg></span><span><b>엑셀(CSV)로 내보내기</b><small>보유 자산 목록 · 수익률 포함</small></span></button>
@@ -652,6 +670,21 @@
       <label class="f">메모 (선택)<input type="text" name="gmemo" maxlength="60" autocomplete="off" placeholder="예: 세뱃돈, 증여세 신고 완료"></label>
     </div>
     <div class="dlg-f"><div class="spacer"></div><button type="button" class="btn" data-close>취소</button><button type="submit" class="btn primary">저장</button></div>
+  </form>
+</dialog>
+
+<!-- Share dialog -->
+<dialog id="shareDlg" aria-labelledby="shareTitle">
+  <form id="shareForm" novalidate>
+    <div class="dlg-h"><h3 id="shareTitle">공유 링크 만들기</h3><button type="button" class="icon-btn" data-close aria-label="닫기"><svg aria-hidden="true"><use href="#i-x"/></svg></button></div>
+    <div class="dlg-b">
+      <p style="margin:0;color:var(--text-2);font-size:14px">지금 시점의 자산 현황을 링크 하나에 담아요. 받은 사람은 링크를 열면 <b>읽기 전용</b>으로 볼 수 있고, 그 사람의 데이터는 바뀌지 않아요.</p>
+      <label class="check"><input type="checkbox" name="kids"><span>아이자산 포함<small>체크하지 않으면 아이자산은 빼고 공유해요</small></span></label>
+      <label class="check"><input type="checkbox" name="memo" checked><span>메모 포함<small>계좌명·만기 등 메모 내용</small></span></label>
+      <div class="callout warnbox" style="margin:0;font-size:13px">링크를 가진 사람은 누구나 금액을 볼 수 있어요. 믿을 수 있는 사람에게만 보내 주세요. 링크는 만든 시점의 사본이라, 이후에 바꾼 내용은 반영되지 않아요.</div>
+      <div class="preview" id="shareInfo" hidden></div>
+    </div>
+    <div class="dlg-f"><div class="spacer"></div><button type="button" class="btn" data-close>취소</button><button type="submit" class="btn primary" id="shareSubmit">링크 복사</button></div>
   </form>
 </dialog>
 
@@ -842,7 +875,9 @@ const fmtInput = n => (n == null || n === '' ? '' : (+n).toLocaleString('en-US',
 const unitHint = n => (n ? '= ' + korPlain(n) : '');
 
 /* ============ Persistence ============ */
+let viewOnly = false;
 function save() {
+  if (viewOnly) return;
   const cur = monthKey(), t = totals();
   state.history = state.history.filter(e => e.month !== cur);
   if (state.holdings.length) state.history.push({ month: cur, assets: Math.round(t.assets), debt: Math.round(t.debt), byCat: Object.fromEntries(CATS.map(c => [c.id, Math.round(t.byCat[c.id])])) });
@@ -1300,6 +1335,7 @@ function renderKids() {
 /* ---- kid dialogs ---- */
 let editingChild = null, editingKid = null;
 function openChild(id = null) {
+  if (blocked()) return; 
   editingChild = id; const c = id ? state.kids.children.find(x => x.id === id) : null, f = $('#childForm').elements;
   $('#childTitle').textContent = c ? '아이 정보 수정' : '아이 등록';
   f.kname.value = c ? c.name : ''; f.birth.value = c ? c.birth : ''; f.birth.max = ymd(new Date());
@@ -1324,6 +1360,7 @@ $('#childDelete').addEventListener('click', async () => {
 $('#ktypeRadios').innerHTML = KTYPES.map((t, i) => `<label><input type="radio" name="ktype" value="${t.id}" ${i === 0 ? 'checked' : ''}><span class="c">${t.name}</span></label>`).join('');
 const KF = () => $('#kidItemForm').elements;
 function openKidItem(id = null) {
+  if (blocked()) return; 
   const child = currentChild(); if (!child) return openChild();
   editingKid = id; const h = id ? state.kids.holdings.find(x => x.id === id) : null, f = KF();
   $('#kidItemTitle').textContent = `${child.name} · ${h ? '자산 수정' : '자산 추가'}`;
@@ -1351,6 +1388,7 @@ $('#kidItemDelete').addEventListener('click', () => {
   const [h] = state.kids.holdings.splice(idx, 1); commit(); toast(`'${h.name}' 삭제했어요`, () => { state.kids.holdings.splice(idx, 0, h); commit(); });
 });
 function openGift() {
+  if (blocked()) return; 
   const f = $('#giftForm').elements; f.gdate.value = ymd(new Date()); f.gdate.max = ymd(new Date()); f.gamount.value = ''; f.gmemo.value = ''; f.gfrom.value = '부모';
   $('[data-ghint]').textContent = ''; $('#giftTitle').textContent = `${currentChild().name} · 증여 기록`; $('#giftDlg').showModal(); f.gamount.focus();
 }
@@ -1363,6 +1401,7 @@ $('#giftForm').addEventListener('submit', e => {
 });
 $('#view-kids').addEventListener('click', e => {
   const item = e.target.closest('.item'); if (item) return openKidItem(item.dataset.id);
+  if (viewOnly) return;
   const gb = e.target.closest('[data-gift]');
   if (gb) { const idx = state.kids.gifts.findIndex(x => x.id === gb.dataset.gift), [g] = state.kids.gifts.splice(idx, 1); commit(); return toast(`${dot(g.date)} 증여 기록을 삭제했어요`, () => { state.kids.gifts.splice(idx, 0, g); commit(); }); }
   const act = e.target.closest('[data-kact]')?.dataset.kact;
@@ -1421,6 +1460,7 @@ const EF = () => $('#editForm').elements;
 $('#ptypeRadios').innerHTML = PTYPES.map((p, i) => `<label><input type="radio" name="pType" value="${p.id}" ${i === 0 ? 'checked' : ''}><span class="c">${p.name}</span></label>`).join('');
 $('#catRadios').innerHTML = ALL.map((c, i) => `<label><input type="radio" name="cat" value="${c.id}" ${i === 0 ? 'checked' : ''}><span class="c"><span class="swatch" style="background:var(${c.color})"></span>${c.short}</span></label>`).join('');
 function openEdit(id = null, cat = ctxCat()) {
+  if (blocked()) return; 
   editingId = id;
   const f = EF(), h = id ? state.holdings.find(x => x.id === id) : { name: '', cat, cur: 'KRW', mode: cat === 'crypto' ? 'qty' : 'amount', amount: null, qty: null, price: null, cost: null, memo: '', pType: 'savings', contrib: null, monthly: 0 };
   if (!h) return;
@@ -1487,6 +1527,7 @@ $$('dialog').forEach(d => d.addEventListener('mousedown', e => { if (e.target ==
 /* ============ History dialog ============ */
 let editingMonth = null;
 function openHist(month = null) {
+  if (blocked()) return; 
   editingMonth = month; const f = $('#histForm').elements, e = month ? state.history.find(x => x.month === month) : null;
   $('#histTitle').textContent = month ? `${month.replace('-', '년 ')}월 기록 수정` : '지난 달 기록 추가';
   f.month.value = month || monthsAgo(1); f.month.max = monthsAgo(1); f.month.disabled = !!month;
@@ -1525,7 +1566,7 @@ function parsePaste(text) {
     return name && amount != null ? { name, cat: cat ? cat.id : 'alt', amount: Math.abs(amount), guessed: !cat } : null;
   }).filter(r => r !== undefined);
 }
-function openPaste() { $('#pasteForm').elements.paste.value = ''; syncPaste(); $('#pasteDlg').showModal(); $('#pasteForm').elements.paste.focus(); }
+function openPaste() { if (blocked()) return; $('#pasteForm').elements.paste.value = ''; syncPaste(); $('#pasteDlg').showModal(); $('#pasteForm').elements.paste.focus(); }
 function syncPaste() {
   const rows = parsePaste($('#pasteForm').elements.paste.value), ok = rows.filter(Boolean), bad = rows.length - ok.length;
   $('#pasteSubmit').disabled = !ok.length;
@@ -1597,7 +1638,7 @@ function download(name, content, type) {
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([content], { type })); a.download = name;
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); toast(`'${name}' 저장했어요`);
 }
-$('#importJson').addEventListener('click', () => $('#importFile').click());
+$('#importJson').addEventListener('click', () => { if (!blocked()) $('#importFile').click(); });
 $('#importFile').addEventListener('change', async e => {
   const file = e.target.files[0]; e.target.value = ''; if (!file) return;
   let s;
@@ -1606,12 +1647,14 @@ $('#importFile').addEventListener('change', async e => {
   const prev = state; state = normalize(s); commit(); toast('복원했어요', () => { state = prev; commit(); });
 });
 async function loadSample() {
+  if (blocked()) return; 
   if (state.holdings.length && !(await confirmDlg('예시 데이터 보기', '현재 데이터를 예시 데이터로 바꿀까요? 바꾼 직후 실행 취소할 수 있어요.', '예시 보기'))) return;
   const prev = state; state = sampleState(); state.settings.hide = prev.settings.hide; commit(); location.hash = '#home';
   toast('예시 데이터를 불러왔어요', () => { state = prev; commit(); });
 }
 $('#loadSample').addEventListener('click', loadSample);
 $('#resetAll').addEventListener('click', async () => {
+  if (blocked()) return; 
   if (!(await confirmDlg('전체 초기화', '모든 자산, 월별 기록, 설정을 삭제해요. 필요하면 먼저 백업 파일을 저장하세요.', '모두 삭제', '취소', true))) return;
   const prev = state; state = emptyState(); commit(); toast('모든 데이터를 삭제했어요', () => { state = prev; commit(); });
 });
@@ -1626,12 +1669,83 @@ document.addEventListener('keydown', e => {
 });
 let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(route, 150); });
 
-/* ============ Boot ============ */
-save(); render(); route();
-if (firstRun) {
-  confirmDlg('반가워요! 내 자산을 한눈에 정리해 볼까요?', '예시 데이터로 먼저 둘러보거나, 바로 내 자산을 입력할 수 있어요. 데이터는 이 기기에만 저장돼요.', '예시로 둘러보기', '직접 입력하기')
-    .then(ok => { if (ok) { state = sampleState(); commit(); toast('예시 데이터예요 · 설정에서 언제든 초기화할 수 있어요'); } else { location.hash = '#assets'; openEdit(); } });
+/* ============ Share link (snapshot in URL fragment, never sent to the server) ============ */
+function blocked() { if (viewOnly) { toast('공유 보기에서는 수정할 수 없어요 · 내 기기에 저장하면 수정할 수 있어요'); return true; } return false; }
+const b64u = bytes => { let s = ''; bytes.forEach(b => (s += String.fromCharCode(b))); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
+const unb64u = str => Uint8Array.from(atob(str.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+async function encodeShare(obj) {
+  const bytes = new TextEncoder().encode(JSON.stringify(obj));
+  if (typeof CompressionStream === 'undefined') return 'j' + b64u(bytes);
+  const out = await new Response(new Blob([bytes]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer();
+  return 'z' + b64u(new Uint8Array(out));
 }
+async function decodeShare(code) {
+  const kind = code[0], bytes = unb64u(code.slice(1));
+  const raw = kind === 'z' ? new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer()) : bytes;
+  return JSON.parse(new TextDecoder().decode(raw));
+}
+function sharePayload(withKids, withMemo) {
+  const c = JSON.parse(JSON.stringify(state));
+  c.settings.hide = false;
+  if (!withKids) c.kids = emptyKids();
+  if (!withMemo) { c.holdings.forEach(h => (h.memo = '')); c.kids.holdings.forEach(h => (h.memo = '')); c.kids.gifts.forEach(g => (g.memo = '')); }
+  c.holdings.forEach(h => { for (const k in h) if (h[k] === null || h[k] === '' || h[k] === 0 && k !== 'amount') delete h[k]; });
+  return { v: 1, at: new Date().toISOString(), data: c };
+}
+function openShare() {
+  if (blocked()) return;
+  if (!state.holdings.length && !state.kids.children.length) return toast('공유할 데이터가 없어요');
+  const f = $('#shareForm').elements; f.kids.checked = false; f.memo.checked = true;
+  $('#shareInfo').hidden = true; $('#shareSubmit').textContent = navigator.share && matchMedia('(pointer: coarse)').matches ? '공유하기' : '링크 복사';
+  $('#shareDlg').showModal();
+}
+$('#shareBtn').addEventListener('click', openShare);
+$('#shareForm').addEventListener('submit', async e => {
+  e.preventDefault(); const f = $('#shareForm').elements;
+  const url = location.origin + location.pathname + '#s=' + await encodeShare(sharePayload(f.kids.checked, f.memo.checked));
+  const info = $('#shareInfo'); info.hidden = false;
+  info.innerHTML = `<div class="hint">링크 길이 ${url.length.toLocaleString()}자 · ${new Date().toLocaleDateString('ko-KR')} 기준 사본</div><input type="text" readonly value="${esc(url)}" aria-label="공유 링크" style="font-size:13px">`;
+  const input = info.querySelector('input'); input.select();
+  try {
+    if (navigator.share && matchMedia('(pointer: coarse)').matches) { await navigator.share({ title: '자산 현황 공유', url }); $('#shareDlg').close(); return; }
+    await navigator.clipboard.writeText(url); toast('링크를 복사했어요 · 메신저에 붙여넣어 보내세요');
+  } catch (err) { if (err && err.name === 'AbortError') return; toast('위 링크를 길게 눌러 복사해 주세요'); }
+});
+const SHARE_KEY = 'asset-dashboard-shared';
+async function loadShared() {
+  let code = null;
+  if (location.hash.startsWith('#s=')) { code = location.hash.slice(3); sessionStorage.setItem(SHARE_KEY, code); history.replaceState(null, '', location.pathname + location.search + '#home'); }
+  else code = sessionStorage.getItem(SHARE_KEY);
+  if (!code) return null;
+  try { const p = await decodeShare(code); if (!p || !p.data || !Array.isArray(p.data.holdings)) throw 0; return p; }
+  catch { sessionStorage.removeItem(SHARE_KEY); toast('공유 링크가 손상되어 열 수 없어요 · 링크 전체가 복사됐는지 확인해 주세요'); return null; }
+}
+$('#shareClose').addEventListener('click', () => { sessionStorage.removeItem(SHARE_KEY); location.replace(location.pathname + location.search + '#home'); location.reload(); });
+$('#shareImport').addEventListener('click', async () => {
+  const mine = JSON.parse(localStorage.getItem(KEY) || 'null');
+  const hasMine = mine && ((mine.holdings || []).length || ((mine.kids || {}).children || []).length);
+  if (hasMine && !(await confirmDlg('내 기기에 저장', '이 기기에 이미 저장된 내 데이터가 공유받은 데이터로 바뀌어요. 필요하면 먼저 닫고 백업 파일을 저장하세요.', '바꾸기', '취소', true))) return;
+  viewOnly = false; document.body.classList.remove('viewonly'); $('#shareBanner').hidden = true; sessionStorage.removeItem(SHARE_KEY);
+  $$('#view-pension input').forEach(i => (i.disabled = false));
+  commit(); toast('내 기기에 저장했어요 · 이제 수정할 수 있어요');
+});
+
+/* ============ Boot ============ */
+(async () => {
+  const shared = await loadShared();
+  if (shared) {
+    viewOnly = true; state = normalize(shared.data); document.body.classList.add('viewonly');
+    $('#shareBanner').hidden = false;
+    $('#shareFrom').textContent = `공유받은 자산 현황 (${new Date(shared.at).toLocaleDateString('ko-KR')} 기준)`;
+    $$('#view-pension input').forEach(i => (i.disabled = true));
+    if (parseHash().tab === 'settings') location.hash = '#home';
+  }
+  save(); render(); route();
+  if (firstRun && !viewOnly) {
+    confirmDlg('반가워요! 내 자산을 한눈에 정리해 볼까요?', '예시 데이터로 먼저 둘러보거나, 바로 내 자산을 입력할 수 있어요. 데이터는 이 기기에만 저장돼요.', '예시로 둘러보기', '직접 입력하기')
+      .then(ok => { if (ok) { state = sampleState(); commit(); toast('예시 데이터예요 · 설정에서 언제든 초기화할 수 있어요'); } else { location.hash = '#assets'; openEdit(); } });
+  }
+})();
 </script>
 </body>
 </html>
