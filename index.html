@@ -18,7 +18,7 @@
     --text: #0b0b0b; --text-2: #52514e; --muted: #7a7974;
     --line: #e6e5df; --border: rgba(11,11,11,0.09); --baseline: #c3c2b7;
     --accent: #2a78d6; --accent-ink: #ffffff; --accent-soft: rgba(42,120,214,0.10);
-    --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4; --s6: #008300;
+    --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4; --s6: #008300; --s7: #6250d6; --s8: #e34948;
     --up: #006300; --down: #d03b3b; --warn: #b26b00;
     --shadow: 0 1px 2px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.05);
     --radius: 16px;
@@ -29,7 +29,7 @@
     --text: #f2f2f0; --text-2: #b4b3ad; --muted: #85847e;
     --line: #26262a; --border: rgba(255,255,255,0.08); --baseline: #3a3a3e;
     --accent: #3987e5; --accent-ink: #ffffff; --accent-soft: rgba(57,135,229,0.16);
-    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
     --up: #2fbf4f; --down: #ef6b6b; --warn: #f0b429;
     --shadow: none;
   }
@@ -575,7 +575,7 @@
   <form id="pasteForm" novalidate>
     <div class="dlg-h"><h3 id="pasteTitle">엑셀에서 붙여넣기</h3><button type="button" class="icon-btn" data-close aria-label="닫기"><svg aria-hidden="true"><use href="#i-x"/></svg></button></div>
     <div class="dlg-b">
-      <p class="hint" style="margin:0;font-size:13.5px">엑셀·구글시트에서 <b>이름 · 분류 · 금액</b> 3개 열을 복사해 붙여넣으세요. 분류는 현금, 주식, 채권, 부동산, 연금, 기타, 부채(대출) 중 하나로 써 주세요.</p>
+      <p class="hint" style="margin:0;font-size:13.5px">엑셀·구글시트에서 <b>이름 · 분류 · 금액</b> 3개 열을 복사해 붙여넣으세요. 분류는 현금, 주식, ISA, 채권, 부동산, 연금, 비트코인(코인), 기타, 부채(대출) 중 하나로 써 주세요.</p>
       <textarea name="paste" aria-label="붙여넣을 내용" placeholder="파킹통장	현금	12,000,000&#10;미국 ETF	주식	45000000&#10;전세대출	부채	100000000"></textarea>
       <div class="preview" id="pastePreview" aria-live="polite">붙여넣으면 미리보기가 표시돼요</div>
     </div>
@@ -597,13 +597,16 @@
 <script>
 /* ============ Constants & state ============ */
 const CATS = [
-  { id: 'cash',    name: '현금·예금', short: '현금',   color: '--s1', alias: ['현금', '예금', '적금', '통장', 'cma', 'cash'] },
-  { id: 'stock',   name: '주식',      short: '주식',   color: '--s2', alias: ['주식', 'etf', '펀드', 'stock'] },
-  { id: 'bond',    name: '채권',      short: '채권',   color: '--s3', alias: ['채권', 'bond'] },
-  { id: 'real',    name: '부동산',    short: '부동산', color: '--s4', alias: ['부동산', '아파트', '주택', '전세', '보증금', 'real'] },
-  { id: 'pension', name: '연금',      short: '연금',   color: '--s5', alias: ['연금', 'irp', '퇴직', 'pension'] },
-  { id: 'alt',     name: '기타·대체', short: '기타',   color: '--s6', alias: ['기타', '대체', '금', '코인', '가상', 'alt'] },
+  { id: 'cash',    name: '현금·예금', short: '현금',     color: '--s1', slot: 1, alias: ['현금', '예금', '적금', '통장', 'cma', 'cash'] },
+  { id: 'stock',   name: '주식',      short: '주식',     color: '--s2', slot: 2, alias: ['주식', 'etf', '펀드', 'stock'] },
+  { id: 'isa',     name: 'ISA',       short: 'ISA',      color: '--s7', slot: 7, alias: ['isa', '개인종합'] },
+  { id: 'bond',    name: '채권',      short: '채권',     color: '--s3', slot: 3, alias: ['채권', 'bond'] },
+  { id: 'real',    name: '부동산',    short: '부동산',   color: '--s4', slot: 4, alias: ['부동산', '아파트', '주택', '전세', '보증금', 'real'] },
+  { id: 'pension', name: '연금',      short: '연금',     color: '--s5', slot: 5, alias: ['연금', 'irp', '퇴직', 'pension'] },
+  { id: 'crypto',  name: '비트코인',  short: '비트코인', color: '--s8', slot: 8, alias: ['비트', 'btc', '코인', '가상', '이더', 'eth', '업비트', '빗썸', 'crypto'] },
+  { id: 'alt',     name: '기타·대체', short: '기타',     color: '--s6', slot: 6, alias: ['기타', '대체', '금', 'alt'] },
 ];
+const STACK = [...CATS].sort((a, b) => a.slot - b.slot); // validated color-adjacency order for the stacked bar
 const DEBT = { id: 'debt', name: '부채', short: '부채', color: '--muted', alias: ['부채', '대출', '빚', 'debt', '카드', '마이너스'] };
 const ALL = [...CATS, DEBT];
 const PTYPES = [
@@ -620,7 +623,7 @@ const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 const defaultSettings = () => ({ fx: 1400, expense: 3000000, goal: 1000000000, hide: false, range: 12 });
-const defaultTargets = () => ({ cash: 10, stock: 30, bond: 10, real: 40, pension: 8, alt: 2 });
+const defaultTargets = () => ({ cash: 10, stock: 25, isa: 5, bond: 10, real: 40, pension: 8, crypto: 0, alt: 2 });
 const defaultPension = () => ({ age: 40, startAge: 60, years: 20, rate: 4, nps: 0, salary: 'low' });
 const emptyState = () => ({ version: 2, holdings: [], targets: defaultTargets(), settings: defaultSettings(), pension: defaultPension(), history: [] });
 
@@ -651,6 +654,8 @@ function sampleState() {
     H('정기예금', 'cash', 30000000, { memo: '만기 2027.03' }),
     H('삼성전자', 'stock', 0, { mode: 'qty', qty: 400, price: 72000, cost: 26000000, memo: '키움증권' }),
     H('미국 S&P500 ETF', 'stock', 0, { cur: 'USD', mode: 'qty', qty: 80, price: 560, cost: 38000, memo: 'VOO' }),
+    H('ISA 중개형', 'isa', 18000000, { cost: 15000000, memo: '만기 2028.05' }),
+    H('비트코인', 'crypto', 0, { mode: 'qty', qty: 0.12, price: 130000000, cost: 11000000, memo: '업비트' }),
     H('국채 ETF', 'bond', 25000000, { cost: 24500000 }),
     H('아파트', 'real', 320000000, { memo: '지분 기준' }),
     H('연금저축펀드', 'pension', 23000000, { pType: 'savings', cost: 19000000, contrib: 4000000, monthly: 500000, memo: '미래에셋' }),
@@ -673,7 +678,7 @@ function sampleState() {
 
 function normalize(s) {
   const out = emptyState();
-  out.targets = { ...out.targets, ...(s.targets || {}) };
+  out.targets = s.targets ? { ...Object.fromEntries(CATS.map(c => [c.id, 0])), ...s.targets } : out.targets; // new categories start at 0% for existing users
   out.settings = { ...out.settings, ...(s.settings || {}) };
   out.pension = { ...out.pension, ...(s.pension || {}) };
   out.holdings = (s.holdings || []).map(h => ({
@@ -721,7 +726,7 @@ function short(n, { sign = false, won = false } = {}) {
 }
 const pct = (n, d = 1) => (n > 0 ? '+' : '') + n.toFixed(d) + '%';
 const parseNum = v => { const n = parseFloat(String(v ?? '').replace(/[^\d.\-]/g, '')); return isFinite(n) ? n : null; };
-const fmtInput = n => (n == null || n === '' ? '' : (+n).toLocaleString('en-US', { maximumFractionDigits: 4 }));
+const fmtInput = n => (n == null || n === '' ? '' : (+n).toLocaleString('en-US', { maximumFractionDigits: 8 }));
 const unitHint = n => (n ? '= ' + korPlain(n) : '');
 
 /* ============ Persistence ============ */
@@ -870,7 +875,7 @@ function renderAlloc(t) {
   const rows = CATS.map(c => ({ ...c, v: t.byCat[c.id], p: t.byCat[c.id] / t.assets * 100, tg: +state.targets[c.id] || 0 }))
     .filter(r => r.v > 0 || r.tg > 0).sort((a, b) => b.v - a.v);
   const max = Math.max(...rows.map(r => Math.max(r.p, r.tg)), 1);
-  $('#stackbar').innerHTML = CATS.filter(c => t.byCat[c.id] > 0).map(c => `<div style="flex:${t.byCat[c.id]};background:var(${c.color})"></div>`).join('');
+  $('#stackbar').innerHTML = STACK.filter(c => t.byCat[c.id] > 0).map(c => `<div style="flex:${t.byCat[c.id]};background:var(${c.color})"></div>`).join('');
   $('#alloc').innerHTML = rows.map(r => `
     <a class="alloc-row" href="#${r.id === 'pension' ? 'pension' : 'assets/' + r.id}" title="${r.name}${hidden() ? '' : ' ' + korPlain(r.v)} · 현재 ${r.p.toFixed(1)}% / 목표 ${r.tg}% · 눌러서 자세히">
       <div class="name"><span class="swatch" style="background:var(${r.color})"></span>${r.name}</div>
@@ -893,6 +898,8 @@ function renderInsights(t) {
     }
   });
   if (!off && Math.abs(sumT - 100) <= 0.01) add('good', '✓', '모든 분류가 목표 비중 ±5%p 안에 있어요', '지금은 리밸런싱이 필요 없어요');
+  const cr = t.assets ? t.byCat.crypto / t.assets * 100 : 0;
+  if (cr > 10) add('warn', '!', `비트코인 비중 <b>${cr.toFixed(1)}%</b>`, '가격 변동이 큰 자산이에요 · 감당할 수 있는 비중인지 점검해 보세요');
   const exp = +state.settings.expense || 0;
   if (exp) {
     const mo = t.byCat.cash / exp;
@@ -1047,7 +1054,7 @@ function renderPension() {
 
 function itemRow(h, isDebt) {
   const v = valueKRW(h), c = costKRW(h), meta = [];
-  if (h.mode === 'qty') meta.push(`${(+h.qty).toLocaleString('ko-KR')}${h.cat === 'stock' ? '주' : '개'} × ${h.cur === 'USD' ? '$' + (+h.price).toLocaleString('en-US') : (hidden() ? MASK : (+h.price).toLocaleString('ko-KR') + '원')}`);
+  if (h.mode === 'qty') meta.push(`${(+h.qty).toLocaleString('ko-KR', { maximumFractionDigits: 8 })}${h.cat === 'stock' || h.cat === 'isa' ? '주' : '개'} × ${h.cur === 'USD' ? '$' + (+h.price).toLocaleString('en-US') : (hidden() ? MASK : (+h.price).toLocaleString('ko-KR') + '원')}`);
   else if (h.cur === 'USD') meta.push(hidden() ? MASK : '$' + (+h.amount).toLocaleString('en-US'));
   if (h.cat === 'pension') {
     meta.unshift(ptName(h.pType));
@@ -1138,7 +1145,7 @@ document.addEventListener('input', e => {
   if (!el.classList || !el.classList.contains('money')) return;
   if (/\.\d*$/.test(el.value)) return;
   const n = parseNum(el.value);
-  if (n != null) el.value = n.toLocaleString('en-US', { maximumFractionDigits: 4 });
+  if (n != null) el.value = n.toLocaleString('en-US', { maximumFractionDigits: 8 });
 });
 
 /* ============ Edit dialog ============ */
@@ -1148,7 +1155,7 @@ $('#ptypeRadios').innerHTML = PTYPES.map((p, i) => `<label><input type="radio" n
 $('#catRadios').innerHTML = ALL.map((c, i) => `<label><input type="radio" name="cat" value="${c.id}" ${i === 0 ? 'checked' : ''}><span class="c"><span class="swatch" style="background:var(${c.color})"></span>${c.short}</span></label>`).join('');
 function openEdit(id = null, cat = ctxCat()) {
   editingId = id;
-  const f = EF(), h = id ? state.holdings.find(x => x.id === id) : { name: '', cat, cur: 'KRW', mode: 'amount', amount: null, qty: null, price: null, cost: null, memo: '', pType: 'savings', contrib: null, monthly: 0 };
+  const f = EF(), h = id ? state.holdings.find(x => x.id === id) : { name: '', cat, cur: 'KRW', mode: cat === 'crypto' ? 'qty' : 'amount', amount: null, qty: null, price: null, cost: null, memo: '', pType: 'savings', contrib: null, monthly: 0 };
   if (!h) return;
   $('#editTitle').textContent = id ? '자산 수정' : '자산 추가';
   f.title.value = h.name; f.cat.value = h.cat; f.cur.value = h.cur; f.mode.value = h.mode;
@@ -1181,7 +1188,11 @@ function syncEdit() {
   $('#editPreview').innerHTML = html;
 }
 $('#editForm').addEventListener('input', syncEdit);
-$('#editForm').addEventListener('change', syncEdit);
+$('#editForm').addEventListener('change', e => {
+  const f = EF();
+  if (e.target.name === 'cat' && !editingId && !f.amount.value && e.target.value === 'crypto') f.mode.value = 'qty';
+  syncEdit();
+});
 $('#editForm').addEventListener('submit', e => {
   e.preventDefault();
   const f = EF(), name = f.title.value.trim(), qty = f.mode.value === 'qty';
