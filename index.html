@@ -280,6 +280,13 @@
   @media (max-width: 900px) {
     .g-home-top, .g-home-mid, .settings { grid-template-columns: 1fr; }
   }
+  .tab { white-space: nowrap; }
+  @media (max-width: 1080px) {
+    .tab svg, #addBtn .kbd { display: none; }
+    .tab { padding: 7px 10px; }
+    .topbar-inner { gap: 10px; }
+  }
+  @media (max-width: 820px) { #addBtn { padding: 0 10px; } #addBtn .lbl { display: none; } }
   @media (max-width: 640px) {
     .topbar .tabs, .hide-sm { display: none !important; }
     .topbar-inner { padding: 10px 14px; gap: 8px; }
@@ -298,7 +305,7 @@
     dialog { width: 100vw; max-width: 100vw; margin: auto 0 0; border-radius: 20px 20px 0 0; max-height: 92dvh; padding-bottom: env(safe-area-inset-bottom); border-bottom: 0; }
     @keyframes pop { from { transform: translateY(40px); opacity: .6; } to { transform: none; opacity: 1; } }
     .bottom-nav {
-      display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+      display: grid; grid-template-columns: repeat(6, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
       background: color-mix(in srgb, var(--surface) 90%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
       border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom);
     }
@@ -329,6 +336,15 @@
   a.alloc-row:hover { background: var(--hover); }
   @media (max-width: 900px) { .g-2 { grid-template-columns: 1fr; } }
   @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr 1fr; } .big { font-size: 28px; } }
+  .kid-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .kid-bar .chips { margin-bottom: 0; flex: 1 1 auto; }
+  .space-note { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12.5px; margin: -4px 2px 14px; }
+  .gift-list { list-style: none; margin: 12px 0 0; padding: 0; border-top: 1px solid var(--line); }
+  .gift-list li { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+  .gift-list li:last-child { border-bottom: 0; }
+  .gift-list .gm { color: var(--muted); font-size: 12.5px; }
+  .gift-list .icon-btn { width: 30px; height: 30px; border-radius: 8px; }
+  .gift-list .icon-btn svg { width: 14px; height: 14px; }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 </style>
 </head>
@@ -339,6 +355,9 @@
   <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16M5 15l4-4 3 3 6-7"/></symbol>
   <symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
   <symbol id="i-pension" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 0 1 9 9H3a9 9 0 0 1 9-9zM12 12v7a2 2 0 0 0 4 0"/></symbol>
+  <symbol id="i-kid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M10.5 7.5h.01M13.5 7.5h.01M10.8 9.6c.7.5 1.7.5 2.4 0M5 21v-1a7 7 0 0 1 14 0v1"/></symbol>
+  <symbol id="i-gift" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8M12 8v13M12 8S10.5 3 8 4s.5 4 4 4zM12 8s1.5-5 4-4-.5 4-4 4z"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
   <symbol id="i-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6M3 3l18 18M9.9 9.9a3 3 0 0 0 4.2 4.2"/></symbol>
@@ -361,13 +380,14 @@
       <a class="tab" href="#home" data-tab="home"><svg aria-hidden="true"><use href="#i-home"/></svg>홈</a>
       <a class="tab" href="#assets" data-tab="assets"><svg aria-hidden="true"><use href="#i-list"/></svg>자산</a>
       <a class="tab" href="#pension" data-tab="pension"><svg aria-hidden="true"><use href="#i-pension"/></svg>연금</a>
+      <a class="tab" href="#kids" data-tab="kids"><svg aria-hidden="true"><use href="#i-kid"/></svg>아이자산</a>
       <a class="tab" href="#history" data-tab="history"><svg aria-hidden="true"><use href="#i-chart"/></svg>기록</a>
       <a class="tab" href="#settings" data-tab="settings"><svg aria-hidden="true"><use href="#i-gear"/></svg>설정</a>
     </nav>
     <div class="spacer"></div>
     <button class="icon-btn" id="hideBtn" aria-pressed="false" aria-label="금액 숨기기" title="금액 숨기기 (H)"></button>
     <button class="icon-btn" id="themeBtn" aria-label="테마 전환" title="테마 전환"></button>
-    <button class="btn primary hide-sm" id="addBtn" title="자산 추가 (N)"><svg aria-hidden="true"><use href="#i-plus"/></svg>자산 추가 <span class="kbd">N</span></button>
+    <button class="btn primary hide-sm" id="addBtn" title="자산 추가 (N)"><svg aria-hidden="true"><use href="#i-plus"/></svg><span class="lbl">자산 추가</span> <span class="kbd">N</span></button>
   </div>
 </header>
 
@@ -451,6 +471,13 @@
     <div style="margin-top:14px" id="pnList"></div>
   </section>
 
+  <!-- KIDS (independent space) -->
+  <section class="view" id="view-kids" aria-label="아이자산">
+    <div class="kid-bar"><nav class="chips" id="kidChips" aria-label="아이 선택"></nav><button class="btn sm" id="addChildBtn"><svg aria-hidden="true"><use href="#i-plus"/></svg>아이 등록</button></div>
+    <div class="space-note"><svg width="14" height="14" aria-hidden="true"><use href="#i-kid"/></svg>아이자산은 내 순자산·자산 배분·월별 기록과 합산되지 않는 별도 공간이에요.</div>
+    <div id="kidBody"></div>
+  </section>
+
   <!-- HISTORY -->
   <section class="view" id="view-history" aria-label="기록">
     <div class="card">
@@ -494,7 +521,7 @@
           <button id="resetAll" class="danger"><span class="ai"><svg aria-hidden="true"><use href="#i-trash"/></svg></span><span><b>전체 초기화</b><small>모든 자산 · 기록 · 설정 삭제</small></span></button>
         </div>
         <input type="file" id="importFile" accept="application/json,.json" hidden>
-        <p class="hint hide-sm" style="margin:16px 0 0">단축키 · <kbd class="kbd">N</kbd> 자산 추가 · <kbd class="kbd">/</kbd> 검색 · <kbd class="kbd">H</kbd> 금액 숨기기 · <kbd class="kbd">1</kbd>–<kbd class="kbd">5</kbd> 탭 이동</p>
+        <p class="hint hide-sm" style="margin:16px 0 0">단축키 · <kbd class="kbd">N</kbd> 자산 추가 · <kbd class="kbd">/</kbd> 검색 · <kbd class="kbd">H</kbd> 금액 숨기기 · <kbd class="kbd">1</kbd>–<kbd class="kbd">6</kbd> 탭 이동</p>
       </div>
     </div>
   </section>
@@ -506,6 +533,7 @@
   <a href="#home" data-tab="home"><svg aria-hidden="true"><use href="#i-home"/></svg>홈</a>
   <a href="#assets" data-tab="assets"><svg aria-hidden="true"><use href="#i-list"/></svg>자산</a>
   <a href="#pension" data-tab="pension"><svg aria-hidden="true"><use href="#i-pension"/></svg>연금</a>
+  <a href="#kids" data-tab="kids"><svg aria-hidden="true"><use href="#i-kid"/></svg>아이자산</a>
   <a href="#history" data-tab="history"><svg aria-hidden="true"><use href="#i-chart"/></svg>기록</a>
   <a href="#settings" data-tab="settings"><svg aria-hidden="true"><use href="#i-gear"/></svg>설정</a>
 </nav>
@@ -570,6 +598,63 @@
   </form>
 </dialog>
 
+<!-- Child dialog -->
+<dialog id="childDlg" aria-labelledby="childTitle">
+  <form id="childForm" novalidate>
+    <div class="dlg-h"><h3 id="childTitle">아이 등록</h3><button type="button" class="icon-btn" data-close aria-label="닫기"><svg aria-hidden="true"><use href="#i-x"/></svg></button></div>
+    <div class="dlg-b">
+      <label class="f">이름 (또는 애칭)<input type="text" name="kname" maxlength="20" autocomplete="off" placeholder="예: 첫째, 서윤"></label>
+      <label class="f">생년월일<input type="date" name="birth"><span class="hint">증여 공제 한도(미성년·성년) 계산에 사용해요</span></label>
+    </div>
+    <div class="dlg-f"><button type="button" class="btn danger" id="childDelete" hidden><svg aria-hidden="true"><use href="#i-trash"/></svg>삭제</button><div class="spacer"></div><button type="button" class="btn" data-close>취소</button><button type="submit" class="btn primary">저장</button></div>
+  </form>
+</dialog>
+
+<!-- Kid item dialog -->
+<dialog id="kidItemDlg" aria-labelledby="kidItemTitle">
+  <form id="kidItemForm" novalidate>
+    <div class="dlg-h"><h3 id="kidItemTitle">아이 자산 추가</h3><button type="button" class="icon-btn" data-close aria-label="닫기"><svg aria-hidden="true"><use href="#i-x"/></svg></button></div>
+    <div class="dlg-b">
+      <label class="f">이름<input type="text" name="title" maxlength="40" autocomplete="off" placeholder="예: 주택청약, 아이 주식계좌"></label>
+      <fieldset><legend class="f">종류</legend><div class="radio-chips" id="ktypeRadios"></div></fieldset>
+      <fieldset><legend class="f">입력 방식</legend><div class="radio-chips">
+        <label><input type="radio" name="kmode" value="amount" checked><span class="c">금액</span></label>
+        <label><input type="radio" name="kmode" value="qty"><span class="c">수량 × 현재가</span></label></div></fieldset>
+      <label class="f" id="kAmountWrap">평가금액 (원)<input type="text" inputmode="numeric" name="amount" class="money" autocomplete="off" placeholder="0"><span class="hint" data-khint="amount"></span></label>
+      <div class="row2" id="kQtyWrap" hidden>
+        <label class="f">수량<input type="text" inputmode="decimal" name="qty" autocomplete="off" placeholder="0"></label>
+        <label class="f">현재가 (원)<input type="text" inputmode="decimal" name="price" class="money" autocomplete="off" placeholder="0"></label>
+      </div>
+      <div class="row2">
+        <label class="f">넣은 원금 (선택)<input type="text" inputmode="numeric" name="cost" class="money" autocomplete="off" placeholder="수익률 계산용"><span class="hint" data-khint="cost"></span></label>
+        <label class="f">월 적립액 (선택)<input type="text" inputmode="numeric" name="monthly" class="money" autocomplete="off" placeholder="0"><span class="hint" data-khint="monthly"></span></label>
+      </div>
+      <label class="f">메모 (선택)<input type="text" name="memo" maxlength="80" autocomplete="off" placeholder="예: 아동수당 자동이체"></label>
+    </div>
+    <div class="dlg-f"><button type="button" class="btn danger" id="kidItemDelete" hidden><svg aria-hidden="true"><use href="#i-trash"/></svg>삭제</button><div class="spacer"></div><button type="button" class="btn" data-close>취소</button><button type="submit" class="btn primary">저장</button></div>
+  </form>
+</dialog>
+
+<!-- Gift dialog -->
+<dialog id="giftDlg" aria-labelledby="giftTitle">
+  <form id="giftForm" novalidate>
+    <div class="dlg-h"><h3 id="giftTitle">증여 기록</h3><button type="button" class="icon-btn" data-close aria-label="닫기"><svg aria-hidden="true"><use href="#i-x"/></svg></button></div>
+    <div class="dlg-b">
+      <div class="row2">
+        <label class="f">날짜<input type="date" name="gdate"></label>
+        <label class="f">금액 (원)<input type="text" inputmode="numeric" name="gamount" class="money" autocomplete="off" placeholder="0"><span class="hint" data-ghint></span></label>
+      </div>
+      <fieldset><legend class="f">준 사람</legend><div class="radio-chips">
+        <label><input type="radio" name="gfrom" value="부모" checked><span class="c">부모</span></label>
+        <label><input type="radio" name="gfrom" value="조부모"><span class="c">조부모</span></label>
+        <label><input type="radio" name="gfrom" value="기타 친족"><span class="c">기타 친족</span></label></div>
+        <span class="hint" style="display:block;margin-top:6px">부모·조부모(직계존속)가 준 돈은 같은 한도로 합산돼요</span></fieldset>
+      <label class="f">메모 (선택)<input type="text" name="gmemo" maxlength="60" autocomplete="off" placeholder="예: 세뱃돈, 증여세 신고 완료"></label>
+    </div>
+    <div class="dlg-f"><div class="spacer"></div><button type="button" class="btn" data-close>취소</button><button type="submit" class="btn primary">저장</button></div>
+  </form>
+</dialog>
+
 <!-- Paste dialog -->
 <dialog id="pasteDlg" aria-labelledby="pasteTitle">
   <form id="pasteForm" novalidate>
@@ -625,7 +710,9 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 const defaultSettings = () => ({ fx: 1400, expense: 3000000, goal: 1000000000, hide: false, range: 12 });
 const defaultTargets = () => ({ cash: 10, stock: 25, isa: 5, bond: 10, real: 40, pension: 8, crypto: 0, alt: 2 });
 const defaultPension = () => ({ age: 40, startAge: 60, years: 20, rate: 4, nps: 0, salary: 'low' });
-const emptyState = () => ({ version: 2, holdings: [], targets: defaultTargets(), settings: defaultSettings(), pension: defaultPension(), history: [] });
+const emptyKids = () => ({ children: [], holdings: [], gifts: [], history: [] });
+const emptyState = () => ({ version: 2, holdings: [], targets: defaultTargets(), settings: defaultSettings(), pension: defaultPension(), kids: emptyKids(), history: [] });
+const KTYPES = [{ id: 'deposit', name: '예·적금' }, { id: 'stock', name: '주식·ETF' }, { id: 'fund', name: '펀드' }, { id: 'housing', name: '청약통장' }, { id: 'insurance', name: '보험' }, { id: 'cash', name: '현금·용돈' }, { id: 'other', name: '기타' }];
 
 /* ============ Calculations ============ */
 const fxOf = (h, s) => (h.cur === 'USD' ? (+s.settings.fx || 0) : 1);
@@ -673,6 +760,22 @@ function sampleState() {
     s.history.push({ month: monthsAgo(i), assets: Object.values(byCat).reduce((x, y) => x + y, 0), debt: Math.round(d / 1e4) * 1e4, byCat });
   }
   s.pension = { ...defaultPension(), age: 38, nps: 1100000 };
+  { // sample child (independent space)
+    const now = new Date(), kid = { id: uid(), name: '첫째', birth: `${now.getFullYear() - 7}-04-12` };
+    const K = (name, type, amount, extra = {}) => ({ id: uid(), childId: kid.id, name, type, mode: 'amount', amount, qty: null, price: null, cost: null, monthly: 0, memo: '', ...extra });
+    s.kids = { children: [kid], holdings: [
+      K('아이 주식계좌', 'stock', 0, { mode: 'qty', qty: 80, price: 72000, cost: 4800000, memo: '삼성전자' }),
+      K('미국 ETF', 'stock', 6200000, { cost: 5000000, monthly: 100000 }),
+      K('주택청약', 'housing', 2400000, { cost: 2400000, monthly: 100000 }),
+      K('아동수당 적금', 'deposit', 3800000, { cost: 3600000, monthly: 100000, memo: '아동수당 자동이체' }),
+    ], gifts: [
+      { id: uid(), childId: kid.id, date: `${now.getFullYear() - 4}-03-02`, amount: 5000000, from: '부모', memo: '증여세 신고 완료' },
+      { id: uid(), childId: kid.id, date: `${now.getFullYear() - 2}-01-21`, amount: 3000000, from: '조부모', memo: '세뱃돈 모음' },
+      { id: uid(), childId: kid.id, date: `${now.getFullYear()}-02-10`, amount: 2000000, from: '부모', memo: '' },
+    ], history: [] };
+    const kt = s.kids.holdings.reduce((a, h) => a + rawValue(h), 0);
+    for (let i = 1; i <= 12; i++) s.kids.history.push({ month: monthsAgo(i), childId: kid.id, value: Math.round(kt * Math.pow(0.985, i) / 1e4) * 1e4 - i * 300000 });
+  }
   return s;
 }
 
@@ -681,6 +784,15 @@ function normalize(s) {
   out.targets = s.targets ? { ...Object.fromEntries(CATS.map(c => [c.id, 0])), ...s.targets } : out.targets; // new categories start at 0% for existing users
   out.settings = { ...out.settings, ...(s.settings || {}) };
   out.pension = { ...out.pension, ...(s.pension || {}) };
+  const k = s.kids || {};
+  out.kids.children = (k.children || []).map(c => ({ id: String(c.id || uid()), name: String(c.name || '아이'), birth: /^\d{4}-\d{2}-\d{2}$/.test(c.birth) ? c.birth : '' }));
+  const kidIds = new Set(out.kids.children.map(c => c.id));
+  out.kids.holdings = (k.holdings || []).filter(h => kidIds.has(String(h.childId))).map(h => ({
+    id: String(h.id || uid()), childId: String(h.childId), name: String(h.name || '이름 없음'), type: KTYPES.some(t => t.id === h.type) ? h.type : 'other',
+    mode: h.mode === 'qty' ? 'qty' : 'amount', amount: +h.amount || 0, qty: h.qty == null ? null : +h.qty, price: h.price == null ? null : +h.price,
+    cost: h.cost == null || h.cost === '' ? null : +h.cost, monthly: +h.monthly || 0, memo: String(h.memo || '') }));
+  out.kids.gifts = (k.gifts || []).filter(g => kidIds.has(String(g.childId)) && /^\d{4}-\d{2}-\d{2}$/.test(g.date)).map(g => ({ id: String(g.id || uid()), childId: String(g.childId), date: g.date, amount: +g.amount || 0, from: String(g.from || '부모'), memo: String(g.memo || '') }));
+  out.kids.history = (k.history || []).filter(e => kidIds.has(String(e.childId)) && /^\d{4}-\d{2}$/.test(e.month)).map(e => ({ month: e.month, childId: String(e.childId), value: +e.value || 0 }));
   out.holdings = (s.holdings || []).map(h => ({
     id: String(h.id ?? uid()), name: String(h.name || '이름 없음'), cat: ALL.some(c => c.id === h.cat) ? h.cat : 'alt',
     cur: h.cur === 'USD' ? 'USD' : 'KRW', mode: h.mode === 'qty' ? 'qty' : 'amount',
@@ -734,11 +846,13 @@ function save() {
   const cur = monthKey(), t = totals();
   state.history = state.history.filter(e => e.month !== cur);
   if (state.holdings.length) state.history.push({ month: cur, assets: Math.round(t.assets), debt: Math.round(t.debt), byCat: Object.fromEntries(CATS.map(c => [c.id, Math.round(t.byCat[c.id])])) });
+  state.kids.history = state.kids.history.filter(e => e.month !== cur);
+  state.kids.children.forEach(c => { const hs = kidHoldings(c.id); if (hs.length) state.kids.history.push({ month: cur, childId: c.id, value: Math.round(hs.reduce((a, h) => a + rawValue(h), 0)) }); });
   try { localStorage.setItem(KEY, JSON.stringify(state)); } catch { toast('저장 공간이 부족해 저장하지 못했어요'); }
 }
 
 /* ============ Router ============ */
-const TABS = ['home', 'assets', 'pension', 'history', 'settings'];
+const TABS = ['home', 'assets', 'pension', 'kids', 'history', 'settings'];
 function parseHash() { const [t, sub = ''] = location.hash.slice(1).split('/'); return { tab: TABS.includes(t) ? t : 'home', sub }; }
 function ctxCat() { const { tab, sub } = parseHash(); if (tab === 'pension') return 'pension'; if (tab === 'assets' && ALL.some(c => c.id === sub)) return sub; return 'cash'; }
 let lastTab = null;
@@ -747,8 +861,8 @@ function route() {
   $$('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + tab));
   $$('[data-tab]').forEach(a => (a.dataset.tab === tab ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')));
   filterCat = tab === 'assets' && ALL.some(c => c.id === sub) ? sub : 'all';
-  document.title = (tab === 'assets' && filterCat !== 'all' ? catOf(filterCat).name : { home: '홈', assets: '자산', pension: '연금', history: '기록', settings: '설정' }[tab]) + ' · 자산관리 대시보드';
-  if (tab === 'home') renderTrend(); else if (tab === 'assets') renderAssets(); else if (tab === 'pension') renderPension();
+  document.title = (tab === 'assets' && filterCat !== 'all' ? catOf(filterCat).name : { home: '홈', assets: '자산', pension: '연금', kids: '아이자산', history: '기록', settings: '설정' }[tab]) + ' · 자산관리 대시보드';
+  if (tab === 'home') renderTrend(); else if (tab === 'assets') renderAssets(); else if (tab === 'pension') renderPension(); else if (tab === 'kids') renderKids();
   if (tab !== lastTab) window.scrollTo({ top: 0 });
   lastTab = tab;
 }
@@ -1054,13 +1168,14 @@ function renderPension() {
 
 function itemRow(h, isDebt) {
   const v = valueKRW(h), c = costKRW(h), meta = [];
-  if (h.mode === 'qty') meta.push(`${(+h.qty).toLocaleString('ko-KR', { maximumFractionDigits: 8 })}${h.cat === 'stock' || h.cat === 'isa' ? '주' : '개'} × ${h.cur === 'USD' ? '$' + (+h.price).toLocaleString('en-US') : (hidden() ? MASK : (+h.price).toLocaleString('ko-KR') + '원')}`);
+  if (h.mode === 'qty') meta.push(`${(+h.qty).toLocaleString('ko-KR', { maximumFractionDigits: 8 })}${h.cat === 'stock' || h.cat === 'isa' || h.type === 'stock' ? '주' : '개'} × ${h.cur === 'USD' ? '$' + (+h.price).toLocaleString('en-US') : (hidden() ? MASK : (+h.price).toLocaleString('ko-KR') + '원')}`);
   else if (h.cur === 'USD') meta.push(hidden() ? MASK : '$' + (+h.amount).toLocaleString('en-US'));
   if (h.cat === 'pension') {
     meta.unshift(ptName(h.pType));
     if (h.monthly) meta.push(`월 ${short(h.monthly)} 적립`);
     if (h.contrib && h.pType !== 'db') meta.push(`올해 ${short(h.contrib)} 납입`);
   }
+  if (h.childId) { meta.unshift(ktName(h.type)); if (h.monthly) meta.push(`월 ${short(h.monthly)} 적립`); }
   if (h.memo) meta.push(esc(h.memo));
   let sub = '';
   if (c && !isDebt) { const r = (v - c) / c * 100; sub = `<small class="${r >= 0 ? 'up' : 'down'}">${pct(r)} · ${short(v - c, { sign: true })}</small>`; }
@@ -1104,6 +1219,158 @@ function renderSettings() {
   el.textContent = sumT + '%'; el.classList.toggle('down', bad); el.title = bad ? '합계를 100%로 맞춰 주세요' : '';
 }
 
+/* ============ Kids (independent space) ============ */
+const ktName = id => (KTYPES.find(t => t.id === id) || KTYPES[6]).name;
+const kidHoldings = id => state.kids.holdings.filter(h => h.childId === id);
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const dot = s => s.replace(/-/g, '.');
+function ageOf(birth, at = new Date()) {
+  if (!birth) return null; const b = new Date(birth + 'T00:00:00');
+  let a = at.getFullYear() - b.getFullYear(); if (at.getMonth() < b.getMonth() || (at.getMonth() === b.getMonth() && at.getDate() < b.getDate())) a--;
+  return a;
+}
+function currentChild() { const { sub } = parseHash(); const ch = state.kids.children; return ch.find(c => c.id === sub) || ch[0] || null; }
+function giftCalc(child) {
+  const today = new Date(), from = new Date(today); from.setFullYear(from.getFullYear() - 10);
+  const gifts = state.kids.gifts.filter(g => g.childId === child.id).sort((a, b) => b.date.localeCompare(a.date));
+  const direct = gifts.filter(g => g.from !== '기타 친족'), other = gifts.filter(g => g.from === '기타 친족');
+  const inWin = arr => arr.filter(g => g.date > ymd(from));
+  const age = ageOf(child.birth), adult = age != null && age >= 19;
+  const limit = adult ? 5e7 : 2e7, used = inWin(direct).reduce((a, g) => a + g.amount, 0);
+  const otherUsed = inWin(other).reduce((a, g) => a + g.amount, 0);
+  const oldest = inWin(direct).slice(-1)[0];
+  let recover = null;
+  if (oldest) { const d = new Date(oldest.date + 'T00:00:00'); d.setFullYear(d.getFullYear() + 10); d.setDate(d.getDate() + 1); recover = { date: ymd(d), amount: oldest.amount }; }
+  let adultDate = null; if (child.birth && !adult) { const d = new Date(child.birth + 'T00:00:00'); d.setFullYear(d.getFullYear() + 19); adultDate = ymd(d); }
+  const thisYear = gifts.filter(g => g.date.startsWith(String(today.getFullYear()))).reduce((a, g) => a + g.amount, 0);
+  return { gifts, limit, used, left: Math.max(0, limit - used), over: Math.max(0, used - limit), adult, age, recover, adultDate, otherUsed, thisYear };
+}
+function renderKids() {
+  const kids = state.kids.children, child = currentChild();
+  $('#kidChips').innerHTML = kids.map(c => `<a class="chip" href="#kids/${c.id}" ${child && c.id === child.id ? 'aria-current="page"' : ''}>${esc(c.name)}${c.birth ? ` <span class="n">만 ${ageOf(c.birth)}세</span>` : ''}</a>`).join('');
+  if (!child) {
+    $('#kidBody').innerHTML = `<div class="card empty"><h3>아이 자산을 따로 관리해 보세요</h3><p>아이 이름으로 된 통장·주식·청약과 증여 기록을 아이별로 정리할 수 있어요.<br>여기 넣은 금액은 내 순자산에 합산되지 않아요.</p>
+      <div class="btns"><button class="btn primary" data-kact="add-child">${plusIcon}아이 등록</button></div></div>`;
+    return;
+  }
+  const hs = kidHoldings(child.id), total = hs.reduce((a, h) => a + rawValue(h), 0), W = { won: true };
+  const wc = hs.filter(h => h.cost > 0), cv = wc.reduce((a, h) => a + rawValue(h), 0), cc = wc.reduce((a, h) => a + h.cost, 0);
+  const past = state.kids.history.filter(e => e.childId === child.id && e.month < monthKey()).sort((a, b) => a.month.localeCompare(b.month)).map(e => ({ month: e.month, v: e.value }));
+  const ser = hs.length || past.length ? [...past, { month: monthKey(), v: total, live: true }] : [];
+  const prev = ser.length > 1 ? ser[ser.length - 2] : null, g = giftCalc(child), monthly = hs.reduce((a, h) => a + (h.monthly || 0), 0);
+  const age = ageOf(child.birth);
+  const summary = `<div class="card">
+    <div class="card-h" style="margin-bottom:0"><div><div class="eyebrow">${esc(child.name)}의 자산${age != null ? ` <span style="color:var(--muted);font-weight:500">· 만 ${age}세</span>` : ''}
+        <button class="btn ghost sm" data-kact="edit-child" aria-label="${esc(child.name)} 정보 수정" style="min-height:26px;padding:0 6px"><svg aria-hidden="true" style="width:14px;height:14px"><use href="#i-edit"/></svg></button></div>
+      <div class="big num">${kor(total)}</div></div>
+      <button class="btn primary sm" data-kact="add-item">${plusIcon}자산 추가</button></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">${prev ? deltaPill(total - prev.v, prev.v, '지난달보다') : ''}${cc ? `<span class="pill ${cv >= cc ? 'up' : 'down'}">수익률 ${pct((cv - cc) / cc * 100)}</span>` : ''}</div>
+    <div class="kv">
+      <div><div class="k">월 적립액</div><div class="v num">${short(monthly, W)}</div></div>
+      <div><div class="k">올해 증여</div><div class="v num">${short(g.thisYear, W)}</div></div>
+      <div><div class="k">항목</div><div class="v num">${hs.length}개</div></div>
+    </div>
+    <div class="chart mini-chart" id="kidChart"></div>
+  </div>`;
+  const p = Math.min(100, g.used / g.limit * 100);
+  const gift = `<div class="card">
+    <div class="card-h"><div><h2>증여 공제 한도</h2><p>부모·조부모 증여 최근 10년 합산 · ${g.adult ? '성년 5,000만원' : '미성년 2,000만원'}</p></div>
+      <button class="btn sm" data-kact="add-gift"><svg aria-hidden="true"><use href="#i-gift"/></svg>증여 기록</button></div>
+    <div class="k">${g.over ? '한도 초과' : '세금 없이 더 줄 수 있는 금액'}</div>
+    <div class="big num ${g.over ? 'down' : ''}">${kor(g.over || g.left)}</div>
+    <div class="meter" role="progressbar" aria-label="증여 공제 한도 사용률" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(p)}"><div style="width:${p}%;${g.over ? 'background:var(--down)' : ''}"></div></div>
+    <div class="meter-labels num"><span>10년 합산 ${short(g.used, W)}</span><span>한도 ${short(g.limit, W)}</span></div>
+    ${g.over ? `<div class="callout warnbox">한도를 ${short(g.over, W)} 넘었어요. 넘는 금액은 증여세 대상이에요 · 신고 기한은 증여한 달 말일부터 3개월이에요.</div>` : ''}
+    <div class="goal-meta" style="margin-top:12px">
+      ${g.recover ? `<span>${dot(g.recover.date)}부터 <b class="num">${short(g.recover.amount, W)}</b> 한도가 다시 생겨요 <span style="color:var(--muted)">(가장 오래된 증여 10년 경과)</span></span>` : ''}
+      ${g.adultDate ? `<span>${dot(g.adultDate)} 만 19세가 되면 한도가 <b>5,000만원</b>으로 늘어요</span>` : ''}
+      ${g.otherUsed ? `<span>기타 친족 증여 10년 합산 <b class="num">${short(g.otherUsed, W)}</b> / 1,000만원 (별도 한도)</span>` : ''}
+    </div>
+    ${g.gifts.length ? `<ul class="gift-list">${g.gifts.slice(0, 8).map(x => `<li><div><div>${dot(x.date)} · ${esc(x.from)}</div>${x.memo ? `<div class="gm">${esc(x.memo)}</div>` : ''}</div><b class="num">${kor(x.amount)}</b>
+      <button class="icon-btn" data-gift="${x.id}" aria-label="${dot(x.date)} 증여 기록 삭제"><svg aria-hidden="true"><use href="#i-x"/></svg></button></li>`).join('')}</ul>${g.gifts.length > 8 ? `<p class="note">외 ${g.gifts.length - 8}건</p>` : ''}`
+      : '<p class="note">부모·조부모에게 받은 돈을 기록하면 남은 한도를 계산해 드려요.</p>'}
+    <p class="note">세법 기준(2026년): 직계존속→자녀 증여재산공제 10년 합산 미성년 2,000만원·성년 5,000만원, 기타 친족 1,000만원. 한도 안이라도 증여세 신고를 해 두면 나중에 자금 출처를 증명하기 쉬워요.</p>
+  </div>`;
+  const list = hs.length ? groupsHtml(hs, { assets: total }, KTYPES.map(t => ({ name: t.name, match: h => h.type === t.id })))
+    : `<div class="card empty"><h3>${esc(child.name)}의 자산을 추가해 보세요</h3><p>아이 명의 통장, 주식, 청약통장 등을 등록하세요.</p><div class="btns"><button class="btn primary" data-kact="add-item">${plusIcon}자산 추가</button></div></div>`;
+  $('#kidBody').innerHTML = `<div class="grid g-2">${summary}${gift}</div><div style="margin-top:14px">${list}</div>`;
+  lineChart($('#kidChart'), ser, { H: 150, label: child.name + ' 자산 추이', empty: '기록이 2개월 이상 쌓이면 그래프가 그려져요.' });
+}
+
+/* ---- kid dialogs ---- */
+let editingChild = null, editingKid = null;
+function openChild(id = null) {
+  editingChild = id; const c = id ? state.kids.children.find(x => x.id === id) : null, f = $('#childForm').elements;
+  $('#childTitle').textContent = c ? '아이 정보 수정' : '아이 등록';
+  f.kname.value = c ? c.name : ''; f.birth.value = c ? c.birth : ''; f.birth.max = ymd(new Date());
+  $('#childDelete').hidden = !c; $('#childDlg').showModal(); if (!c) f.kname.focus();
+}
+$('#childForm').addEventListener('submit', e => {
+  e.preventDefault(); const f = $('#childForm').elements, name = f.kname.value.trim();
+  if (!name) { f.kname.setCustomValidity('이름을 입력해 주세요'); f.kname.reportValidity(); f.kname.setCustomValidity(''); return; }
+  let id = editingChild;
+  if (id) Object.assign(state.kids.children.find(x => x.id === id), { name, birth: f.birth.value });
+  else { id = uid(); state.kids.children.push({ id, name, birth: f.birth.value }); }
+  $('#childDlg').close(); commit(); location.hash = '#kids/' + id; toast(editingChild ? '수정했어요' : `${name} 등록했어요`);
+});
+$('#childDelete').addEventListener('click', async () => {
+  const id = editingChild, c = state.kids.children.find(x => x.id === id); $('#childDlg').close();
+  if (!(await confirmDlg(`${c.name} 삭제`, `${c.name}의 자산·증여 기록·월별 기록을 모두 삭제할까요?`, '삭제', '취소', true))) return;
+  const prev = JSON.parse(JSON.stringify(state.kids));
+  const keep = x => x.childId !== id;
+  state.kids = { children: state.kids.children.filter(x => x.id !== id), holdings: state.kids.holdings.filter(keep), gifts: state.kids.gifts.filter(keep), history: state.kids.history.filter(keep) };
+  location.hash = '#kids'; commit(); toast(`${c.name} 삭제했어요`, () => { state.kids = prev; commit(); location.hash = '#kids/' + id; });
+});
+$('#ktypeRadios').innerHTML = KTYPES.map((t, i) => `<label><input type="radio" name="ktype" value="${t.id}" ${i === 0 ? 'checked' : ''}><span class="c">${t.name}</span></label>`).join('');
+const KF = () => $('#kidItemForm').elements;
+function openKidItem(id = null) {
+  const child = currentChild(); if (!child) return openChild();
+  editingKid = id; const h = id ? state.kids.holdings.find(x => x.id === id) : null, f = KF();
+  $('#kidItemTitle').textContent = `${child.name} · ${h ? '자산 수정' : '자산 추가'}`;
+  f.title.value = h ? h.name : ''; f.ktype.value = h ? h.type : 'deposit'; f.kmode.value = h ? h.mode : 'amount';
+  f.amount.value = h && h.mode === 'amount' ? fmtInput(h.amount) : ''; f.qty.value = h ? fmtInput(h.qty) : ''; f.price.value = h ? fmtInput(h.price) : '';
+  f.cost.value = h ? fmtInput(h.cost) : ''; f.monthly.value = h && h.monthly ? fmtInput(h.monthly) : ''; f.memo.value = h ? h.memo : '';
+  $('#kidItemDelete').hidden = !h; syncKid(); $('#kidItemDlg').showModal(); if (!h) f.title.focus();
+}
+function syncKid() {
+  const f = KF(), q = f.kmode.value === 'qty'; $('#kAmountWrap').hidden = q; $('#kQtyWrap').hidden = !q;
+  ['amount', 'cost', 'monthly'].forEach(n => ($(`[data-khint=${n}]`).textContent = unitHint(parseNum(f[n].value))));
+}
+$('#kidItemForm').addEventListener('input', syncKid); $('#kidItemForm').addEventListener('change', syncKid);
+$('#kidItemForm').addEventListener('submit', e => {
+  e.preventDefault(); const f = KF(), name = f.title.value.trim(), q = f.kmode.value === 'qty', child = currentChild();
+  if (!name) { f.title.setCustomValidity('이름을 입력해 주세요'); f.title.reportValidity(); f.title.setCustomValidity(''); return; }
+  const h = { id: editingKid || uid(), childId: child.id, name, type: f.ktype.value, mode: f.kmode.value, amount: q ? 0 : parseNum(f.amount.value) || 0,
+    qty: q ? parseNum(f.qty.value) || 0 : null, price: q ? parseNum(f.price.value) || 0 : null, cost: parseNum(f.cost.value), monthly: parseNum(f.monthly.value) || 0, memo: f.memo.value.trim() };
+  const was = !!editingKid;
+  if (was) state.kids.holdings = state.kids.holdings.map(x => x.id === editingKid ? h : x); else state.kids.holdings.push(h);
+  $('#kidItemDlg').close(); commit(); toast(was ? `'${name}' 수정했어요` : `'${name}' 추가했어요`);
+});
+$('#kidItemDelete').addEventListener('click', () => {
+  const id = editingKid, idx = state.kids.holdings.findIndex(x => x.id === id); $('#kidItemDlg').close(); if (idx < 0) return;
+  const [h] = state.kids.holdings.splice(idx, 1); commit(); toast(`'${h.name}' 삭제했어요`, () => { state.kids.holdings.splice(idx, 0, h); commit(); });
+});
+function openGift() {
+  const f = $('#giftForm').elements; f.gdate.value = ymd(new Date()); f.gdate.max = ymd(new Date()); f.gamount.value = ''; f.gmemo.value = ''; f.gfrom.value = '부모';
+  $('[data-ghint]').textContent = ''; $('#giftTitle').textContent = `${currentChild().name} · 증여 기록`; $('#giftDlg').showModal(); f.gamount.focus();
+}
+$('#giftForm').addEventListener('input', () => ($('[data-ghint]').textContent = unitHint(parseNum($('#giftForm').elements.gamount.value))));
+$('#giftForm').addEventListener('submit', e => {
+  e.preventDefault(); const f = $('#giftForm').elements, amount = parseNum(f.gamount.value);
+  if (!amount || !f.gdate.value) { toast('날짜와 금액을 입력해 주세요'); return; }
+  state.kids.gifts.push({ id: uid(), childId: currentChild().id, date: f.gdate.value, amount, from: f.gfrom.value, memo: f.gmemo.value.trim() });
+  $('#giftDlg').close(); commit(); toast(`${korPlain(amount)} 증여를 기록했어요`);
+});
+$('#view-kids').addEventListener('click', e => {
+  const item = e.target.closest('.item'); if (item) return openKidItem(item.dataset.id);
+  const gb = e.target.closest('[data-gift]');
+  if (gb) { const idx = state.kids.gifts.findIndex(x => x.id === gb.dataset.gift), [g] = state.kids.gifts.splice(idx, 1); commit(); return toast(`${dot(g.date)} 증여 기록을 삭제했어요`, () => { state.kids.gifts.splice(idx, 0, g); commit(); }); }
+  const act = e.target.closest('[data-kact]')?.dataset.kact;
+  if (act === 'add-child') openChild(); else if (act === 'edit-child') openChild(currentChild().id); else if (act === 'add-item') openKidItem(); else if (act === 'add-gift') openGift();
+});
+$('#addChildBtn').addEventListener('click', () => openChild());
+function openAdd() { parseHash().tab === 'kids' ? openKidItem() : openEdit(); }
+
 /* ============ Render all ============ */
 function renderChrome() {
   const hb = $('#hideBtn');
@@ -1115,7 +1382,7 @@ function renderChrome() {
   $('#themeBtn').setAttribute('aria-label', dark ? '밝은 테마로 전환' : '어두운 테마로 전환');
   document.querySelector('meta[name=theme-color]').content = dark ? '#0b0b0c' : '#f6f6f4';
 }
-function render() { renderChrome(); renderHome(); renderAssets(); renderPension(); renderHistory(); renderSettings(); }
+function render() { renderChrome(); renderHome(); renderAssets(); renderPension(); renderKids(); renderHistory(); renderSettings(); }
 function commit() { save(); render(); }
 
 /* ============ Toast ============ */
@@ -1278,8 +1545,8 @@ $('#pasteForm').addEventListener('submit', e => {
 });
 
 /* ============ Events ============ */
-$('#addBtn').addEventListener('click', () => openEdit());
-$('#fab').addEventListener('click', () => openEdit());
+$('#addBtn').addEventListener('click', openAdd);
+$('#fab').addEventListener('click', openAdd);
 $('#pasteBtn').addEventListener('click', openPaste);
 $('#pasteBtn2').addEventListener('click', openPaste);
 $('#assetList').addEventListener('click', e => {
@@ -1352,10 +1619,10 @@ $('#resetAll').addEventListener('click', async () => {
 document.addEventListener('keydown', e => {
   if (e.metaKey || e.ctrlKey || e.altKey || e.isComposing || document.querySelector('dialog[open]')) return;
   if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)) { if (e.key === 'Escape') document.activeElement.blur(); return; }
-  if (e.key === 'n' || e.key === 'N') { e.preventDefault(); openEdit(); }
+  if (e.key === 'n' || e.key === 'N') { e.preventDefault(); openAdd(); }
   else if (e.key === '/') { e.preventDefault(); location.hash = '#assets'; setTimeout(() => $('#q').focus(), 0); }
   else if (e.key === 'h' || e.key === 'H') $('#hideBtn').click();
-  else if ('12345'.includes(e.key) && e.key.length === 1) location.hash = '#' + TABS[+e.key - 1];
+  else if ('123456'.includes(e.key) && e.key.length === 1) location.hash = '#' + TABS[+e.key - 1];
 });
 let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(route, 150); });
 
