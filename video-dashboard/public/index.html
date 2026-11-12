@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0b0f">
+<meta name="robots" content="noindex, nofollow">
+<title>여행 필름</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<!-- 로그인 -->
+<main id="login" class="login" hidden>
+  <div class="login-glow" aria-hidden="true"></div>
+  <form id="login-form" class="login-card" autocomplete="on">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"></span><span data-site-title>여행 필름</span></div>
+    <p class="login-sub">아이디와 비밀번호를 입력하면 영상을 볼 수 있어요.</p>
+    <label>아이디<input name="id" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
+    <label>비밀번호<input name="password" type="password" autocomplete="current-password" required></label>
+    <p class="form-error" id="login-error" role="alert"></p>
+    <button class="btn primary block" type="submit">들어가기</button>
+  </form>
+</main>
+
+<!-- 대시보드 -->
+<div id="app" hidden>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"></span><span data-site-title>여행 필름</span></div>
+    <label class="search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="search" type="search" placeholder="제목, 여행지, 태그 검색" aria-label="검색">
+    </label>
+    <div class="topbar-actions">
+      <button class="btn primary admin-only" id="btn-upload" type="button">＋ 업로드</button>
+      <button class="btn ghost admin-only" id="btn-settings" type="button">설정</button>
+      <button class="btn ghost" id="btn-logout" type="button">로그아웃</button>
+    </div>
+  </header>
+
+  <section id="hero" class="hero" hidden></section>
+
+  <main class="content">
+    <section id="stats" class="stats" aria-label="요약"></section>
+
+    <div class="toolbar">
+      <div id="places" class="chips" role="tablist" aria-label="여행지"></div>
+      <div class="selects">
+        <select id="year" aria-label="연도"></select>
+        <select id="sort" aria-label="정렬">
+          <option value="new">최신 여행순</option>
+          <option value="old">오래된 여행순</option>
+          <option value="added">최근 추가순</option>
+          <option value="views">조회수순</option>
+          <option value="title">제목순</option>
+        </select>
+      </div>
+    </div>
+
+    <section id="grid" class="grid" aria-live="polite"></section>
+    <div id="empty" class="empty" hidden></div>
+  </main>
+</div>
+
+<!-- 재생 -->
+<dialog id="player" class="player">
+  <div class="player-stage">
+    <video id="player-video" controls playsinline preload="metadata"></video>
+    <button class="icon-btn player-close" data-close type="button" aria-label="닫기">✕</button>
+  </div>
+  <div class="player-info">
+    <div class="player-head">
+      <div>
+        <h2 id="player-title"></h2>
+        <p id="player-meta" class="muted"></p>
+      </div>
+      <div class="player-nav">
+        <button class="btn ghost" id="player-prev" type="button">← 이전</button>
+        <button class="btn ghost" id="player-next" type="button">다음 →</button>
+      </div>
+    </div>
+    <p id="player-desc" class="player-desc"></p>
+    <div id="player-tags" class="tags"></div>
+    <div class="player-foot">
+      <label class="check"><input type="checkbox" id="autoplay-next"> 끝나면 다음 영상 이어보기</label>
+      <span class="admin-only player-admin">
+        <button class="btn ghost" id="player-thumb" type="button">지금 장면을 썸네일로</button>
+        <button class="btn ghost" id="player-edit" type="button">수정</button>
+      </span>
+    </div>
+  </div>
+</dialog>
+
+<!-- 업로드 -->
+<dialog id="upload" class="sheet">
+  <form id="upload-form">
+    <header class="sheet-head"><h2>영상 업로드</h2><button class="icon-btn" data-close type="button" aria-label="닫기">✕</button></header>
+    <div class="sheet-body">
+      <label id="drop" class="drop">
+        <input id="file-input" type="file" accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.m4v,.webm" multiple hidden>
+        <strong>영상을 여기에 끌어다 놓거나 눌러서 선택</strong>
+        <span class="muted">MP4 · MOV · WebM — 여러 개를 한 번에 올릴 수 있어요</span>
+      </label>
+      <ul id="queue" class="queue"></ul>
+      <div class="field-row">
+        <label>여행지<input name="location" list="location-list" maxlength="60" placeholder="예: 일본 교토"></label>
+        <label>여행 날짜<input name="date" type="date"></label>
+      </div>
+      <label>태그 <span class="muted">(쉼표로 구분)</span><input name="tags" maxlength="200" placeholder="예: 가족, 바다, 드론"></label>
+      <p class="muted small">여행지·날짜·태그는 선택한 모든 영상에 함께 적용됩니다. 나중에 영상마다 따로 고칠 수 있어요.</p>
+      <p class="form-error" id="upload-error" role="alert"></p>
+    </div>
+    <footer class="sheet-foot">
+      <button class="btn ghost" data-close type="button">닫기</button>
+      <button class="btn primary" id="upload-submit" type="submit" disabled>업로드</button>
+    </footer>
+  </form>
+</dialog>
+
+<!-- 수정 -->
+<dialog id="edit" class="sheet">
+  <form id="edit-form">
+    <header class="sheet-head"><h2>영상 정보 수정</h2><button class="icon-btn" data-close type="button" aria-label="닫기">✕</button></header>
+    <div class="sheet-body">
+      <label>제목<input name="title" maxlength="120" required></label>
+      <label>설명<textarea name="description" rows="3" maxlength="2000"></textarea></label>
+      <div class="field-row">
+        <label>여행지<input name="location" list="location-list" maxlength="60"></label>
+        <label>여행 날짜<input name="date" type="date"></label>
+      </div>
+      <label>태그 <span class="muted">(쉼표로 구분)</span><input name="tags" maxlength="200"></label>
+      <label class="check"><input type="checkbox" name="featured"> 첫 화면 대표 영상으로 고정</label>
+      <label>썸네일 바꾸기 <span class="muted">(이미지 파일)</span><input name="thumb" type="file" accept="image/jpeg,image/png,image/webp"></label>
+      <p class="form-error" id="edit-error" role="alert"></p>
+    </div>
+    <footer class="sheet-foot">
+      <button class="btn danger" id="edit-delete" type="button">삭제</button>
+      <span class="spacer"></span>
+      <button class="btn ghost" data-close type="button">취소</button>
+      <button class="btn primary" type="submit">저장</button>
+    </footer>
+  </form>
+</dialog>
+
+<!-- 설정 -->
+<dialog id="settings" class="sheet">
+  <header class="sheet-head"><h2>계정 설정</h2><button class="icon-btn" data-close type="button" aria-label="닫기">✕</button></header>
+  <div class="sheet-body">
+    <form id="viewer-form" class="account">
+      <h3>시청용 계정 <span class="muted">— 다른 사람에게 알려주는 아이디·비밀번호</span></h3>
+      <div class="field-row">
+        <label>아이디<input name="id" autocomplete="off" autocapitalize="none" required minlength="3" maxlength="40"></label>
+        <label>새 비밀번호<input name="password" type="text" autocomplete="off" required minlength="8" maxlength="200"></label>
+      </div>
+      <label>현재 관리자 비밀번호<input name="currentPassword" type="password" autocomplete="current-password" required></label>
+      <p class="form-msg" role="status"></p>
+      <button class="btn primary" type="submit">시청용 계정 저장</button>
+    </form>
+    <form id="admin-form" class="account">
+      <h3>관리자 계정 <span class="muted">— 업로드·수정용 (나만 사용)</span></h3>
+      <div class="field-row">
+        <label>아이디<input name="id" autocomplete="username" autocapitalize="none" required minlength="3" maxlength="40"></label>
+        <label>새 비밀번호<input name="password" type="password" autocomplete="new-password" required minlength="8" maxlength="200"></label>
+      </div>
+      <label>현재 관리자 비밀번호<input name="currentPassword" type="password" autocomplete="current-password" required></label>
+      <p class="form-msg" role="status"></p>
+      <button class="btn primary" type="submit">관리자 계정 저장</button>
+    </form>
+  </div>
+</dialog>
+
+<datalist id="location-list"></datalist>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script src="/app.js"></script>
+</body>
+</html>
