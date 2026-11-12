@@ -176,6 +176,11 @@ dialog::backdrop { background: rgba(0,0,0,0.78); backdrop-filter: blur(6px); }
 .account h3 { font-size: 15px; }
 .account h3 .muted { font-size: 13px; }
 .account .btn { justify-self: start; }
+.accounts { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.accounts li { display: flex; align-items: center; gap: 10px; justify-content: space-between; }
+.accounts .who { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.accounts select { width: auto; padding: 6px 10px; font-size: 14px; flex: none; }
+.notice { background: rgba(255,169,77,0.1); border: 1px solid rgba(255,169,77,0.35); border-radius: 12px; padding: 12px 14px; font-size: 14px; color: var(--text); }
 
 .drop {
   border: 1.5px dashed rgba(255,255,255,0.22); border-radius: 14px; padding: 26px 16px; text-align: center; cursor: pointer;

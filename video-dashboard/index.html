@@ -6,10 +6,10 @@
 <meta name="theme-color" content="#0a0b0f">
 <meta name="robots" content="noindex, nofollow">
 <title>여행 필름</title>
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -19,8 +19,9 @@
   <form id="login-form" class="login-card" autocomplete="on">
     <div class="brand"><span class="brand-mark" aria-hidden="true"></span><span data-site-title>여행 필름</span></div>
     <p class="login-sub">아이디와 비밀번호를 입력하면 영상을 볼 수 있어요.</p>
-    <label>아이디<input name="id" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
+    <label>아이디 <span class="muted">(또는 이메일)</span><input name="id" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
     <label>비밀번호<input name="password" type="password" autocomplete="current-password" required></label>
+    <p class="notice" id="login-notice" hidden></p>
     <p class="form-error" id="login-error" role="alert"></p>
     <button class="btn primary block" type="submit">들어가기</button>
   </form>
@@ -147,27 +148,19 @@
 
 <!-- 설정 -->
 <dialog id="settings" class="sheet">
-  <header class="sheet-head"><h2>계정 설정</h2><button class="icon-btn" data-close type="button" aria-label="닫기">✕</button></header>
+  <header class="sheet-head"><h2>계정과 권한</h2><button class="icon-btn" data-close type="button" aria-label="닫기">✕</button></header>
   <div class="sheet-body">
-    <form id="viewer-form" class="account">
-      <h3>시청용 계정 <span class="muted">— 다른 사람에게 알려주는 아이디·비밀번호</span></h3>
-      <div class="field-row">
-        <label>아이디<input name="id" autocomplete="off" autocapitalize="none" required minlength="3" maxlength="40"></label>
-        <label>새 비밀번호<input name="password" type="text" autocomplete="off" required minlength="8" maxlength="200"></label>
-      </div>
-      <label>현재 관리자 비밀번호<input name="currentPassword" type="password" autocomplete="current-password" required></label>
+    <div class="account">
+      <h3>계정별 권한</h3>
+      <ul id="accounts" class="accounts"></ul>
+      <p class="muted small">관리자는 업로드·수정·삭제, 게스트는 보기만 할 수 있어요. 권한 없음은 로그인해도 아무것도 볼 수 없습니다.<br>새 계정은 Supabase 대시보드 → Authentication → Users 에서 만든 뒤 여기서 권한을 주세요.</p>
+      <p class="form-msg" id="accounts-msg" role="status"></p>
+    </div>
+    <form id="password-form" class="account">
+      <h3>내 비밀번호 바꾸기</h3>
+      <label>새 비밀번호<input name="password" type="password" autocomplete="new-password" required minlength="8" maxlength="72"></label>
       <p class="form-msg" role="status"></p>
-      <button class="btn primary" type="submit">시청용 계정 저장</button>
-    </form>
-    <form id="admin-form" class="account">
-      <h3>관리자 계정 <span class="muted">— 업로드·수정용 (나만 사용)</span></h3>
-      <div class="field-row">
-        <label>아이디<input name="id" autocomplete="username" autocapitalize="none" required minlength="3" maxlength="40"></label>
-        <label>새 비밀번호<input name="password" type="password" autocomplete="new-password" required minlength="8" maxlength="200"></label>
-      </div>
-      <label>현재 관리자 비밀번호<input name="currentPassword" type="password" autocomplete="current-password" required></label>
-      <p class="form-msg" role="status"></p>
-      <button class="btn primary" type="submit">관리자 계정 저장</button>
+      <button class="btn primary" type="submit">비밀번호 저장</button>
     </form>
   </div>
 </dialog>
@@ -175,6 +168,8 @@
 <datalist id="location-list"></datalist>
 <div id="toast" class="toast" role="status" hidden></div>
 
-<script src="/app.js"></script>
+<script src="vendor/supabase.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
 </body>
 </html>

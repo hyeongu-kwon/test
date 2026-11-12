@@ -4,38 +4,87 @@ const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
+const CFG = window.TV_CONFIG || {};
+const configured = Boolean(CFG.supabaseUrl && CFG.supabaseAnonKey);
+const sb = configured ? window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey) : null;
+
 const state = {
-  role: null, videos: [], q: '', place: '', year: '',
+  role: null, userId: null, videos: [], q: '', place: '', year: '',
   sort: localStorage.getItem('tv-sort') || 'new',
   currentId: null, editId: null, queue: [], uploading: false,
+  thumbUrls: {}, mediaUrls: {},
 };
 const isAdmin = () => state.role === 'admin';
 
-/* ---------- API ---------- */
-async function api(method, url, body) {
-  const opts = { method, headers: { 'X-Requested-With': 'tv' }, credentials: 'same-origin' };
-  if (body instanceof Blob) { opts.body = body; opts.headers['Content-Type'] = 'application/octet-stream'; }
-  else if (body !== undefined) { opts.body = JSON.stringify(body); opts.headers['Content-Type'] = 'application/json'; }
-  const res = await fetch(url, opts);
-  const data = await res.json().catch(() => ({}));
-  if (res.status === 401 && url !== '/api/login') { showLogin(); throw new Error(data.error || '로그인이 필요합니다.'); }
-  if (!res.ok) throw new Error(data.error || '요청에 실패했습니다.');
+/* ---------- Supabase ---------- */
+const ERRORS = [
+  [/invalid login credentials/i, '아이디 또는 비밀번호가 맞지 않습니다.'],
+  [/row-level security|not allowed|permission denied|unauthorized/i, '권한이 없습니다.'],
+  [/exceeded the maximum allowed size|payload too large|too large/i, '파일이 Supabase 업로드 한도보다 큽니다. (무료 플랜은 파일당 50MB)'],
+  [/mime type .* is not supported/i, 'MP4, MOV, WebM 영상과 JPG, PNG, WebP 이미지만 올릴 수 있습니다.'],
+  [/failed to fetch|network/i, '네트워크 오류입니다. 잠시 뒤 다시 시도하세요.'],
+  [/rate limit/i, '요청이 너무 많습니다. 잠시 뒤 다시 시도하세요.'],
+];
+function friendly(err) {
+  const msg = (err && (err.message || err.error_description || err.error)) || '요청에 실패했습니다.';
+  const hit = ERRORS.find(([re]) => re.test(msg));
+  return new Error(hit ? hit[1] : msg);
+}
+// Supabase 호출 결과에서 data만 꺼내고, 오류는 한국어 메시지로 던집니다.
+async function run(promise) {
+  const { data, error } = await promise;
+  if (error) throw friendly(error);
   return data;
 }
-function uploadWithProgress(url, blob, onProgress) {
+const fromRow = (r) => ({
+  id: r.id, title: r.title, description: r.description, location: r.location, date: r.trip_date || '',
+  tags: r.tags || [], featured: r.featured, duration: Number(r.duration) || 0,
+  file: r.video_path, thumb: r.thumb_path, views: r.views || 0, createdAt: r.created_at,
+});
+const VIDEO_TYPES = { mp4: 'video/mp4', m4v: 'video/mp4', mov: 'video/quicktime', webm: 'video/webm' };
+const fileExt = (name) => (/\.([a-z0-9]+)$/i.exec(name) || [, ''])[1].toLowerCase();
+
+// 진행률을 보여주기 위해 영상은 Storage REST API로 직접 올립니다.
+async function uploadWithProgress(bucket, path, blob, contentType, onProgress) {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) throw new Error('로그인이 필요합니다.');
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-    xhr.open('PUT', url);
-    xhr.setRequestHeader('X-Requested-With', 'tv');
-    xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+    xhr.open('POST', `${CFG.supabaseUrl}/storage/v1/object/${bucket}/${path}`);
+    xhr.setRequestHeader('Authorization', `Bearer ${session.access_token}`);
+    xhr.setRequestHeader('apikey', CFG.supabaseAnonKey);
+    xhr.setRequestHeader('Content-Type', contentType);
+    xhr.setRequestHeader('Cache-Control', 'max-age=3600');
     xhr.upload.onprogress = (e) => { if (e.lengthComputable) onProgress(e.loaded / e.total); };
     xhr.onload = () => {
       let data = {}; try { data = JSON.parse(xhr.responseText); } catch {}
-      if (xhr.status >= 200 && xhr.status < 300) resolve(data); else reject(new Error(data.error || '업로드에 실패했습니다.'));
+      if (xhr.status >= 200 && xhr.status < 300) resolve(data);
+      else reject(friendly(xhr.status === 413 ? { message: 'payload too large' } : data));
     };
-    xhr.onerror = () => reject(new Error('네트워크 오류로 업로드하지 못했습니다.'));
+    xhr.onerror = () => reject(friendly({ message: 'network' }));
     xhr.send(blob);
   });
+}
+async function uploadThumb(id, blob) {
+  const ext = { 'image/png': 'png', 'image/webp': 'webp' }[blob.type] || 'jpg';
+  const path = `${id}-${Date.now()}.${ext}`;
+  await run(sb.storage.from('thumbs').upload(path, blob, { contentType: blob.type || 'image/jpeg', cacheControl: '31536000' }));
+  await signThumbs([path]);
+  return path;
+}
+async function signThumbs(paths) {
+  paths = paths.filter((p) => p && !state.thumbUrls[p]);
+  if (!paths.length) return;
+  const signed = await run(sb.storage.from('thumbs').createSignedUrls(paths, 7 * 86400));
+  for (const s of signed) if (s.signedUrl) state.thumbUrls[s.path] = s.signedUrl;
+}
+// 영상은 비공개 버킷에 있어서, 재생할 때마다 1시간짜리 서명 주소를 받아 씁니다.
+async function mediaUrl(v) {
+  const hit = state.mediaUrls[v.file];
+  if (hit && hit.exp > Date.now()) return hit.url;
+  const { signedUrl } = await run(sb.storage.from('videos').createSignedUrl(v.file, 3600));
+  state.mediaUrls[v.file] = { url: signedUrl, exp: Date.now() + 50 * 60e3 };
+  return signedUrl;
 }
 
 /* ---------- 표시 형식 ---------- */
@@ -50,9 +99,10 @@ function fmtDate(d) {
   return `${y}년 ${m}월 ${day}일`;
 }
 const metaLine = (v) => [v.location, fmtDate(v.date), `조회 ${(v.views || 0).toLocaleString('ko-KR')}`].filter(Boolean).join(' · ');
-const thumbUrl = (v) => (v.thumb ? `/thumb/${v.id}?v=${v.thumbVer}` : '');
+const thumbUrl = (v) => (v.thumb && state.thumbUrls[v.thumb]) || '';
 const parseTags = (s) => s.split(',').map((t) => t.trim()).filter(Boolean);
 const sortKeyDate = (v) => v.date || (v.createdAt || '').slice(0, 10);
+const displayId = (email) => (email || '').replace(new RegExp(`@${(CFG.loginDomain || '').replace(/\./g, '\\.')}$`), '');
 
 let toastTimer;
 function toast(msg) {
@@ -66,15 +116,23 @@ function setTitle(title) {
   document.title = title;
   $$('[data-site-title]').forEach((el) => { el.textContent = title; });
 }
-function showLogin() {
-  state.role = null;
+function showLogin(notice = '') {
+  state.role = null; state.userId = null;
   $$('dialog[open]').forEach((d) => d.close());
   $('#app').hidden = true; $('#login').hidden = false;
   document.body.classList.remove('is-admin');
+  const n = $('#login-notice'); n.hidden = !notice; n.textContent = notice;
   $('#login-form').elements.id.focus();
 }
-async function enter(role) {
-  state.role = role;
+// 로그인된 계정의 권한을 확인하고 들어갑니다. 권한이 없으면 로그아웃시킵니다.
+async function enter(user) {
+  const profile = await run(sb.from('profiles').select('role').eq('id', user.id).maybeSingle());
+  const role = profile && profile.role;
+  if (role !== 'admin' && role !== 'guest') {
+    await sb.auth.signOut();
+    return showLogin('이 계정은 아직 볼 수 있는 권한이 없어요. 관리자에게 권한을 요청하세요.');
+  }
+  state.role = role; state.userId = user.id;
   document.body.classList.toggle('is-admin', isAdmin());
   $('#login').hidden = true; $('#app').hidden = false;
   await loadVideos();
@@ -82,18 +140,21 @@ async function enter(role) {
 $('#login-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const f = e.currentTarget, err = $('#login-error'), btn = $('button[type=submit]', f);
-  err.textContent = ''; btn.disabled = true;
+  err.textContent = ''; $('#login-notice').hidden = true; btn.disabled = true;
   try {
-    const me = await api('POST', '/api/login', { id: f.elements.id.value, password: f.elements.password.value });
-    f.reset(); setTitle(me.title); await enter(me.role);
+    const id = f.elements.id.value.trim();
+    const email = id.includes('@') ? id : `${id}@${CFG.loginDomain}`;
+    const { user } = await run(sb.auth.signInWithPassword({ email, password: f.elements.password.value }));
+    f.reset(); await enter(user);
   } catch (ex) { err.textContent = ex.message; f.elements.password.select(); }
   finally { btn.disabled = false; }
 });
-$('#btn-logout').addEventListener('click', async () => { await api('POST', '/api/logout').catch(() => {}); showLogin(); });
+$('#btn-logout').addEventListener('click', async () => { await sb.auth.signOut().catch(() => {}); showLogin(); });
 
 /* ---------- 목록 ---------- */
 async function loadVideos() {
-  state.videos = (await api('GET', '/api/videos')).videos;
+  state.videos = (await run(sb.from('videos').select('*'))).map(fromRow);
+  await signThumbs(state.videos.map((v) => v.thumb)).catch(() => {});
   render();
 }
 function filtered() {
@@ -214,7 +275,7 @@ grid.addEventListener('keydown', (e) => {
 let previewTimer;
 const canHover = matchMedia('(hover: hover)').matches;
 function stopPreview() {
-  clearTimeout(previewTimer);
+  clearTimeout(previewTimer); previewTimer = null;
   const el = $('.card-thumb video', grid);
   if (el) { el.pause(); el.removeAttribute('src'); el.load(); el.remove(); }
 }
@@ -225,9 +286,12 @@ grid.addEventListener('mouseover', (e) => {
   stopPreview();
   const v = state.videos.find((x) => x.id === card.dataset.id);
   if (!v || !v.file) return;
-  previewTimer = setTimeout(() => {
+  previewTimer = setTimeout(async () => {
+    const timer = previewTimer;
+    const src = await mediaUrl(v).catch(() => null);
+    if (!src || timer !== previewTimer || !card.isConnected) return;
     const el = document.createElement('video');
-    el.muted = true; el.loop = true; el.playsInline = true; el.src = `/media/${v.id}`;
+    el.muted = true; el.loop = true; el.playsInline = true; el.src = src;
     $('.card-thumb', card).append(el);
     el.play().catch(() => el.remove());
   }, 600);
@@ -244,6 +308,7 @@ $$('dialog').forEach((d) => {
 
 /* ---------- 플레이어 ---------- */
 const player = $('#player'), pv = $('#player-video');
+pv.crossOrigin = 'anonymous'; // 다른 출처(Supabase)의 영상에서 썸네일을 뽑으려면 필요
 const autoNext = $('#autoplay-next');
 autoNext.checked = localStorage.getItem('tv-autonext') !== '0';
 autoNext.addEventListener('change', () => localStorage.setItem('tv-autonext', autoNext.checked ? '1' : '0'));
@@ -261,17 +326,22 @@ function fillPlayer(v) {
   const { prev, next } = neighbors(v.id);
   $('#player-prev').disabled = !prev; $('#player-next').disabled = !next;
 }
-function openPlayer(id) {
+async function openPlayer(id) {
   const v = state.videos.find((x) => x.id === id);
   if (!v || !v.file) return;
   stopPreview();
   state.currentId = id;
   fillPlayer(v);
   pv.poster = thumbUrl(v);
-  pv.src = `/media/${v.id}`;
   if (!player.open) player.showModal();
-  pv.play().catch(() => {});
-  api('POST', `/api/videos/${v.id}/view`).then((r) => { v.views = r.views; if (state.currentId === id) $('#player-meta').textContent = metaLine(v); }).catch(() => {});
+  try {
+    const src = await mediaUrl(v);
+    if (state.currentId !== id) return;
+    pv.src = src;
+    pv.play().catch(() => {});
+  } catch (ex) { return toast(ex.message); }
+  run(sb.rpc('increment_views', { video_id: id }))
+    .then((n) => { v.views = n; if (state.currentId === id) $('#player-meta').textContent = metaLine(v); }).catch(() => {});
 }
 function step(dir) {
   const target = neighbors(state.currentId)[dir];
@@ -279,6 +349,12 @@ function step(dir) {
 }
 $('#player-prev').addEventListener('click', () => step('prev'));
 $('#player-next').addEventListener('click', () => step('next'));
+// CORS 문제로 재생이 안 되면 일반 모드로 한 번 더 시도합니다. (이 경우 "지금 장면을 썸네일로"만 쓸 수 없음)
+pv.addEventListener('error', () => {
+  if (pv.crossOrigin === null || !pv.currentSrc) return;
+  const src = pv.currentSrc;
+  pv.removeAttribute('crossorigin'); pv.src = src; pv.play().catch(() => {});
+});
 pv.addEventListener('ended', () => { if (autoNext.checked) step('next'); });
 player.addEventListener('close', () => {
   pv.pause(); pv.removeAttribute('src'); pv.load();
@@ -286,14 +362,19 @@ player.addEventListener('close', () => {
 });
 $('#player-edit').addEventListener('click', () => { const id = state.currentId; player.close(); openEdit(id); });
 $('#player-thumb').addEventListener('click', async () => {
-  const id = state.currentId;
+  const v = state.videos.find((x) => x.id === state.currentId);
   try {
     const blob = await captureFrame(pv);
     if (!blob) throw new Error('이 장면은 썸네일로 만들 수 없어요.');
-    const { video } = await api('PUT', `/api/videos/${id}/thumb`, blob);
-    replaceVideo(video); toast('썸네일을 바꿨어요');
+    await setThumb(v, blob); toast('썸네일을 바꿨어요');
   } catch (ex) { toast(ex.message); }
 });
+async function setThumb(v, blob) {
+  const old = v.thumb;
+  const path = await uploadThumb(v.id, blob);
+  replaceVideo(fromRow(await run(sb.from('videos').update({ thumb_path: path }).eq('id', v.id).select().single())));
+  if (old) sb.storage.from('thumbs').remove([old]);
+}
 function replaceVideo(video) {
   const i = state.videos.findIndex((v) => v.id === video.id);
   if (i >= 0) state.videos[i] = video; else state.videos.push(video);
@@ -363,7 +444,7 @@ function renderQueue() {
 }
 async function addFiles(files) {
   for (const file of files) {
-    if (!/^video\//.test(file.type) && !/\.(mp4|m4v|mov|webm)$/i.test(file.name)) { toast(`${file.name}: 영상 파일이 아니에요`); continue; }
+    if (!VIDEO_TYPES[fileExt(file.name)]) { toast(`${file.name}: MP4, MOV, WebM만 올릴 수 있어요`); continue; }
     const q = {
       file, title: file.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim(),
       status: 'analyzing', message: '분석 중…', progress: 0, info: null, thumbUrl: '',
@@ -401,21 +482,28 @@ uploadForm.addEventListener('submit', async (e) => {
   for (const q of state.queue) {
     if (q.status !== 'ready') continue;
     q.status = 'uploading'; q.message = '업로드 중… 0%'; renderQueue();
-    let created = null;
+    const id = crypto.randomUUID(), ext = fileExt(q.file.name);
+    const videoPath = `${id}.${ext}`;
+    let thumbPath = null, uploaded = false;
     try {
-      const meta = { ...shared, title: q.title, duration: q.info.duration, width: q.info.width, height: q.info.height };
-      created = (await api('POST', '/api/videos', meta)).video;
       let last = 0;
-      let { video } = await uploadWithProgress(`/api/videos/${created.id}/file`, q.file, (p) => {
+      await uploadWithProgress('videos', videoPath, q.file, VIDEO_TYPES[ext] || q.file.type, (p) => {
         q.progress = p; q.message = `업로드 중… ${Math.round(p * 100)}%`;
         if (p - last > 0.01 || p === 1) { last = p; renderQueue(); }
       });
-      if (q.info.thumb) video = (await api('PUT', `/api/videos/${created.id}/thumb`, q.info.thumb)).video;
-      replaceVideo(video);
+      uploaded = true;
+      if (q.info.thumb) thumbPath = await uploadThumb(id, q.info.thumb).catch(() => null);
+      const row = await run(sb.from('videos').insert({
+        id, title: q.title.trim() || '제목 없음', location: shared.location.trim(), trip_date: shared.date || null, tags: shared.tags,
+        duration: Math.round((q.info.duration || 0) * 10) / 10, width: q.info.width || 0, height: q.info.height || 0,
+        video_path: videoPath, thumb_path: thumbPath,
+      }).select().single());
+      replaceVideo(fromRow(row));
       q.status = 'done'; q.message = '완료';
     } catch (ex) {
       failed++; q.status = 'error'; q.message = ex.message;
-      if (created) api('DELETE', `/api/videos/${created.id}`).catch(() => {});
+      if (uploaded) sb.storage.from('videos').remove([videoPath]);
+      if (thumbPath) sb.storage.from('thumbs').remove([thumbPath]);
     }
     renderQueue(); render();
   }
@@ -440,52 +528,76 @@ editForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const f = editForm.elements, id = state.editId;
   try {
-    let { video } = await api('PATCH', `/api/videos/${id}`, {
-      title: f.title.value, description: f.description.value, location: f.location.value,
-      date: f.date.value, tags: parseTags(f.tags.value), featured: f.featured.checked,
-    });
-    if (f.thumb.files[0]) video = (await api('PUT', `/api/videos/${id}/thumb`, f.thumb.files[0])).video;
-    replaceVideo(video); render(); editDlg.close(); toast('저장했어요');
+    const row = await run(sb.from('videos').update({
+      title: f.title.value.trim(), description: f.description.value.trim(), location: f.location.value.trim(),
+      trip_date: f.date.value || null, tags: parseTags(f.tags.value), featured: f.featured.checked,
+    }).eq('id', id).select().single());
+    replaceVideo(fromRow(row));
+    if (f.thumb.files[0]) await setThumb(state.videos.find((x) => x.id === id), f.thumb.files[0]);
+    render(); editDlg.close(); toast('저장했어요');
   } catch (ex) { $('#edit-error').textContent = ex.message; }
 });
 $('#edit-delete').addEventListener('click', async () => {
   const v = state.videos.find((x) => x.id === state.editId);
   if (!v || !confirm(`"${v.title}" 영상을 삭제할까요?\n영상 파일도 함께 지워지며 되돌릴 수 없습니다.`)) return;
   try {
-    await api('DELETE', `/api/videos/${v.id}`);
+    await run(sb.from('videos').delete().eq('id', v.id));
+    await Promise.all([
+      sb.storage.from('videos').remove([v.file]),
+      v.thumb ? sb.storage.from('thumbs').remove([v.thumb]) : null,
+    ]);
     state.videos = state.videos.filter((x) => x.id !== v.id);
     render(); editDlg.close(); toast('삭제했어요');
   } catch (ex) { $('#edit-error').textContent = ex.message; }
 });
 
-/* ---------- 설정 ---------- */
+/* ---------- 계정과 권한 ---------- */
+const ROLE_LABEL = { admin: '관리자', guest: '게스트', pending: '권한 없음' };
+async function renderAccounts() {
+  const list = await run(sb.from('profiles').select('id, email, role').order('created_at'));
+  $('#accounts').innerHTML = list.map((p) => `
+    <li>
+      <span class="who">${esc(displayId(p.email))}${p.id === state.userId ? ' <span class="muted">(나)</span>' : ''}</span>
+      <select data-id="${p.id}" aria-label="${esc(displayId(p.email))} 권한" ${p.id === state.userId ? 'disabled' : ''}>
+        ${Object.entries(ROLE_LABEL).map(([value, label]) => `<option value="${value}" ${p.role === value ? 'selected' : ''}>${label}</option>`).join('')}
+      </select>
+    </li>`).join('');
+}
 $('#btn-settings').addEventListener('click', async () => {
   try {
-    const acc = await api('GET', '/api/account');
-    for (const [form, id] of [['#viewer-form', acc.viewerId], ['#admin-form', acc.adminId]]) {
-      const el = $(form); el.reset(); el.elements.id.value = id; $('.form-msg', el).textContent = '';
-    }
-    $('#settings').showModal();
+    $('#accounts-msg').textContent = ''; $('#password-form').reset(); $('#password-form .form-msg').textContent = '';
+    await renderAccounts(); $('#settings').showModal();
   } catch (ex) { toast(ex.message); }
 });
-for (const [sel, role] of [['#viewer-form', 'viewer'], ['#admin-form', 'admin']]) {
-  $(sel).addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const form = e.currentTarget, f = form.elements, msg = $('.form-msg', form);
-    msg.className = 'form-msg';
-    try {
-      await api('PUT', '/api/account', { role, id: f.id.value.trim(), password: f.password.value, currentPassword: f.currentPassword.value });
-      msg.textContent = role === 'viewer' ? '저장했어요. 이전 시청용 비밀번호로 로그인한 사람은 다시 로그인해야 합니다.' : '저장했어요.';
-      f.password.value = ''; f.currentPassword.value = '';
-    } catch (ex) { msg.className = 'form-msg bad'; msg.textContent = ex.message; }
-  });
-}
+$('#accounts').addEventListener('change', async (e) => {
+  const sel = e.target.closest('select[data-id]'); if (!sel) return;
+  const msg = $('#accounts-msg'); msg.className = 'form-msg';
+  try {
+    await run(sb.from('profiles').update({ role: sel.value }).eq('id', sel.dataset.id).select().single());
+    msg.textContent = `권한을 "${ROLE_LABEL[sel.value]}"(으)로 바꿨어요.`;
+  } catch (ex) { msg.className = 'form-msg bad'; msg.textContent = ex.message; await renderAccounts().catch(() => {}); }
+});
+$('#password-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.currentTarget, msg = $('.form-msg', form);
+  msg.className = 'form-msg';
+  try {
+    await run(sb.auth.updateUser({ password: form.elements.password.value }));
+    form.reset(); msg.textContent = '비밀번호를 바꿨어요.';
+  } catch (ex) { msg.className = 'form-msg bad'; msg.textContent = ex.message; }
+});
 
 /* ---------- 시작 ---------- */
 (async () => {
+  setTitle(CFG.siteTitle);
+  if (!configured) {
+    showLogin('아직 Supabase가 연결되지 않았어요. config.js에 프로젝트 URL과 anon 키를 넣어 주세요.');
+    $$('#login-form input, #login-form button').forEach((el) => { el.disabled = true; });
+    return;
+  }
   try {
-    const me = await fetch('/api/me', { credentials: 'same-origin' }).then((r) => r.json());
-    setTitle(me.title);
-    if (me.role) await enter(me.role); else showLogin();
-  } catch { showLogin(); }
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) await enter(session.user); else showLogin();
+  } catch (ex) { showLogin(ex.message); }
+  sb.auth.onAuthStateChange((event) => { if (event === 'SIGNED_OUT' && state.role) showLogin(); });
 })();
