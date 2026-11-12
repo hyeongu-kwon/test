@@ -48,7 +48,8 @@ h2, h3, p { margin: 0; }
   cursor: pointer; font-size: 15px; flex: none;
 }
 .icon-btn:hover { background: rgba(255,255,255,0.16); }
-label { display: grid; gap: 6px; font-size: 13px; font-weight: 600; color: var(--text-2); }
+label { display: block; font-size: 13px; font-weight: 600; color: var(--text-2); }
+label > input:not([type=checkbox]), label > select, label > textarea { display: block; margin-top: 6px; }
 input[type=text], input[type=password], input[type=date], input[type=search], input:not([type]), textarea, select {
   width: 100%; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px;
   padding: 10px 12px; font-size: 15px; color: var(--text); min-width: 0;
@@ -180,10 +181,13 @@ dialog::backdrop { background: rgba(0,0,0,0.78); backdrop-filter: blur(6px); }
 .accounts li { display: flex; align-items: center; gap: 10px; justify-content: space-between; }
 .accounts .who { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
 .accounts select { width: auto; padding: 6px 10px; font-size: 14px; flex: none; }
+.accounts .who { flex: 1; }
+.accounts .btn { padding: 5px 10px; font-size: 13px; flex: none; }
+@media (max-width: 520px) { .accounts li { flex-wrap: wrap; } .accounts .who { flex-basis: 100%; } }
 .notice { background: rgba(255,169,77,0.1); border: 1px solid rgba(255,169,77,0.35); border-radius: 12px; padding: 12px 14px; font-size: 14px; color: var(--text); }
 
 .drop {
-  border: 1.5px dashed rgba(255,255,255,0.22); border-radius: 14px; padding: 26px 16px; text-align: center; cursor: pointer;
+  display: grid;  border: 1.5px dashed rgba(255,255,255,0.22); border-radius: 14px; padding: 26px 16px; text-align: center; cursor: pointer;
   justify-items: center; gap: 4px; color: var(--text); font-size: 15px; transition: border-color .15s, background .15s;
 }
 .drop:hover, .drop.over { border-color: var(--accent); background: rgba(255,169,77,0.07); }

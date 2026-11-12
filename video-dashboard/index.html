@@ -151,11 +151,21 @@
   <header class="sheet-head"><h2>계정과 권한</h2><button class="icon-btn" data-close type="button" aria-label="닫기">✕</button></header>
   <div class="sheet-body">
     <div class="account">
-      <h3>계정별 권한</h3>
+      <h3>계정 목록</h3>
       <ul id="accounts" class="accounts"></ul>
-      <p class="muted small">관리자는 업로드·수정·삭제, 게스트는 보기만 할 수 있어요. 권한 없음은 로그인해도 아무것도 볼 수 없습니다.<br>새 계정은 Supabase 대시보드 → Authentication → Users 에서 만든 뒤 여기서 권한을 주세요.</p>
+      <p class="muted small">관리자는 업로드·수정·삭제, 게스트는 보기만 할 수 있어요. 권한 없음은 로그인해도 아무것도 볼 수 없습니다.</p>
       <p class="form-msg" id="accounts-msg" role="status"></p>
     </div>
+    <form id="create-form" class="account" autocomplete="off">
+      <h3>새 계정 만들기</h3>
+      <div class="field-row">
+        <label>아이디 <span class="muted">(또는 이메일)</span><input name="id" autocomplete="off" autocapitalize="none" spellcheck="false" required maxlength="80"></label>
+        <label>비밀번호 <span class="muted">(8자 이상)</span><input name="password" type="text" autocomplete="off" required minlength="8" maxlength="72"></label>
+      </div>
+      <label>권한<select name="role"><option value="guest">게스트 — 보기만</option><option value="admin">관리자 — 업로드·수정</option></select></label>
+      <p class="form-msg" role="status"></p>
+      <button class="btn primary" type="submit">계정 만들기</button>
+    </form>
     <form id="password-form" class="account">
       <h3>내 비밀번호 바꾸기</h3>
       <label>새 비밀번호<input name="password" type="password" autocomplete="new-password" required minlength="8" maxlength="72"></label>

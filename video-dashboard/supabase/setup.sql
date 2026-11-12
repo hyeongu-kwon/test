@@ -130,6 +130,76 @@ drop policy if exists "travel: 관리자만 파일 삭제" on storage.objects;
 create policy "travel: 관리자만 파일 삭제" on storage.objects for delete to authenticated
   using (bucket_id in ('videos', 'thumbs') and public.my_role() = 'admin');
 
--- ============ 5. 첫 관리자 지정 ============
--- Authentication → Users 에서 내 계정을 만든 뒤, 아래 줄의 이메일을 바꿔 따로 실행하세요.
+-- ============ 5. 대시보드에서 계정 관리 (관리자 전용) ============
+-- 앱의 설정 화면에서 계정을 만들고, 비밀번호를 바꾸고, 삭제할 수 있게 하는 함수입니다.
+-- 모두 호출한 사람이 관리자인지 먼저 확인합니다.
+create or replace function public.admin_create_user(p_email text, p_password text, p_role text default 'guest') returns uuid
+language plpgsql security definer set search_path = public, extensions, auth as $$
+declare
+  uid uuid := gen_random_uuid();
+  v_email text := lower(trim(p_email));
+begin
+  if coalesce(public.my_role(), '') <> 'admin' then raise exception 'not allowed'; end if;
+  if v_email !~ '^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$' then raise exception 'invalid email'; end if;
+  if char_length(coalesce(p_password, '')) < 8 or char_length(p_password) > 72 then raise exception 'password length'; end if;
+  if p_role not in ('admin', 'guest', 'pending') then raise exception 'invalid role'; end if;
+  if exists (select 1 from auth.users where email = v_email) then raise exception 'already exists'; end if;
+
+  insert into auth.users (
+    instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+    raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+    confirmation_token, recovery_token, email_change, email_change_token_new
+  ) values (
+    '00000000-0000-0000-0000-000000000000', uid, 'authenticated', 'authenticated', v_email,
+    crypt(p_password, gen_salt('bf')), now(),
+    '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now(),
+    '', '', '', ''
+  );
+  insert into auth.identities (id, user_id, provider_id, provider, identity_data, last_sign_in_at, created_at, updated_at)
+  values (
+    gen_random_uuid(), uid, uid::text, 'email',
+    jsonb_build_object('sub', uid::text, 'email', v_email, 'email_verified', true, 'phone_verified', false),
+    now(), now(), now()
+  );
+  -- 프로필은 위 트리거가 만들어 주므로 권한만 지정합니다.
+  insert into public.profiles (id, email, role) values (uid, v_email, p_role)
+    on conflict (id) do update set role = excluded.role;
+  return uid;
+end $$;
+
+create or replace function public.admin_set_password(p_user uuid, p_password text) returns void
+language plpgsql security definer set search_path = public, extensions, auth as $$
+begin
+  if coalesce(public.my_role(), '') <> 'admin' then raise exception 'not allowed'; end if;
+  if char_length(coalesce(p_password, '')) < 8 or char_length(p_password) > 72 then raise exception 'password length'; end if;
+  update auth.users set encrypted_password = crypt(p_password, gen_salt('bf')), updated_at = now() where id = p_user;
+  if not found then raise exception 'user not found'; end if;
+end $$;
+
+create or replace function public.admin_delete_user(p_user uuid) returns void
+language plpgsql security definer set search_path = public, extensions, auth as $$
+begin
+  if coalesce(public.my_role(), '') <> 'admin' then raise exception 'not allowed'; end if;
+  if p_user = auth.uid() then raise exception 'cannot delete self'; end if;
+  delete from auth.users where id = p_user;  -- 프로필도 함께 지워집니다.
+  if not found then raise exception 'user not found'; end if;
+end $$;
+
+revoke execute on function public.admin_create_user(text, text, text), public.admin_set_password(uuid, text), public.admin_delete_user(uuid) from public, anon;
+grant execute on function public.admin_create_user(text, text, text), public.admin_set_password(uuid, text), public.admin_delete_user(uuid) to authenticated;
+
+-- 관리자가 자기 권한을 스스로 내려 관리자가 없어지는 일을 막습니다.
+create or replace function public.protect_own_role() returns trigger
+language plpgsql as $$
+begin
+  if new.role is distinct from old.role and old.id = auth.uid() then raise exception 'cannot change own role'; end if;
+  return new;
+end $$;
+drop trigger if exists profiles_protect_own_role on public.profiles;
+create trigger profiles_protect_own_role before update on public.profiles
+  for each row execute function public.protect_own_role();
+
+-- ============ 6. 첫 관리자 지정 ============
+-- 첫 관리자 계정만은 Supabase 대시보드(Authentication → Users → Add user)에서 만들어야 합니다.
+-- 만든 뒤 아래 줄의 이메일을 바꿔 따로 실행하세요. 그다음부터는 앱의 설정 화면에서 계정을 관리합니다.
 -- update public.profiles set role = 'admin' where email = 'me@example.com';

@@ -24,6 +24,11 @@ const ERRORS = [
   [/mime type .* is not supported/i, 'MP4, MOV, WebM 영상과 JPG, PNG, WebP 이미지만 올릴 수 있습니다.'],
   [/failed to fetch|network/i, '네트워크 오류입니다. 잠시 뒤 다시 시도하세요.'],
   [/rate limit/i, '요청이 너무 많습니다. 잠시 뒤 다시 시도하세요.'],
+  [/already exists/i, '이미 있는 아이디입니다.'],
+  [/invalid email/i, '아이디는 영문·숫자로 입력하세요. (예: guest, mom2)'],
+  [/password length/i, '비밀번호는 8~72자로 입력하세요.'],
+  [/cannot (delete self|change own role)/i, '내 계정의 권한을 바꾸거나 삭제할 수는 없습니다.'],
+  [/could not find the function|admin_\w+.*does not exist/i, '계정 관리 기능이 아직 설치되지 않았어요. 최신 setup.sql을 Supabase SQL Editor에서 실행하세요.'],
 ];
 function friendly(err) {
   const msg = (err && (err.message || err.error_description || err.error)) || '요청에 실패했습니다.';
@@ -143,8 +148,7 @@ $('#login-form').addEventListener('submit', async (e) => {
   err.textContent = ''; $('#login-notice').hidden = true; btn.disabled = true;
   try {
     const id = f.elements.id.value.trim();
-    const email = id.includes('@') ? id : `${id}@${CFG.loginDomain}`;
-    const { user } = await run(sb.auth.signInWithPassword({ email, password: f.elements.password.value }));
+    const { user } = await run(sb.auth.signInWithPassword({ email: toEmail(id), password: f.elements.password.value }));
     f.reset(); await enter(user);
   } catch (ex) { err.textContent = ex.message; f.elements.password.select(); }
   finally { btn.disabled = false; }
@@ -553,29 +557,64 @@ $('#edit-delete').addEventListener('click', async () => {
 
 /* ---------- 계정과 권한 ---------- */
 const ROLE_LABEL = { admin: '관리자', guest: '게스트', pending: '권한 없음' };
+const toEmail = (id) => (id.includes('@') ? id : `${id}@${CFG.loginDomain}`).toLowerCase();
 async function renderAccounts() {
   const list = await run(sb.from('profiles').select('id, email, role').order('created_at'));
-  $('#accounts').innerHTML = list.map((p) => `
-    <li>
-      <span class="who">${esc(displayId(p.email))}${p.id === state.userId ? ' <span class="muted">(나)</span>' : ''}</span>
-      <select data-id="${p.id}" aria-label="${esc(displayId(p.email))} 권한" ${p.id === state.userId ? 'disabled' : ''}>
+  $('#accounts').innerHTML = list.map((p) => {
+    const me = p.id === state.userId, name = esc(displayId(p.email));
+    return `
+    <li data-id="${p.id}" data-name="${name}">
+      <span class="who">${name}${me ? ' <span class="muted">(나)</span>' : ''}</span>
+      <select aria-label="${name} 권한" ${me ? 'disabled' : ''}>
         ${Object.entries(ROLE_LABEL).map(([value, label]) => `<option value="${value}" ${p.role === value ? 'selected' : ''}>${label}</option>`).join('')}
       </select>
-    </li>`).join('');
+      ${me ? '' : '<button class="btn ghost" type="button" data-act="password">비밀번호</button><button class="btn danger" type="button" data-act="delete">삭제</button>'}
+    </li>`;
+  }).join('');
+}
+function accountsMsg(text, bad = false) {
+  const msg = $('#accounts-msg'); msg.className = bad ? 'form-msg bad' : 'form-msg'; msg.textContent = text;
 }
 $('#btn-settings').addEventListener('click', async () => {
   try {
-    $('#accounts-msg').textContent = ''; $('#password-form').reset(); $('#password-form .form-msg').textContent = '';
+    accountsMsg('');
+    for (const sel of ['#password-form', '#create-form']) { $(sel).reset(); $('.form-msg', $(sel)).textContent = ''; }
     await renderAccounts(); $('#settings').showModal();
   } catch (ex) { toast(ex.message); }
 });
 $('#accounts').addEventListener('change', async (e) => {
-  const sel = e.target.closest('select[data-id]'); if (!sel) return;
-  const msg = $('#accounts-msg'); msg.className = 'form-msg';
+  const li = e.target.closest('li[data-id]'); if (!li || e.target.tagName !== 'SELECT') return;
   try {
-    await run(sb.from('profiles').update({ role: sel.value }).eq('id', sel.dataset.id).select().single());
-    msg.textContent = `권한을 "${ROLE_LABEL[sel.value]}"(으)로 바꿨어요.`;
-  } catch (ex) { msg.className = 'form-msg bad'; msg.textContent = ex.message; await renderAccounts().catch(() => {}); }
+    await run(sb.from('profiles').update({ role: e.target.value }).eq('id', li.dataset.id).select().single());
+    accountsMsg(`${li.dataset.name}: 권한을 "${ROLE_LABEL[e.target.value]}"(으)로 바꿨어요.`);
+  } catch (ex) { accountsMsg(ex.message, true); await renderAccounts().catch(() => {}); }
+});
+$('#accounts').addEventListener('click', async (e) => {
+  const btn = e.target.closest('[data-act]'); if (!btn) return;
+  const { id, name } = btn.closest('li').dataset;
+  try {
+    if (btn.dataset.act === 'password') {
+      const pw = prompt(`"${name}" 계정의 새 비밀번호 (8자 이상)`);
+      if (pw === null) return;
+      await run(sb.rpc('admin_set_password', { p_user: id, p_password: pw }));
+      accountsMsg(`${name}: 비밀번호를 바꿨어요.`);
+    } else {
+      if (!confirm(`"${name}" 계정을 삭제할까요? 이 계정으로는 더 이상 로그인할 수 없습니다.`)) return;
+      await run(sb.rpc('admin_delete_user', { p_user: id }));
+      await renderAccounts(); accountsMsg(`${name}: 계정을 삭제했어요.`);
+    }
+  } catch (ex) { accountsMsg(ex.message, true); }
+});
+$('#create-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.currentTarget, f = form.elements, msg = $('.form-msg', form);
+  msg.className = 'form-msg';
+  try {
+    const id = f.id.value.trim();
+    await run(sb.rpc('admin_create_user', { p_email: toEmail(id), p_password: f.password.value, p_role: f.role.value }));
+    msg.textContent = `"${id}" 계정을 만들었어요. 아이디와 비밀번호를 알려주세요.`;
+    form.reset(); await renderAccounts();
+  } catch (ex) { msg.className = 'form-msg bad'; msg.textContent = ex.message; }
 });
 $('#password-form').addEventListener('submit', async (e) => {
   e.preventDefault();

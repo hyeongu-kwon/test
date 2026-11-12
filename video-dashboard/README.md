@@ -18,18 +18,26 @@
 2. **DB 설정** — SQL Editor에 [`supabase/setup.sql`](supabase/setup.sql) 전체를 붙여 넣고 실행합니다.
 3. **가입 막기(권장)** — Authentication → Sign In / Providers 에서 "Allow new users to sign up"을 끕니다.
    켜 두어도 새 계정은 `권한 없음` 상태라 영상을 볼 수 없습니다.
-4. **계정 만들기** — Authentication → Users → Add user → Create new user (Auto Confirm User 체크)
-   - 내 계정: 예) `me@example.com`
-   - 게스트 계정: 예) `guest@travel.film` → 로그인 화면에서는 아이디 `guest`만 입력하면 됩니다.
+4. **내 계정 만들기** — Authentication → Users → Add user → Create new user (Auto Confirm User 체크)
+   첫 관리자 계정만 여기서 만듭니다. 예) `me@example.com`
 5. **첫 관리자 지정** — SQL Editor에서 한 번 실행합니다.
    ```sql
    update public.profiles set role = 'admin' where email = 'me@example.com';
    ```
 6. **연결 정보 입력** — Project Settings → API 의 Project URL과 `anon` `public` 키를 [`config.js`](config.js)에 넣습니다.
    `anon` 키는 공개되어도 되는 키입니다. **`service_role` 키는 절대 넣지 마세요.**
-7. **게스트 권한 주기** — 관리자로 로그인 → 설정 → 계정별 권한에서 `게스트`로 바꿉니다.
+7. **나머지 계정은 앱에서** — 관리자로 로그인 → **설정**에서 계정을 만들고 권한을 줍니다. (아래 참고)
 8. **배포** — 이 폴더를 정적 호스팅에 올립니다. (GitHub Pages라면 `…/video-dashboard/` 주소)
    로컬 확인: `python3 -m http.server 8000` 후 `http://localhost:8000`
+
+## 계정 관리 (관리자, 앱의 설정 화면)
+- **새 계정 만들기**: 아이디·비밀번호·권한(게스트/관리자)을 정해 바로 만듭니다.
+- **권한 바꾸기**: 계정마다 관리자 / 게스트 / 권한 없음
+- **비밀번호 바꾸기**, **계정 삭제**
+- 내 계정의 권한을 내리거나 내 계정을 삭제할 수는 없습니다(관리자가 없어지는 것을 방지).
+
+이 기능은 `setup.sql`이 만드는 관리자 전용 DB 함수(`admin_create_user` 등)로 동작합니다.
+Supabase의 인증 테이블에 직접 계정을 넣는 방식이라, 혹시 만든 계정으로 로그인이 안 되면 Supabase 대시보드의 Users 화면에서 만들고 앱에서 권한만 주면 됩니다.
 
 아이디에 `@`가 없으면 `config.js`의 `loginDomain`을 붙여 로그인합니다(`guest` → `guest@travel.film`).
 실제로 메일을 받을 필요가 없는 주소여도 됩니다.
@@ -42,7 +50,7 @@
 - **재생**: 이전/다음, 끝나면 다음 영상 이어보기
 - **업로드(관리자)**: 여러 개를 끌어다 놓기, 진행률 표시, 길이와 썸네일 자동 추출
 - **수정(관리자)**: 제목·설명·여행지·날짜·태그, 대표 고정, 썸네일 교체, 삭제
-- **설정(관리자)**: 계정별 권한 변경, 내 비밀번호 변경
+- **설정(관리자)**: 계정 만들기·권한 변경·비밀번호 변경·삭제
 
 ## 용량과 영상 형식
 - Supabase **무료 플랜은 파일 하나에 50MB, 전체 저장 용량 1GB** 정도로 제한됩니다(정확한 수치는 Supabase 요금 안내 확인).
