@@ -930,7 +930,7 @@ function normalize(s) {
 
 /* 계정 서버(Supabase) 연결 정보. 비워 두면 이 기기에만 저장하는 방식으로 동작합니다.
    url: 프로젝트 URL (https://xxxx.supabase.co) · key: anon/publishable 공개 키 (service_role 비밀 키는 절대 넣지 마세요) */
-const CLOUD = Object.assign({ url: '', key: '' }, window.ASSET_CLOUD || {});
+const CLOUD = Object.assign({ url: 'https://spgjjsunubkqzlqukaae.supabase.co', key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwZ2pqc3VudWJrcXpscXVrYWFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ1MTM4MjAsImV4cCI6MjExMDA4OTgyMH0.xWdrtlcrLaty385lnyvLNZP-f2WvafrwUZA3Vrrj5Rc' }, window.ASSET_CLOUD || {});
 const cloudOn = !!(CLOUD.url && CLOUD.key);
 let state = null, firstRun = false;
 const readStored = () => { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { return null; } };
