@@ -8,7 +8,13 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="내 자산">
-<title>자산관리 대시보드</title>
+<title>내 자산</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="내 자산">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
@@ -993,7 +999,7 @@ function route() {
   $$('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + tab));
   $$('[data-tab]').forEach(a => (a.dataset.tab === tab ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')));
   filterCat = tab === 'assets' && ALL.some(c => c.id === sub) ? sub : 'all';
-  document.title = (tab === 'assets' && filterCat !== 'all' ? catOf(filterCat).name : { home: '홈', assets: '자산', pension: '연금', kids: '아이자산', history: '기록', settings: '설정' }[tab]) + ' · 자산관리 대시보드';
+  document.title = '내 자산 · ' + (tab === 'assets' && filterCat !== 'all' ? catOf(filterCat).name : { home: '홈', assets: '자산', pension: '연금', kids: '아이자산', history: '기록', settings: '설정' }[tab]);
   if (tab === 'home') renderTrend(); else if (tab === 'assets') renderAssets(); else if (tab === 'pension') renderPension(); else if (tab === 'kids') renderKids();
   if (tab !== lastTab) window.scrollTo({ top: 0 });
   lastTab = tab;
