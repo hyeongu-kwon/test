@@ -295,7 +295,9 @@
   .view-bar { margin-bottom: 14px; }
   .view-bar .chips { margin-bottom: 6px; }
   .view-bar .hint { margin: 0 2px; }
-  .quote-note { color: var(--muted); font-size: 12.5px; }
+  .quote-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; background: var(--surface-2); border-radius: 10px; padding: 9px 12px; margin-bottom: 12px; font-size: 13px; color: var(--text-2); }
+  .quote-bar.ok { color: var(--good); }
+  .quote-bar.warn { color: var(--warn); }
   .sync::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--good); }
   .sync[data-s=saving]::before { background: var(--warn); }
   .sync[data-s=offline]::before, .sync[data-s=error]::before { background: var(--bad); }
@@ -517,6 +519,10 @@
       <button class="btn" id="pasteBtn2"><svg aria-hidden="true"><use href="#i-paste"/></svg>엑셀 붙여넣기</button>
     </div>
     <nav class="chips" id="catChips" aria-label="분류별 보기"></nav>
+    <div class="quote-bar">
+      <span id="quoteStat"></span>
+      <button class="btn sm" id="quoteBtn" type="button">시세 갱신</button>
+    </div>
     <div class="summary-strip num" id="assetSummary"></div>
     <div id="assetList"></div>
   </section>
@@ -902,11 +908,6 @@ async function refreshQuotes() {
     if (!document.querySelector('dialog[open]')) render();
   } finally { quoteBusy = false; }
 }
-const quoteNote = () => {
-  if (!quoteState) return '';
-  const t = new Date(quoteState.at).toTimeString().slice(0, 5);
-  return `<span class="quote-note">시세 ${quoteState.ok}개 자동 갱신${quoteState.fail ? ` · ${quoteState.fail}개 실패(직접 입력 가격 사용)` : ''} · ${t}</span>`;
-};
 const rawValue = h => (h.mode === 'qty' ? (+h.qty || 0) * unitPrice(h) : +h.amount || 0);
 const valueKRW = (h, s = state) => rawValue(h) * fxOf(h, s);
 const costKRW = (h, s = state) => (h.cost == null ? null : h.cost * fxOf(h, s));
@@ -1294,12 +1295,25 @@ function catDetailHtml(id, t) {
     <div class="chart mini-chart" id="catChart"></div>
   </div>`;
 }
+function renderQuoteBar() {
+  const el = $('#quoteStat'), bar = el.parentElement, btn = $('#quoteBtn');
+  const tickers = state.holdings.filter(h => h.mode === 'qty' && h.ticker).length;
+  btn.disabled = !tickers || quoteBusy || viewOnly; btn.textContent = quoteBusy ? '갱신 중…' : '시세 갱신';
+  bar.className = 'quote-bar';
+  if (!tickers) { el.textContent = '주식·비트코인에 종목코드를 입력하면 현재가를 자동으로 가져와요'; return; }
+  if (!quoteState) { el.textContent = '아직 시세를 가져오지 않았어요 · 시세 갱신을 눌러 보세요'; bar.classList.add('warn'); return; }
+  const t = new Date(quoteState.at).toTimeString().slice(0, 5);
+  if (quoteState.fail) { el.textContent = `시세 ${quoteState.ok}개 갱신 · ${quoteState.fail}개 실패(직접 입력 가격 사용) · ${t}`; bar.classList.add('warn'); }
+  else { el.textContent = `시세 ${quoteState.ok}개 자동 갱신 완료 · ${t}`; bar.classList.add('ok'); }
+}
+$('#quoteBtn').addEventListener('click', () => refreshQuotes());
 function renderAssets() {
+  renderQuoteBar();
   const t = totals(), q = $('#q').value.trim().toLowerCase();
   const counts = Object.fromEntries(ALL.map(c => [c.id, state.holdings.filter(h => h.cat === c.id).length]));
   $('#catChips').innerHTML = [`<a class="chip" href="#assets" ${filterCat === 'all' ? 'aria-current="page"' : ''}>전체 <span class="n">${state.holdings.length}</span></a>`,
     ...ALL.map(c => `<a class="chip" href="#assets/${c.id}" ${filterCat === c.id ? 'aria-current="page"' : ''}><span class="swatch" style="background:var(${c.color})"></span>${c.short}${counts[c.id] ? ` <span class="n">${counts[c.id]}</span>` : ''}</a>`)].join('');
-  $('#assetSummary').innerHTML = filterCat === 'all' && state.holdings.length ? `<span>자산 <b>${short(t.assets, { won: true })}</b></span><span>부채 <b>${short(t.debt, { won: true })}</b></span><span>순자산 <b>${short(t.net, { won: true })}</b></span>${quoteNote()}` : '';
+  $('#assetSummary').innerHTML = filterCat === 'all' && state.holdings.length ? `<span>자산 <b>${short(t.assets, { won: true })}</b></span><span>부채 <b>${short(t.debt, { won: true })}</b></span><span>순자산 <b>${short(t.net, { won: true })}</b></span>` : '';
   if (!state.holdings.length && filterCat === 'all') {
     $('#assetList').innerHTML = `<div class="card empty"><h3>아직 등록된 자산이 없어요</h3><p>통장, 주식, 부동산, 대출까지 하나씩 추가해 보세요.</p>
       <div class="btns"><button class="btn primary" data-act="add">${plusIcon}자산 추가</button><button class="btn" data-act="paste"><svg aria-hidden="true"><use href="#i-paste"/></svg>엑셀 붙여넣기</button><button class="btn ghost" data-act="sample">예시 보기</button></div></div>`;
