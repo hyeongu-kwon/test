@@ -292,6 +292,9 @@
   .tab { white-space: nowrap; }
   .top-actions { display: flex; gap: 8px; align-items: center; }
   .sync { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+  .view-bar { margin-bottom: 14px; }
+  .view-bar .chips { margin-bottom: 6px; }
+  .view-bar .hint { margin: 0 2px; }
   .quote-note { color: var(--muted); font-size: 12.5px; }
   .sync::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--good); }
   .sync[data-s=saving]::before { background: var(--warn); }
@@ -463,9 +466,13 @@
 <main>
   <!-- HOME -->
   <section class="view" id="view-home" aria-label="홈">
+    <div class="view-bar">
+      <nav class="chips" id="viewChips" aria-label="홈 요약에 포함할 자산"></nav>
+      <p class="hint" id="viewNote"></p>
+    </div>
     <div class="grid g-home-top">
       <div class="card">
-        <div class="eyebrow">순자산 <span class="num" id="asof" style="color:var(--muted);font-weight:500"></span></div>
+        <div class="eyebrow"><span id="heroLabel">순자산</span> <span class="num" id="asof" style="color:var(--muted);font-weight:500"></span></div>
         <div class="hero-value num" id="heroNet"></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap" id="heroDeltas"></div>
         <div class="stats">
@@ -841,7 +848,7 @@ const monthsAgo = n => { const d = new Date(); return monthKey(new Date(d.getFul
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-const defaultSettings = () => ({ fx: 1400, expense: 3000000, goal: 1000000000, hide: false, range: 12, autolock: 10 });
+const defaultSettings = () => ({ fx: 1400, expense: 3000000, goal: 1000000000, hide: false, range: 12, autolock: 10, homeHide: [] });
 const defaultTargets = () => ({ cash: 10, stock: 25, isa: 5, bond: 10, real: 40, pension: 8, crypto: 0, alt: 2 });
 const defaultPension = () => ({ age: 40, startAge: 60, years: 20, rate: 4, nps: 0, salary: 'low' });
 const emptyKids = () => ({ children: [], holdings: [], gifts: [], history: [] });
@@ -904,10 +911,22 @@ function totalsOf(s) {
 }
 const totals = () => totalsOf(state);
 const netOf = e => e.assets - e.debt;
+/* Home-screen view: categories the user excluded (e.g. 연금) are left out of totals, trend and allocation. */
+const excluded = () => new Set(state.settings.homeHide || []);
+function viewOf(e) {
+  const ex = excluded();
+  if (!ex.size) return { ...e };
+  if (!e.byCat) return null; // older monthly records have no category split, so they cannot be filtered
+  const byCat = Object.fromEntries(CATS.map(c => [c.id, ex.has(c.id) ? 0 : e.byCat[c.id] || 0]));
+  const assets = CATS.reduce((a, c) => a + byCat[c.id], 0);
+  const debt = ex.has('debt') ? 0 : e.debt;
+  return { ...e, byCat, assets, debt, net: assets - debt };
+}
 function series() {
   const cur = monthKey(), t = totals();
   const past = state.history.filter(e => e.month < cur).sort((a, b) => a.month.localeCompare(b.month));
-  return state.holdings.length || past.length ? [...past, { month: cur, assets: t.assets, debt: t.debt, byCat: t.byCat, live: true }] : [];
+  if (!(state.holdings.length || past.length)) return [];
+  return [...past, { month: cur, assets: t.assets, debt: t.debt, byCat: t.byCat, live: true }].map(viewOf).filter(Boolean);
 }
 
 function sampleState() {
@@ -960,6 +979,7 @@ function normalize(s) {
   const out = emptyState();
   out.targets = s.targets ? { ...Object.fromEntries(CATS.map(c => [c.id, 0])), ...s.targets } : out.targets; // new categories start at 0% for existing users
   out.settings = { ...out.settings, ...(s.settings || {}) };
+  out.settings.homeHide = Array.isArray(out.settings.homeHide) ? out.settings.homeHide.filter(id => ALL.some(c => c.id === id)) : [];
   out.pension = { ...out.pension, ...(s.pension || {}) };
   const k = s.kids || {};
   out.kids.children = (k.children || []).map(c => ({ id: String(c.id || uid()), name: String(c.name || '아이'), birth: /^\d{4}-\d{2}-\d{2}$/.test(c.birth) ? c.birth : '' }));
@@ -1058,8 +1078,16 @@ function route() {
 window.addEventListener('hashchange', route);
 
 /* ============ Render: home ============ */
+function renderViewChips() {
+  const ex = excluded();
+  $('#viewChips').innerHTML = [`<button class="chip" data-view="all" aria-pressed="${!ex.size}">전체</button>`,
+    ...ALL.map(c => `<button class="chip" data-view="${c.id}" aria-pressed="${!ex.has(c.id)}"><span class="swatch" style="background:var(${c.color})"></span>${c.short}</button>`)].join('');
+  $('#heroLabel').textContent = ex.size ? '선택 자산 순자산' : '순자산';
+  $('#viewNote').textContent = ex.size ? `${[...ex].map(id => catOf(id).short).join(', ')} 제외한 기준 · 요약, 추이, 배분에 적용돼요` : '모든 자산 포함 · 칩을 눌러 빼고 싶은 자산을 고르세요';
+}
 function renderHome() {
-  const t = totals(), s = series();
+  renderViewChips();
+  const t = viewOf(totals()), s = series();
   $('#asof').textContent = '· ' + new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' }) + ' 기준';
   if (hidden()) $('#heroNet').textContent = MASK;
   else {
@@ -1175,7 +1203,8 @@ function catSeries(id) {
 
 function renderAlloc(t) {
   if (!t.assets) { $('#stackbar').innerHTML = ''; $('#alloc').innerHTML = '<div class="empty" style="padding:28px 0">자산을 추가하면 배분이 표시돼요</div>'; return; }
-  const rows = CATS.map(c => ({ ...c, v: t.byCat[c.id], p: t.byCat[c.id] / t.assets * 100, tg: +state.targets[c.id] || 0 }))
+  const ex = excluded();
+  const rows = CATS.filter(c => !ex.has(c.id)).map(c => ({ ...c, v: t.byCat[c.id], p: t.byCat[c.id] / t.assets * 100, tg: +state.targets[c.id] || 0 }))
     .filter(r => r.v > 0 || r.tg > 0).sort((a, b) => b.v - a.v);
   const max = Math.max(...rows.map(r => Math.max(r.p, r.tg)), 1);
   $('#stackbar').innerHTML = STACK.filter(c => t.byCat[c.id] > 0).map(c => `<div style="flex:${t.byCat[c.id]};background:var(${c.color})"></div>`).join('');
@@ -1775,6 +1804,12 @@ const pnBind = (id, key, parse = v => +v) => $(id).addEventListener('input', e =
 pnBind('#pnAge', 'age'); pnBind('#pnStart', 'startAge'); pnBind('#pnYears', 'years'); pnBind('#pnRate', 'rate'); pnBind('#pnNps', 'nps', parseNum);
 $$('input[name=pnSalary]').forEach(r => r.addEventListener('change', e => { state.pension.salary = e.target.value; save(); renderPension(); renderInsights(totals()); }));
 $('#q').addEventListener('input', renderAssets);
+$('#viewChips').addEventListener('click', e => {
+  const b = e.target.closest('[data-view]'); if (!b) return;
+  const ex = excluded();
+  if (b.dataset.view === 'all') ex.clear(); else ex.has(b.dataset.view) ? ex.delete(b.dataset.view) : ex.add(b.dataset.view);
+  state.settings.homeHide = [...ex]; save(); render();
+});
 $('#rangeSeg').addEventListener('click', e => { const b = e.target.closest('[data-range]'); if (b) { state.settings.range = +b.dataset.range; save(); renderTrend(); } });
 $('#hideBtn').addEventListener('click', () => { state.settings.hide = !hidden(); save(); render(); toast(hidden() ? '금액을 숨겼어요' : '금액을 다시 보여드려요'); });
 $('#themeBtn').addEventListener('click', () => {
