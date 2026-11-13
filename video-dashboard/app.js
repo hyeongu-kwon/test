@@ -246,11 +246,10 @@ function render() {
       </div>
       ${isAdmin() ? '<button class="card-edit" type="button" data-edit>수정</button>' : ''}
     </div>`).join('');
-  // 내용이 그대로면 다시 만들지 않습니다. (재생 중인 카드 영상이 끊기지 않도록)
+  // 내용이 그대로면 다시 만들지 않습니다.
   if (gridHtml !== lastGridHtml) {
     lastGridHtml = gridHtml;
     $('#grid').innerHTML = gridHtml;
-    watchCards();
   }
 
   const empty = $('#empty');
@@ -298,11 +297,12 @@ grid.addEventListener('keydown', (e) => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('card')) { e.preventDefault(); activateCard(e); }
 });
 
-// 화면에 보이는 영상은 소리 없이 자동 재생하고, 화면 밖으로 나가면 멈춥니다.
+// 자동 재생은 맨 위 대표 영상만 합니다. 카드는 마우스를 올렸을 때만 소리 없이 미리보기를 보여줍니다.
 let lastGridHtml = null;
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const canHover = matchMedia('(hover: hover)').matches;
 const backgroundVideos = () => $$('#hero .hero-video, #grid .card-thumb video');
-const pauseBackground = () => backgroundVideos().forEach((el) => el.pause());
+const pauseBackground = () => { stopPreview(); backgroundVideos().forEach((el) => el.pause()); };
 function resumeBackground() {
   backgroundVideos().forEach((el) => { if (el.dataset.visible === '1') el.play().catch(() => {}); });
 }
@@ -316,33 +316,31 @@ function makeSilentVideo(src, className) {
   el.src = src;
   return el;
 }
-async function startCardVideo(thumb) {
-  const card = thumb.closest('.card');
-  const v = state.videos.find((x) => x.id === card.dataset.id);
-  if (!v || !v.file || $('video', thumb)) return;
-  const src = await mediaUrl(v).catch(() => null);
-  if (!src || !thumb.isConnected || thumb.dataset.visible !== '1' || $('video', thumb)) return;
-  const el = makeSilentVideo(src, '');
-  el.dataset.visible = '1';
-  thumb.append(el);
-  if (!player.open) el.play().catch(() => {});
-}
-function stopCardVideo(thumb) {
-  const el = $('video', thumb);
+let previewTimer = null;
+function stopPreview() {
+  clearTimeout(previewTimer); previewTimer = null;
+  const el = $('.card-thumb video', grid);
   if (el) { el.pause(); el.removeAttribute('src'); el.load(); el.remove(); }
 }
-const cardObserver = reduceMotion ? null : new IntersectionObserver((entries) => {
-  for (const entry of entries) {
-    const thumb = entry.target;
-    thumb.dataset.visible = entry.isIntersecting ? '1' : '';
-    if (entry.isIntersecting) startCardVideo(thumb); else stopCardVideo(thumb);
-  }
-}, { threshold: 0.6 });
-function watchCards() {
-  if (!cardObserver) return;
-  cardObserver.disconnect();
-  $$('#grid .card-thumb').forEach((thumb) => cardObserver.observe(thumb));
-}
+grid.addEventListener('mouseover', (e) => {
+  if (!canHover) return;
+  const card = e.target.closest('.card');
+  if (!card || card.contains(e.relatedTarget)) return;
+  stopPreview();
+  const v = state.videos.find((x) => x.id === card.dataset.id);
+  if (!v || !v.file) return;
+  const timer = previewTimer = setTimeout(async () => {
+    const src = await mediaUrl(v).catch(() => null);
+    if (!src || timer !== previewTimer || !card.isConnected) return;
+    const el = makeSilentVideo(src, '');
+    $('.card-thumb', card).append(el);
+    el.play().catch(() => el.remove());
+  }, 600);
+});
+grid.addEventListener('mouseout', (e) => {
+  const card = e.target.closest('.card');
+  if (card && !card.contains(e.relatedTarget)) stopPreview();
+});
 // 대표 영상은 화면 밖으로 나가면 잠시 멈춥니다.
 if (!reduceMotion) {
   new IntersectionObserver(([entry]) => {
