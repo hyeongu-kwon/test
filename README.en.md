@@ -29,6 +29,7 @@ A personal asset dashboard that runs in the browser without installation. On a p
 
 ### Features
 - Enter holdings as quantity × price; convert USD assets with an exchange rate; returns when you enter cost basis
+- For stocks and Bitcoin, enter a ticker (6-digit Korean code, US symbol or coin symbol) and your average cost; the current price is fetched automatically and returns are calculated from it. If a quote fails, the manually entered price is used.
 - Hide amounts, light/dark theme (dark by default)
 - Undo for deletes and resets
 - Shortcuts: `N` add, `/` search, `H` hide amounts, `L` lock, `1`–`6` switch tabs
