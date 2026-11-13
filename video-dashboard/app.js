@@ -187,9 +187,12 @@ function render() {
   const byNew = [...playable].sort((a, b) => sortKeyDate(b).localeCompare(sortKeyDate(a)) || b.createdAt.localeCompare(a.createdAt));
   const feat = byNew.find((v) => v.featured) || byNew[0];
   hero.hidden = !feat;
-  if (feat) {
-    hero.dataset.id = feat.id;
-    hero.innerHTML = `
+  // 검색·필터로 다시 그릴 때 배경 영상이 처음부터 재시작하지 않도록, 내용이 바뀐 경우에만 새로 만듭니다.
+  const heroKey = feat ? JSON.stringify([feat.id, feat.featured, feat.title, feat.location, feat.date, feat.duration, feat.description, feat.thumb]) : '';
+  if (hero.dataset.key !== heroKey) {
+    hero.dataset.key = heroKey;
+    hero.dataset.id = feat ? feat.id : '';
+    hero.innerHTML = !feat ? '' : `
       <div class="hero-bg"></div>
       <div class="hero-body">
         <span class="hero-kicker">${feat.featured ? '대표 영상' : '최근 여행'}</span>
@@ -198,7 +201,8 @@ function render() {
         ${feat.description ? `<p class="hero-desc">${esc(feat.description)}</p>` : ''}
         <button class="btn primary" type="button">▶ 재생</button>
       </div>`;
-    if (feat.thumb) $('.hero-bg', hero).style.backgroundImage = `url("${thumbUrl(feat)}")`;
+    if (feat && feat.thumb) $('.hero-bg', hero).style.backgroundImage = `url("${thumbUrl(feat)}")`;
+    if (feat) startHeroVideo(feat, heroKey);
   }
 
   // 요약
@@ -229,7 +233,7 @@ function render() {
 
   // 카드
   const list = filtered();
-  $('#grid').innerHTML = list.map((v) => `
+  const gridHtml = list.map((v) => `
     <div class="card" role="button" tabindex="0" data-id="${v.id}">
       <div class="card-thumb">
         ${v.thumb ? `<img src="${thumbUrl(v)}" alt="" loading="lazy">` : '<div class="placeholder">▶</div>'}
@@ -242,6 +246,11 @@ function render() {
       </div>
       ${isAdmin() ? '<button class="card-edit" type="button" data-edit>수정</button>' : ''}
     </div>`).join('');
+  // 내용이 그대로면 다시 만들지 않습니다.
+  if (gridHtml !== lastGridHtml) {
+    lastGridHtml = gridHtml;
+    $('#grid').innerHTML = gridHtml;
+  }
 
   const empty = $('#empty');
   empty.hidden = list.length > 0;
@@ -252,6 +261,19 @@ function render() {
         (isAdmin() ? '<button class="btn primary" type="button" data-open-upload>＋ 영상 업로드</button>' : '');
   }
 }
+
+// 첫 화면 배경에서 대표 영상을 소리 없이 반복 재생합니다. (재생이 막히면 썸네일이 그대로 보입니다)
+async function startHeroVideo(v, key) {
+  if (reduceMotion) return;
+  const src = await mediaUrl(v).catch(() => null);
+  const hero = $('#hero'), bg = $('.hero-bg', hero);
+  if (!src || !bg || hero.dataset.key !== key) return;
+  const el = makeSilentVideo(src, 'hero-video');
+  el.dataset.visible = '1';
+  bg.after(el);
+  if (!player.open) el.play().catch(() => {});
+}
+const heroVideo = () => $('#hero .hero-video');
 
 $('#search').addEventListener('input', (e) => { state.q = e.target.value; render(); });
 $('#year').addEventListener('change', (e) => { state.year = e.target.value; render(); });
@@ -275,9 +297,26 @@ grid.addEventListener('keydown', (e) => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('card')) { e.preventDefault(); activateCard(e); }
 });
 
-// 마우스를 올리면 소리 없이 미리보기
-let previewTimer;
+// 자동 재생은 맨 위 대표 영상만 합니다. 카드는 마우스를 올렸을 때만 소리 없이 미리보기를 보여줍니다.
+let lastGridHtml = null;
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const canHover = matchMedia('(hover: hover)').matches;
+const backgroundVideos = () => $$('#hero .hero-video, #grid .card-thumb video');
+const pauseBackground = () => { stopPreview(); backgroundVideos().forEach((el) => el.pause()); };
+function resumeBackground() {
+  backgroundVideos().forEach((el) => { if (el.dataset.visible === '1') el.play().catch(() => {}); });
+}
+function makeSilentVideo(src, className) {
+  const el = document.createElement('video');
+  el.className = className;
+  el.muted = true; el.defaultMuted = true; el.loop = true; el.playsInline = true;
+  el.setAttribute('muted', ''); el.setAttribute('playsinline', ''); el.setAttribute('aria-hidden', 'true');
+  el.addEventListener('playing', () => el.classList.add('on'), { once: true });
+  el.addEventListener('error', () => el.remove());
+  el.src = src;
+  return el;
+}
+let previewTimer = null;
 function stopPreview() {
   clearTimeout(previewTimer); previewTimer = null;
   const el = $('.card-thumb video', grid);
@@ -290,12 +329,10 @@ grid.addEventListener('mouseover', (e) => {
   stopPreview();
   const v = state.videos.find((x) => x.id === card.dataset.id);
   if (!v || !v.file) return;
-  previewTimer = setTimeout(async () => {
-    const timer = previewTimer;
+  const timer = previewTimer = setTimeout(async () => {
     const src = await mediaUrl(v).catch(() => null);
     if (!src || timer !== previewTimer || !card.isConnected) return;
-    const el = document.createElement('video');
-    el.muted = true; el.loop = true; el.playsInline = true; el.src = src;
+    const el = makeSilentVideo(src, '');
     $('.card-thumb', card).append(el);
     el.play().catch(() => el.remove());
   }, 600);
@@ -304,6 +341,14 @@ grid.addEventListener('mouseout', (e) => {
   const card = e.target.closest('.card');
   if (card && !card.contains(e.relatedTarget)) stopPreview();
 });
+// 대표 영상은 화면 밖으로 나가면 잠시 멈춥니다.
+if (!reduceMotion) {
+  new IntersectionObserver(([entry]) => {
+    const el = heroVideo(); if (!el) return;
+    el.dataset.visible = entry.isIntersecting ? '1' : '';
+    if (entry.isIntersecting && !player.open) el.play().catch(() => {}); else el.pause();
+  }, { threshold: 0.25 }).observe($('#hero'));
+}
 
 /* ---------- 대화상자 공통 ---------- */
 $$('dialog').forEach((d) => {
@@ -333,7 +378,7 @@ function fillPlayer(v) {
 async function openPlayer(id) {
   const v = state.videos.find((x) => x.id === id);
   if (!v || !v.file) return;
-  stopPreview();
+  pauseBackground();
   state.currentId = id;
   fillPlayer(v);
   pv.poster = thumbUrl(v);
@@ -363,6 +408,7 @@ pv.addEventListener('ended', () => { if (autoNext.checked) step('next'); });
 player.addEventListener('close', () => {
   pv.pause(); pv.removeAttribute('src'); pv.load();
   state.currentId = null; render();
+  resumeBackground();
 });
 $('#player-edit').addEventListener('click', () => { const id = state.currentId; player.close(); openEdit(id); });
 $('#player-thumb').addEventListener('click', async () => {

@@ -101,6 +101,8 @@ body:not(.is-admin) .admin-only { display: none !important; }
 }
 .hero-bg { position: absolute; inset: 0; background: linear-gradient(135deg, #2a2440, #51303a 55%, #7a4a2c) center/cover no-repeat; transition: transform .6s ease; }
 .hero:hover .hero-bg { transform: scale(1.03); }
+.hero-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .8s ease; pointer-events: none; }
+.hero-video.on { opacity: 1; }
 .hero::after {
   content: ""; position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(to top, var(--page) 2%, rgba(10,11,15,0.55) 45%, rgba(10,11,15,0.15) 100%),
@@ -142,6 +144,8 @@ body:not(.is-admin) .admin-only { display: none !important; }
 }
 .card:hover .card-thumb, .card:focus-visible .card-thumb { transform: translateY(-3px); box-shadow: 0 14px 36px rgba(0,0,0,0.5); }
 .card-thumb img, .card-thumb video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.card-thumb video { opacity: 0; transition: opacity .5s ease; pointer-events: none; }
+.card-thumb video.on { opacity: 1; }
 .card-thumb .placeholder { position: absolute; inset: 0; display: grid; place-items: center; font-size: 30px; color: rgba(255,255,255,0.5); }
 .badge {
   position: absolute; right: 8px; bottom: 8px; background: rgba(0,0,0,0.72); border-radius: 6px; padding: 2px 6px;
