@@ -1,5 +1,7 @@
 # 🎬 여행 영상 대시보드
 
+🇺🇸 [English README](README.en.md)
+
 여행 영상을 올려 두고, 로그인한 사람에게만 보여 주는 대시보드입니다.
 
 **바로 열기 → https://hyeongu-kwon.github.io/test/video-dashboard/**
