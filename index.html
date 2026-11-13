@@ -4,33 +4,42 @@
 <script>document.documentElement.dataset.theme = localStorage.getItem('asset-dashboard-theme') || 'dark';</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0b0b0c">
+<meta name="theme-color" content="#0d0e0c">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="내 자산">
-<title>자산관리 대시보드</title>
+<title>내 자산</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="내 자산">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
   :root {
     color-scheme: light;
-    --page: #f6f6f4; --surface: #ffffff; --surface-2: #f1f1ee; --hover: rgba(11,11,11,0.045);
-    --text: #0b0b0b; --text-2: #52514e; --muted: #7a7974;
-    --line: #e6e5df; --border: rgba(11,11,11,0.09); --baseline: #c3c2b7;
-    --accent: #2a78d6; --accent-ink: #ffffff; --accent-soft: rgba(42,120,214,0.10);
+    --page: #f3f2ec; --surface: #fbfaf6; --surface-2: #eceae2; --hover: rgba(20,21,15,0.05);
+    --text: #14150f; --text-2: #55564c; --muted: #84857a;
+    --line: #e1dfd5; --border: rgba(20,21,15,0.10); --baseline: #c6c4b8;
+    --accent: #1f6a43; --accent-ink: #ffffff; --accent-soft: rgba(31,106,67,0.10);
     --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4; --s6: #008300; --s7: #6250d6; --s8: #e34948;
-    --up: #006300; --down: #d03b3b; --warn: #b26b00;
-    --shadow: 0 1px 2px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.05);
-    --radius: 16px;
+    /* 국내 관례: 오르면 빨강, 내리면 파랑 */
+    --up: #d0342c; --down: #2463c4; --good: #1a7f45; --bad: #c8321f; --warn: #a56300;
+    --danger: #c8321f; --danger-ink: #ffffff;
+    --shadow: none;
+    --radius: 12px;
   }
   :root[data-theme="dark"] {
     color-scheme: dark;
-    --page: #0b0b0c; --surface: #141416; --surface-2: #1c1c1f; --hover: rgba(255,255,255,0.05);
-    --text: #f2f2f0; --text-2: #b4b3ad; --muted: #85847e;
-    --line: #26262a; --border: rgba(255,255,255,0.08); --baseline: #3a3a3e;
-    --accent: #3987e5; --accent-ink: #ffffff; --accent-soft: rgba(57,135,229,0.16);
+    --page: #0d0e0c; --surface: #151613; --surface-2: #1f201c; --hover: rgba(255,255,255,0.05);
+    --text: #ecebe4; --text-2: #b3b2a7; --muted: #807f75;
+    --line: #272822; --border: rgba(255,255,255,0.08); --baseline: #3b3c36;
+    --accent: #c8ef6a; --accent-ink: #141a05; --accent-soft: rgba(200,239,106,0.12);
     --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
-    --up: #2fbf4f; --down: #ef6b6b; --warn: #f0b429;
+    --up: #ff6b61; --down: #5c9dff; --good: #7ad18a; --bad: #ff7a6b; --warn: #f0b429;
+    --danger: #ff7a6b; --danger-ink: #1c0906;
     --shadow: none;
   }
 
@@ -81,8 +90,8 @@
   .btn:disabled { opacity: .45; cursor: not-allowed; }
   .btn.primary { background: var(--accent); border-color: transparent; color: var(--accent-ink); }
   .btn.primary:hover { filter: brightness(1.08); background: var(--accent); }
-  .btn.danger { color: var(--down); }
-  .btn.danger.solid { background: var(--down); color: #fff; border-color: transparent; }
+  .btn.danger { color: var(--danger); }
+  .btn.danger.solid { background: var(--danger); color: var(--danger-ink); border-color: transparent; }
   .btn.ghost { border-color: transparent; background: transparent; color: var(--text-2); }
   .btn.ghost:hover { background: var(--hover); color: var(--text); }
   .btn.sm { min-height: 32px; padding: 0 10px; font-size: 13px; }
@@ -103,11 +112,11 @@
   .eyebrow { color: var(--text-2); font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
 
   /* ---------- Hero ---------- */
-  .hero-value { font-size: clamp(36px, 5.2vw, 50px); font-weight: 750; letter-spacing: -0.04em; line-height: 1.1; margin: 6px 0 10px; }
+  .hero-value { font-size: clamp(40px, 5.6vw, 60px); font-weight: 700; letter-spacing: -0.045em; line-height: 1.1; margin: 6px 0 10px; }
   .hero-value .unit { font-size: 0.5em; font-weight: 650; margin-left: 2px; letter-spacing: -0.02em; }
   .pill { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: var(--surface-2); }
   .pill.up { color: var(--up); } .pill.down { color: var(--down); }
-  .up { color: var(--up); } .down { color: var(--down); }
+  .up { color: var(--up); } .down { color: var(--down); } .bad { color: var(--bad); }
   .stats { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 22px; border-top: 1px solid var(--line); padding-top: 16px; }
   .stat + .stat { border-left: 1px solid var(--line); padding-left: 16px; }
   .stat .k { color: var(--muted); font-size: 12.5px; }
@@ -155,9 +164,9 @@
   .insights { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
   .insights li { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; background: var(--surface-2); border-radius: 12px; font-size: 14px; }
   .insights .ic { flex: none; width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; font-size: 13px; font-weight: 700; }
-  .ic.good { background: color-mix(in srgb, var(--up) 18%, transparent); color: var(--up); }
+  .ic.good { background: color-mix(in srgb, var(--good) 16%, transparent); color: var(--good); }
   .ic.warn { background: color-mix(in srgb, var(--warn) 20%, transparent); color: var(--warn); }
-  .ic.bad { background: color-mix(in srgb, var(--down) 18%, transparent); color: var(--down); }
+  .ic.bad { background: color-mix(in srgb, var(--bad) 16%, transparent); color: var(--bad); }
   .ic.info { background: var(--accent-soft); color: var(--accent); }
   .insights .sub { color: var(--muted); font-size: 12.5px; margin-top: 1px; }
 
@@ -245,7 +254,7 @@
   .action-list .ai svg { width: 17px; height: 17px; }
   .action-list b { display: block; font-weight: 600; font-size: 14.5px; }
   .action-list small { color: var(--muted); font-size: 12.5px; }
-  .action-list .danger b, .action-list .danger .ai { color: var(--down); }
+  .action-list .danger b, .action-list .danger .ai { color: var(--danger); }
 
   /* ---------- Dialog ---------- */
   dialog {
@@ -269,19 +278,42 @@
     max-width: calc(100vw - 24px); min-height: 44px;
   }
   .toast.show { opacity: 1; transform: translateX(-50%); pointer-events: auto; }
-  .toast button { border: 0; background: transparent; color: #5aa2f0; font-weight: 700; cursor: pointer; padding: 6px 8px; border-radius: 8px; white-space: nowrap; }
-  :root[data-theme="dark"] .toast button { color: #1c5cab; }
+  .toast button { border: 0; background: transparent; color: #c8ef6a; font-weight: 700; cursor: pointer; padding: 6px 8px; border-radius: 8px; white-space: nowrap; }
+  :root[data-theme="dark"] .toast button { color: #1f6a43; }
 
   .bottom-nav { display: none; }
   .kbd { font-size: 11px; border: 1px solid var(--border); border-radius: 5px; padding: 0 5px; color: var(--muted); font-family: inherit; }
-  .btn.primary .kbd { color: rgba(255,255,255,.8); border-color: rgba(255,255,255,.35); }
+  .btn.primary .kbd { color: inherit; opacity: .7; border-color: currentColor; }
 
   /* ---------- Responsive ---------- */
   @media (max-width: 900px) {
     .g-home-top, .g-home-mid, .settings { grid-template-columns: 1fr; }
   }
   .tab { white-space: nowrap; }
-  @media (max-width: 1080px) {
+  .top-actions { display: flex; gap: 8px; align-items: center; }
+  .sync { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+  .sync::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--good); }
+  .sync[data-s=saving]::before { background: var(--warn); }
+  .sync[data-s=offline]::before, .sync[data-s=error]::before { background: var(--bad); }
+  .card-h h2 { font-size: 13px; font-weight: 650; color: var(--text-2); letter-spacing: 0; }
+  @media (min-width: 1024px) {
+    body { padding-left: 216px; }
+    .topbar { position: fixed; inset: 0 auto 0 0; width: 216px; border-bottom: 0; border-right: 1px solid var(--line); background: var(--page); backdrop-filter: none; -webkit-backdrop-filter: none; }
+    .topbar-inner { flex-direction: column; align-items: stretch; height: 100%; padding: 26px 14px 18px; gap: 4px; }
+    .brand { padding: 0 10px 20px; font-size: 19px; order: 0; }
+    #addBtn { order: 1; margin-bottom: 14px; justify-content: flex-start; min-height: 40px; }
+    #addBtn .kbd { margin-left: auto; }
+    .tabs { order: 2; flex-direction: column; background: none; padding: 0; gap: 1px; border-radius: 0; }
+    .tab { padding: 9px 10px; font-size: 14.5px; gap: 10px; border-radius: 8px; }
+    .tab:hover { background: var(--hover); }
+    .tab[aria-current="page"] { background: var(--surface-2); box-shadow: none; }
+    .topbar .spacer { order: 3; }
+    .sync { order: 4; padding: 0 10px 10px; }
+    .top-actions { order: 5; padding: 0 6px; }
+    .lock { padding-left: 20px; }
+  }
+  @media (max-width: 1023px) {
+    .sync .lbl { display: none; }
     .tab svg, #addBtn .kbd { display: none; }
     .tab { padding: 7px 10px; }
     .topbar-inner { gap: 10px; }
@@ -363,16 +395,18 @@
   .lock-ic svg { width: 26px; height: 26px; }
   .lock-card h2 { margin: 0; text-align: center; font-size: 21px; letter-spacing: -0.03em; }
   .lock-card p { margin: -6px 0 4px; text-align: center; color: var(--text-2); font-size: 14px; }
-  .lock-err { color: var(--down); font-size: 13.5px; font-weight: 600; min-height: 1.2em; margin: -4px 0 -6px; }
+  .lock-err { color: var(--bad); font-size: 13.5px; font-weight: 600; min-height: 1.2em; margin: -4px 0 -6px; }
   .lock-card .btn.primary { min-height: 46px; font-size: 15px; }
   .lock-card .alt { justify-self: center; }
-  body.locked > :not(.lock):not(script):not(svg):not(.toast):not(dialog) { visibility: hidden; }
-  .status-pill { white-space: nowrap; flex: none; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 650; padding: 4px 10px; border-radius: 999px; background: color-mix(in srgb, var(--up) 16%, transparent); color: var(--up); }
+  body.locked > :not(.lock):not(script):not(svg):not(.toast):not(dialog),
+  body.booting > :not(.lock):not(script):not(svg):not(.toast):not(dialog) { visibility: hidden; }
+  #lockBtn.btn { flex: none; }
+  .status-pill { white-space: nowrap; flex: none; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 650; padding: 4px 10px; border-radius: 999px; background: color-mix(in srgb, var(--good) 16%, transparent); color: var(--good); }
   .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 </style>
 </head>
-<body>
+<body class="booting">
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></symbol>
   <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="3"/><path d="M3 9h18M8 14h4"/></symbol>
@@ -410,15 +444,18 @@
       <a class="tab" href="#settings" data-tab="settings"><svg aria-hidden="true"><use href="#i-gear"/></svg>설정</a>
     </nav>
     <div class="spacer"></div>
+    <span class="sync" id="syncStat" data-s="saved" role="status" hidden><span class="lbl">저장됨</span></span>
+    <div class="top-actions">
     <button class="icon-btn" id="lockBtn" aria-label="지금 잠그기" title="지금 잠그기 (L)" hidden><svg aria-hidden="true"><use href="#i-lock"/></svg></button>
     <button class="icon-btn" id="hideBtn" aria-pressed="false" aria-label="금액 숨기기" title="금액 숨기기 (H)"></button>
     <button class="icon-btn" id="themeBtn" aria-label="테마 전환" title="테마 전환"></button>
+    </div>
     <button class="btn primary hide-sm" id="addBtn" title="자산 추가 (N)"><svg aria-hidden="true"><use href="#i-plus"/></svg><span class="lbl">자산 추가</span> <span class="kbd">N</span></button>
   </div>
 </header>
 
 <div class="share-banner" id="shareBanner" hidden><div>
-  <div class="t">🔗 <b id="shareFrom">공유받은 자산 현황</b> · 읽기 전용<small>내 기기에 저장된 데이터는 그대로 있어요. 이 화면에서 바꾼 내용은 저장되지 않아요.</small></div>
+  <div class="t"><b id="shareFrom">공유받은 자산 현황</b> · 읽기 전용<small>내 기기에 저장된 데이터는 그대로 있어요. 이 화면에서 바꾼 내용은 저장되지 않아요.</small></div>
   <button class="btn sm" id="shareImport">내 기기에 저장</button>
   <button class="btn sm primary" id="shareClose">닫고 내 데이터 보기</button>
 </div></div>
@@ -544,7 +581,7 @@
       <div class="set-list">
       <div class="card" id="securityCard"></div>
       <div class="card">
-        <div class="card-h"><div><h2>데이터</h2><p>모든 데이터는 이 기기의 브라우저에만 저장돼요. 다른 기기로 옮길 땐 백업 파일을 사용하세요.</p></div></div>
+        <div class="card-h"><div><h2>데이터</h2><p id="dataDesc">모든 데이터는 이 기기의 브라우저에만 저장돼요. 다른 기기로 옮길 땐 백업 파일을 사용하세요.</p></div></div>
         <div class="action-list">
           <button id="shareBtn"><span class="ai"><svg aria-hidden="true"><use href="#i-up"/></svg></span><span><b>공유 링크 만들기</b><small>지금 데이터를 담은 링크 · 받은 사람은 읽기 전용으로 봐요</small></span></button>
           <button id="exportJson"><span class="ai"><svg aria-hidden="true"><use href="#i-down"/></svg></span><span><b>백업 파일 저장</b><small>JSON · 다른 기기에서 복원할 수 있어요</small></span></button>
@@ -698,6 +735,9 @@
     <p id="lockDesc">아이디와 비밀번호를 입력하세요</p>
     <label class="f" id="lockIdWrap">아이디<input type="text" name="lid" autocomplete="username" autocapitalize="off" spellcheck="false"></label>
     <label class="f">비밀번호<input type="password" name="lpw" autocomplete="current-password"></label>
+    <label class="f" id="lockPw2Wrap" hidden>비밀번호 확인<input type="password" name="lpw2" autocomplete="new-password"></label>
+    <label class="check" id="lockKeepWrap" hidden><input type="checkbox" name="keep"><span>이 기기에서 로그인 유지<small>내 기기에서만 켜세요 · 켜면 자동 로그아웃을 하지 않아요</small></span></label>
+    <p class="note" id="lockNote" hidden style="text-align:left;margin:0">비밀번호는 서버에도 저장되지 않아요. 잊으면 데이터를 되살릴 수 없으니 꼭 기억해 두세요.</p>
     <div class="lock-err" id="lockErr" role="alert"></div>
     <button class="btn primary" type="submit" id="lockSubmit">로그인</button>
     <button type="button" class="btn ghost sm alt" id="lockAlt">비밀번호를 잊으셨나요?</button>
@@ -710,11 +750,11 @@
     <div class="dlg-h"><h3 id="lockDlgTitle">로그인 잠금</h3><button type="button" class="icon-btn" data-close aria-label="닫기"><svg aria-hidden="true"><use href="#i-x"/></svg></button></div>
     <div class="dlg-b">
       <div id="ldCur" class="row2">
-        <label class="f">현재 아이디<input type="text" name="cid" autocomplete="username" autocapitalize="off" spellcheck="false"></label>
+        <label class="f" id="ldCidWrap">현재 아이디<input type="text" name="cid" autocomplete="username" autocapitalize="off" spellcheck="false"></label>
         <label class="f">현재 비밀번호<input type="password" name="cpw" autocomplete="current-password"></label>
       </div>
       <div id="ldNew" style="display:grid;gap:16px">
-        <label class="f"><span id="ldIdLabel">아이디</span><input type="text" name="nid" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="2자 이상"></label>
+        <label class="f" id="ldNidWrap"><span id="ldIdLabel">아이디</span><input type="text" name="nid" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="2자 이상"></label>
         <div class="row2">
           <label class="f"><span id="ldPwLabel">비밀번호</span><input type="password" name="npw" autocomplete="new-password" placeholder="6자 이상 권장"></label>
           <label class="f">비밀번호 확인<input type="password" name="npw2" autocomplete="new-password"></label>
@@ -896,6 +936,10 @@ function normalize(s) {
   return out;
 }
 
+/* 계정 서버(Supabase) 연결 정보. 비워 두면 이 기기에만 저장하는 방식으로 동작합니다.
+   url: 프로젝트 URL (https://xxxx.supabase.co) · key: anon/publishable 공개 키 (service_role 비밀 키는 절대 넣지 마세요) */
+const CLOUD = Object.assign({ url: 'https://spgjjsunubkqzlqukaae.supabase.co', key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwZ2pqc3VudWJrcXpscXVrYWFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ1MTM4MjAsImV4cCI6MjExMDA4OTgyMH0.xWdrtlcrLaty385lnyvLNZP-f2WvafrwUZA3Vrrj5Rc' }, window.ASSET_CLOUD || {});
+const cloudOn = !!(CLOUD.url && CLOUD.key);
 let state = null, firstRun = false;
 const readStored = () => { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { return null; } };
 const isLockedBlob = o => !!(o && o.enc);
@@ -938,7 +982,7 @@ const unitHint = n => (n ? '= ' + korPlain(n) : '');
 /* ============ Persistence ============ */
 let viewOnly = false;
 function save() {
-  if (viewOnly || (lock.enabled && !lock.key)) return;
+  if (viewOnly || (lock.enabled && !lock.key) || (cloudOn && !acct.key)) return;
   const cur = monthKey(), t = totals();
   state.history = state.history.filter(e => e.month !== cur);
   if (state.holdings.length) state.history.push({ month: cur, assets: Math.round(t.assets), debt: Math.round(t.debt), byCat: Object.fromEntries(CATS.map(c => [c.id, Math.round(t.byCat[c.id])])) });
@@ -957,7 +1001,7 @@ function route() {
   $$('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + tab));
   $$('[data-tab]').forEach(a => (a.dataset.tab === tab ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')));
   filterCat = tab === 'assets' && ALL.some(c => c.id === sub) ? sub : 'all';
-  document.title = (tab === 'assets' && filterCat !== 'all' ? catOf(filterCat).name : { home: '홈', assets: '자산', pension: '연금', kids: '아이자산', history: '기록', settings: '설정' }[tab]) + ' · 자산관리 대시보드';
+  document.title = '내 자산 · ' + (tab === 'assets' && filterCat !== 'all' ? catOf(filterCat).name : { home: '홈', assets: '자산', pension: '연금', kids: '아이자산', history: '기록', settings: '설정' }[tab]);
   if (tab === 'home') renderTrend(); else if (tab === 'assets') renderAssets(); else if (tab === 'pension') renderPension(); else if (tab === 'kids') renderKids();
   if (tab !== lastTab) window.scrollTo({ top: 0 });
   lastTab = tab;
@@ -985,7 +1029,7 @@ function renderHome() {
   renderGoal(t, s); renderTrend(); renderAlloc(t); renderInsights(t);
 }
 function deltaPill(d, base, label, invert = false) {
-  const p = base ? d / Math.abs(base) * 100 : 0, up = d >= 0, good = invert ? d <= 0 : up;
+  const p = base ? d / Math.abs(base) * 100 : 0, up = d >= 0, good = up;
   return `<span class="pill ${good ? 'up' : 'down'}"><span aria-hidden="true">${up ? '▲' : '▼'}</span><span class="sr-only">${up ? '증가' : '감소'}</span>${short(Math.abs(d), { won: true })} · ${pct(p)} <span style="color:var(--muted);font-weight:500">${label}</span></span>`;
 }
 function avgMonthly(s, n = 6) {
@@ -998,7 +1042,7 @@ function renderGoal(t, s) {
   if (!goal) { el.innerHTML = `<div class="eyebrow">목표 순자산</div><p style="color:var(--muted)">목표를 정하면 달성률과 예상 도달 시점을 알려드려요.</p><a class="btn" href="#settings">목표 정하기</a>`; return; }
   const p = Math.max(0, Math.min(100, t.net / goal * 100)), avg = avgMonthly(s);
   let eta;
-  if (t.net >= goal) eta = '<b>🎉 목표를 달성했어요!</b>';
+  if (t.net >= goal) eta = '<b>목표를 달성했어요</b>';
   else if (avg && avg > 0) {
     const months = Math.ceil((goal - t.net) / avg), d = new Date(); d.setMonth(d.getMonth() + months);
     const y = Math.floor(months / 12), mo = months % 12;
@@ -1224,7 +1268,7 @@ function renderPension() {
     <div class="chart mini-chart" id="pnChart"></div>`;
   const dday = Math.ceil((new Date(new Date().getFullYear(), 11, 31) - new Date()) / 864e5);
   let msg;
-  if (c.room <= 0) msg = '🎉 올해 세액공제 한도 900만원을 모두 채웠어요';
+  if (c.room <= 0) msg = '올해 세액공제 한도 900만원을 모두 채웠어요';
   else {
     msg = `연말까지 <b>${short(c.room, W)}</b> 더 납입하면 최대 <b>${short(c.room * c.rate, W)}</b>을 더 돌려받아요`;
     msg += c.savingsRoom > 0 ? `<div class="sub">연금저축은 ${short(Math.min(c.savingsRoom, c.room), W)}까지, 나머지는 IRP로 채우면 돼요</div>` : '<div class="sub">연금저축 한도(600만원)는 찼어요 · 나머지는 IRP로 납입하세요</div>';
@@ -1312,7 +1356,7 @@ function renderSettings() {
       `<div class="target-row" style="border-top:1px solid var(--line);margin-top:6px;padding-top:12px"><b>합계</b><b class="num" style="text-align:right;padding-right:10px" id="sumT"></b><span></span></div>`;
   }
   const el = $('#sumT'), bad = Math.abs(sumT - 100) > 0.01;
-  el.textContent = sumT + '%'; el.classList.toggle('down', bad); el.title = bad ? '합계를 100%로 맞춰 주세요' : '';
+  el.textContent = sumT + '%'; el.classList.toggle('bad', bad); el.title = bad ? '합계를 100%로 맞춰 주세요' : '';
 }
 
 /* ============ Kids (independent space) ============ */
@@ -1373,8 +1417,8 @@ function renderKids() {
     <div class="card-h"><div><h2>증여 공제 한도</h2><p>부모·조부모 증여 최근 10년 합산 · ${g.adult ? '성년 5,000만원' : '미성년 2,000만원'}</p></div>
       <button class="btn sm" data-kact="add-gift"><svg aria-hidden="true"><use href="#i-gift"/></svg>증여 기록</button></div>
     <div class="k">${g.over ? '한도 초과' : '세금 없이 더 줄 수 있는 금액'}</div>
-    <div class="big num ${g.over ? 'down' : ''}">${kor(g.over || g.left)}</div>
-    <div class="meter" role="progressbar" aria-label="증여 공제 한도 사용률" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(p)}"><div style="width:${p}%;${g.over ? 'background:var(--down)' : ''}"></div></div>
+    <div class="big num ${g.over ? 'bad' : ''}">${kor(g.over || g.left)}</div>
+    <div class="meter" role="progressbar" aria-label="증여 공제 한도 사용률" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(p)}"><div style="width:${p}%;${g.over ? 'background:var(--bad)' : ''}"></div></div>
     <div class="meter-labels num"><span>10년 합산 ${short(g.used, W)}</span><span>한도 ${short(g.limit, W)}</span></div>
     ${g.over ? `<div class="callout warnbox">한도를 ${short(g.over, W)} 넘었어요. 넘는 금액은 증여세 대상이에요 · 신고 기한은 증여한 달 말일부터 3개월이에요.</div>` : ''}
     <div class="goal-meta" style="margin-top:12px">
@@ -1480,7 +1524,7 @@ function renderChrome() {
   const dark = document.documentElement.dataset.theme === 'dark';
   $('#themeBtn').innerHTML = `<svg aria-hidden="true"><use href="#i-${dark ? 'sun' : 'moon'}"/></svg>`;
   $('#themeBtn').setAttribute('aria-label', dark ? '밝은 테마로 전환' : '어두운 테마로 전환');
-  document.querySelector('meta[name=theme-color]').content = dark ? '#0b0b0c' : '#f6f6f4';
+  document.querySelector('meta[name=theme-color]').content = dark ? '#0d0e0c' : '#f3f2ec';
 }
 function render() { renderChrome(); renderHome(); renderAssets(); renderPension(); renderKids(); renderHistory(); renderSettings(); renderSecurity(); }
 function commit() { save(); render(); }
@@ -1633,7 +1677,7 @@ function syncPaste() {
   $('#pasteSubmit').disabled = !ok.length;
   $('#pasteSubmit').textContent = ok.length ? `${ok.length}개 추가` : '추가';
   $('#pastePreview').innerHTML = !rows.length ? '붙여넣으면 미리보기가 표시돼요' :
-    `<div class="pr"><span>인식 <b>${ok.length}</b>개${bad ? ` · <span class="down">읽지 못한 줄 ${bad}개</span>` : ''}</span><b class="num">순 ${korPlain(ok.reduce((a, r) => a + (r.cat === 'debt' ? -r.amount : r.amount), 0))}</b></div>` +
+    `<div class="pr"><span>인식 <b>${ok.length}</b>개${bad ? ` · <span class="bad">읽지 못한 줄 ${bad}개</span>` : ''}</span><b class="num">순 ${korPlain(ok.reduce((a, r) => a + (r.cat === 'debt' ? -r.amount : r.amount), 0))}</b></div>` +
     (ok.some(r => r.guessed) ? '<div class="hint">분류를 알 수 없는 항목은 ‘기타’로 넣어요</div>' : '') +
     `<div class="hint">${ok.slice(0, 4).map(r => `${esc(r.name)} · ${catOf(r.cat).short} · ${korPlain(r.amount)}`).join('<br>')}${ok.length > 4 ? `<br>외 ${ok.length - 4}개` : ''}</div>`;
 }
@@ -1726,7 +1770,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'n' || e.key === 'N') { e.preventDefault(); openAdd(); }
   else if (e.key === '/') { e.preventDefault(); location.hash = '#assets'; setTimeout(() => $('#q').focus(), 0); }
   else if (e.key === 'h' || e.key === 'H') $('#hideBtn').click();
-  else if (e.key === 'l' || e.key === 'L') lockNow();
+  else if ((e.key === 'l' || e.key === 'L') && signedIn()) lockNow();
   else if ('123456'.includes(e.key) && e.key.length === 1) location.hash = '#' + TABS[+e.key - 1];
 });
 let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(route, 150); });
@@ -1740,6 +1784,7 @@ async function deriveKey(secret, salt, iter = lock.iter) {
 const secretOf = (id, pw) => id.trim().toLowerCase() + '\u0000' + pw;
 let writeChain = Promise.resolve();
 function persist() {
+  if (cloudOn) { if (acct.key) schedulePush(); return; }
   const json = JSON.stringify(state);
   if (!lock.enabled) { try { localStorage.setItem(KEY, json); } catch { toast('저장 공간이 부족해 저장하지 못했어요'); } return; }
   if (!lock.key) return;
@@ -1769,6 +1814,7 @@ function showLock({ title, desc, needId = true, submitLabel = '로그인', alt, 
     $$('dialog[open]').forEach(d => d.close());
     const scr = $('#lockScreen'), f = $('#lockForm'), el = f.elements;
     $('#lockTitle').textContent = title; $('#lockDesc').textContent = desc; $('#lockIdWrap').hidden = !needId;
+    $('#lockPw2Wrap').hidden = $('#lockKeepWrap').hidden = $('#lockNote').hidden = true;
     $('#lockSubmit').textContent = submitLabel; $('#lockErr').textContent = ''; el.lid.value = ''; el.lpw.value = '';
     $('#lockAlt').textContent = alt.label; $('#lockAlt').onclick = async () => { const r = await alt.fn(); if (r !== false) { finish(); resolve(r); } };
     scr.hidden = false; document.body.classList.add('locked');
@@ -1799,6 +1845,7 @@ function loginOwn() {
   });
 }
 async function lockNow() {
+  if (cloudOn) return cloudLogout();
   if (!lock.enabled || !lock.key || viewOnly) return;
   await writeChain;
   Object.assign(lock, { key: null, salt: null }); state = emptyState(); render();
@@ -1808,42 +1855,44 @@ async function lockNow() {
 // auto-lock after inactivity
 let lastActive = Date.now();
 ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(ev => document.addEventListener(ev, () => (lastActive = Date.now()), { passive: true }));
-function checkIdle() { const m = +state.settings.autolock || 0; if (lock.enabled && lock.key && !viewOnly && m && Date.now() - lastActive > m * 60000) lockNow(); }
+function checkIdle() { const m = +state.settings.autolock || 0; if (signedIn() && !acct.keep && !viewOnly && m && Date.now() - lastActive > m * 60000) lockNow(); }
 setInterval(checkIdle, 15000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) checkIdle(); });
 $('#lockBtn').addEventListener('click', lockNow);
 
 function renderSecurity() {
   const el = $('#securityCard'); if (!el) return;
-  $('#lockBtn').hidden = !(lock.enabled && lock.key) || viewOnly;
+  const lb = $('#lockBtn'); lb.hidden = !signedIn() || viewOnly;
+  if (cloudOn) { lb.className = 'btn sm'; lb.textContent = '로그아웃'; lb.title = `${acct.id || ''} 로그아웃 (L)`; lb.removeAttribute('aria-label'); return renderAccount(el); }
   if (!lock.enabled) {
     el.innerHTML = `<div class="card-h"><div><h2>로그인 잠금</h2><p>아이디·비밀번호를 정하면 앱을 열 때마다 로그인해야 내용을 볼 수 있어요. 데이터는 비밀번호로 암호화돼 이 기기에 저장돼요.</p></div></div>
       <button class="btn primary" data-lock="enable"><svg aria-hidden="true"><use href="#i-lock"/></svg>로그인 잠금 켜기</button>`;
     return;
   }
   const a = +state.settings.autolock || 0;
-  el.innerHTML = `<div class="card-h"><div><h2>로그인 잠금</h2><p>앱을 열 때마다 아이디·비밀번호가 필요해요. 데이터는 암호화돼 저장돼요.</p></div><span class="status-pill">🔒 사용 중</span></div>
+  el.innerHTML = `<div class="card-h"><div><h2>로그인 잠금</h2><p>앱을 열 때마다 아이디·비밀번호가 필요해요. 데이터는 암호화돼 저장돼요.</p></div><span class="status-pill">사용 중</span></div>
     <label class="f">자동 잠금<select id="autolockSel">${[[1, '1분'], [5, '5분'], [10, '10분'], [30, '30분'], [60, '1시간'], [0, '사용 안 함']].map(([v, l]) => `<option value="${v}" ${v === a ? 'selected' : ''}>${v ? l + ' 동안 사용하지 않으면 잠그기' : l}</option>`).join('')}</select></label>
     <div class="btn-row"><button class="btn" data-lock="now"><svg aria-hidden="true"><use href="#i-lock"/></svg>지금 잠그기</button><button class="btn" data-lock="change">아이디·비밀번호 변경</button><button class="btn danger" data-lock="disable">잠금 끄기</button></div>`;
 }
 let lockMode = 'enable';
 function openLockDlg(mode) {
   if (blocked()) return;
-  lockMode = mode; const f = $('#lockDlgForm').elements; ['cid', 'cpw', 'nid', 'npw', 'npw2'].forEach(n => (f[n].value = ''));
+  lockMode = mode; $('#ldCidWrap').hidden = $('#ldNidWrap').hidden = mode === 'cloudpw'; const f = $('#lockDlgForm').elements; ['cid', 'cpw', 'nid', 'npw', 'npw2'].forEach(n => (f[n].value = ''));
   $('#ldCur').hidden = mode === 'enable'; $('#ldNew').hidden = mode === 'disable'; $('#ldWarn').hidden = mode === 'disable'; $('#ldErr').textContent = '';
-  $('#lockDlgTitle').textContent = { enable: '로그인 잠금 켜기', change: '아이디·비밀번호 변경', disable: '잠금 끄기' }[mode];
-  $('#ldIdLabel').textContent = mode === 'change' ? '새 아이디' : '아이디'; $('#ldPwLabel').textContent = mode === 'change' ? '새 비밀번호' : '비밀번호';
-  $('#ldSubmit').textContent = { enable: '잠금 켜기', change: '변경', disable: '잠금 끄기' }[mode];
+  $('#lockDlgTitle').textContent = { enable: '로그인 잠금 켜기', change: '아이디·비밀번호 변경', disable: '잠금 끄기', cloudpw: '비밀번호 변경' }[mode];
+  $('#ldIdLabel').textContent = mode === 'change' ? '새 아이디' : '아이디'; $('#ldPwLabel').textContent = mode === 'enable' ? '비밀번호' : '새 비밀번호';
+  $('#ldSubmit').textContent = { enable: '잠금 켜기', change: '변경', disable: '잠금 끄기', cloudpw: '변경' }[mode];
   $('#ldSubmit').className = 'btn ' + (mode === 'disable' ? 'danger solid' : 'primary');
-  $('#lockDlg').showModal(); (mode === 'enable' ? f.nid : f.cid).focus();
+  $('#lockDlg').showModal(); (mode === 'enable' ? f.nid : mode === 'cloudpw' ? f.cpw : f.cid).focus();
 }
 $('#securityCard').addEventListener('click', e => {
   const m = e.target.closest('[data-lock]')?.dataset.lock; if (!m) return;
-  if (m === 'now') lockNow(); else openLockDlg(m);
+  if (m === 'now') lockNow(); else if (m === 'delete') cloudDelete(); else openLockDlg(m);
 });
 $('#securityCard').addEventListener('change', e => { if (e.target.id === 'autolockSel') { state.settings.autolock = +e.target.value; save(); toast(+e.target.value ? '자동 잠금 시간을 바꿨어요' : '자동 잠금을 껐어요'); } });
 $('#lockDlgForm').addEventListener('submit', async e => {
   e.preventDefault(); const f = $('#lockDlgForm').elements, err = m => ($('#ldErr').textContent = m);
+  if (lockMode === 'cloudpw') return cloudChangePw(f, err);
   if (lockMode !== 'enable') {
     if (!f.cid.value.trim() || !f.cpw.value) return err('현재 아이디와 비밀번호를 입력하세요');
     $('#ldSubmit').disabled = true; const ok = await tryUnlock(f.cid.value, f.cpw.value); $('#ldSubmit').disabled = false;
@@ -1862,6 +1911,189 @@ $('#lockDlgForm').addEventListener('submit', async e => {
   $('#ldSubmit').disabled = false; $('#lockDlg').close(); renderSecurity();
   toast(lockMode === 'enable' ? '로그인 잠금을 켰어요 · 다음부터 로그인해야 볼 수 있어요' : '아이디·비밀번호를 바꿨어요');
 });
+
+/* ============ Account sync (ID + password, end-to-end encrypted) ============
+   The server (Supabase, see supabase/setup.sql) only ever receives:
+     - the ID, - an auth token derived from the password, - the AES-GCM encrypted data.
+   PBKDF2(password, salt = SHA-256(id)) -> 64 bytes: first 32 = encryption key (never leaves the device), last 32 = auth token. */
+const acct = { id: null, key: null, auth: null, raw: null, rev: 0, dirty: false, busy: false, keep: false };
+const SESSION_KEY = 'asset-dashboard-session';
+const signedIn = () => (cloudOn ? !!acct.key : !!(lock.enabled && lock.key));
+const utf8 = t => new TextEncoder().encode(t);
+const cat = (...parts) => { const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0)); let o = 0; parts.forEach(p => { out.set(p, o); o += p.length; }); return out; };
+const normId = id => id.trim().toLowerCase();
+async function rpc(fn, body) {
+  const r = await fetch(CLOUD.url.replace(/\/+$/, '') + '/rest/v1/rpc/' + fn, { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: CLOUD.key, Authorization: 'Bearer ' + CLOUD.key }, body: JSON.stringify(body) });
+  if (r.status === 404) throw Object.assign(new Error('setup'), { setup: true });
+  if (!r.ok) throw new Error('http ' + r.status);
+  return r.json();
+}
+async function acctDerive(id, pw) {
+  const salt = new Uint8Array(await crypto.subtle.digest('SHA-256', utf8('asset-dashboard:' + id)));
+  const base = await crypto.subtle.importKey('raw', utf8(pw), 'PBKDF2', false, ['deriveBits']);
+  return new Uint8Array(await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: 310000, hash: 'SHA-256' }, base, 512));
+}
+const aesKey = raw => crypto.subtle.importKey('raw', raw.slice(0, 32), 'AES-GCM', false, ['encrypt', 'decrypt']);
+const authOf = raw => b64u(raw.slice(32));
+async function acctUse(id, raw) { Object.assign(acct, { id, raw, key: await aesKey(raw), auth: authOf(raw) }); }
+async function seal(obj, key) {
+  const bytes = utf8(JSON.stringify(obj)), body = canZip ? await deflate(bytes) : bytes, iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, cat(Uint8Array.of(canZip ? 1 : 0), body)));
+  return b64u(cat(iv, ct));
+}
+async function unseal(data, key) {
+  const bytes = unb64u(data), plain = new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: bytes.slice(0, 12) }, key, bytes.slice(12)));
+  return JSON.parse(new TextDecoder().decode(plain[0] === 1 ? await inflate(plain.slice(1)) : plain.slice(1)));
+}
+const readSession = () => { try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || localStorage.getItem(SESSION_KEY) || 'null'); } catch { return null; } };
+function writeSession() {
+  sessionStorage.removeItem(SESSION_KEY); localStorage.removeItem(SESSION_KEY);
+  (acct.keep ? localStorage : sessionStorage).setItem(SESSION_KEY, JSON.stringify({ id: acct.id, raw: b64u(acct.raw), keep: acct.keep }));
+}
+function clearSession() { sessionStorage.removeItem(SESSION_KEY); localStorage.removeItem(SESSION_KEY); }
+function setSync(s) {
+  const el = $('#syncStat'); el.hidden = !cloudOn || !acct.key; el.dataset.s = s;
+  const label = { saved: '저장됨', saving: '저장 중…', offline: '오프라인 · 연결되면 저장', error: '저장 실패' }[s];
+  el.querySelector('.lbl').textContent = (acct.id ? acct.id + ' · ' : '') + label; el.title = label;
+}
+let pushTimer;
+function schedulePush() { acct.dirty = true; setSync('saving'); clearTimeout(pushTimer); pushTimer = setTimeout(pushNow, 700); }
+async function pushNow() {
+  clearTimeout(pushTimer);
+  if (!acct.key || !acct.dirty) return;
+  if (acct.busy) { acct.again = true; return; }
+  acct.busy = true; acct.dirty = false; let retry = 0;
+  try {
+    const r = await rpc('vault_save', { p_id: acct.id, p_auth: acct.auth, p_data: await seal(state, acct.key), p_rev: acct.rev });
+    if (r.ok) { acct.rev = r.rev; setSync(acct.dirty ? 'saving' : 'saved'); }
+    else if (r.error === 'conflict') { acct.busy = false; return resolveConflict(); }
+    else if (r.error === 'too_large') { setSync('error'); toast('데이터가 너무 커서 저장하지 못했어요'); }
+    else { setSync('error'); toast('로그인이 만료됐어요 · 다시 로그인해 주세요'); acct.busy = false; return cloudLogout(true); }
+  } catch { acct.dirty = true; setSync('offline'); retry = 15000; }
+  acct.busy = false;
+  if (retry) pushTimer = setTimeout(pushNow, retry);
+  else if (acct.again || acct.dirty) { acct.again = false; schedulePush(); }
+}
+async function resolveConflict() {
+  const useRemote = await confirmDlg('다른 기기에서 먼저 수정했어요', '최신 내용을 불러오면 방금 이 기기에서 바꾼 내용은 사라져요. 어느 쪽을 남길까요?', '최신 내용 불러오기', '내 내용으로 덮어쓰기');
+  try {
+    const r = await rpc('vault_load', { p_id: acct.id, p_auth: acct.auth }); if (!r.ok) throw 0;
+    acct.rev = r.rev;
+    if (useRemote) { state = normalize(await unseal(r.data, acct.key)); acct.dirty = false; setSync('saved'); render(); route(); toast('최신 내용을 불러왔어요'); }
+    else { acct.dirty = true; pushNow(); }
+  } catch { acct.dirty = true; setSync('offline'); pushTimer = setTimeout(pushNow, 15000); }
+}
+async function pullLatest() {
+  if (!cloudOn || !acct.key || acct.dirty || acct.busy || viewOnly || document.querySelector('dialog[open]')) return;
+  try {
+    const r = await rpc('vault_load', { p_id: acct.id, p_auth: acct.auth });
+    if (!r.ok) { if (r.error === 'invalid') { toast('다른 기기에서 비밀번호가 바뀌었어요 · 다시 로그인해 주세요'); cloudLogout(true); } return; }
+    if (r.rev !== acct.rev && !acct.dirty) { state = normalize(await unseal(r.data, acct.key)); acct.rev = r.rev; render(); route(); toast('다른 기기에서 바꾼 내용을 불러왔어요'); }
+  } catch { /* offline: keep working */ }
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) pullLatest(); });
+window.addEventListener('online', () => { if (acct.dirty) pushNow(); });
+window.addEventListener('beforeunload', e => { if (cloudOn && (acct.dirty || acct.busy)) { e.preventDefault(); e.returnValue = ''; } });
+
+let localSeed = null; // data that was on this device before the account existed
+const hasData = s => !!(s && ((s.holdings || []).length || ((s.kids || {}).children || []).length));
+function cloudAuth(initialError = '') {
+  return new Promise(resolve => {
+    $$('dialog[open]').forEach(d => d.close());
+    const scr = $('#lockScreen'), f = $('#lockForm'), el = f.elements; let mode = 'login', fresh = false;
+    const setMode = m => {
+      mode = m; const up = m === 'signup';
+      $('#lockTitle').textContent = up ? '계정 만들기' : '내 자산';
+      $('#lockDesc').textContent = up ? '어느 기기에서든 같은 아이디로 로그인해 쓸 수 있어요' : '아이디와 비밀번호로 로그인하세요';
+      $('#lockIdWrap').hidden = false; $('#lockPw2Wrap').hidden = $('#lockNote').hidden = !up; $('#lockKeepWrap').hidden = false;
+      $('#lockSubmit').textContent = up ? '계정 만들기' : '로그인'; $('#lockAlt').textContent = up ? '이미 계정이 있어요 · 로그인' : '처음이신가요? 계정 만들기';
+      el.lpw.autocomplete = up ? 'new-password' : 'current-password'; $('#lockErr').textContent = '';
+    };
+    setMode('login'); el.lid.value = ''; el.lpw.value = ''; el.lpw2.value = ''; el.keep.checked = false; $('#lockErr').textContent = initialError;
+    $('#lockAlt').onclick = () => { setMode(mode === 'login' ? 'signup' : 'login'); el.lid.focus(); };
+    scr.hidden = false; document.body.classList.add('locked'); setTimeout(() => el.lid.focus(), 30);
+    const err = m => ($('#lockErr').textContent = m);
+    f.onsubmit = async e => {
+      e.preventDefault(); const id = normId(el.lid.value), pw = el.lpw.value, up = mode === 'signup';
+      if (!id || !pw) return err('아이디와 비밀번호를 입력하세요');
+      if (up) {
+        if (id.length < 2 || id.length > 32 || /\s/.test(id)) return err('아이디는 공백 없이 2~32자로 정해 주세요');
+        if (pw.length < 6) return err('비밀번호는 6자 이상으로 정해 주세요');
+        if (pw !== el.lpw2.value) return err('비밀번호 확인이 일치하지 않아요');
+      }
+      const label = $('#lockSubmit').textContent; $('#lockSubmit').disabled = true; $('#lockSubmit').textContent = '확인 중…'; err('');
+      try {
+        const raw = await acctDerive(id, pw), key = await aesKey(raw);
+        if (up) {
+          const seed = hasData(localSeed) ? localSeed : emptyState();
+          const r = await rpc('vault_signup', { p_id: id, p_auth: authOf(raw), p_data: await seal(seed, key) });
+          if (!r.ok) throw { code: r.error };
+          state = seed; acct.rev = r.rev || 1; fresh = !hasData(seed);
+          if (hasData(localSeed)) { localStorage.removeItem(KEY); localSeed = null; setTimeout(() => toast('이 기기에 있던 데이터를 계정으로 옮겼어요'), 400); }
+        } else {
+          const r = await rpc('vault_load', { p_id: id, p_auth: authOf(raw) });
+          if (!r.ok) throw { code: r.error };
+          state = normalize(await unseal(r.data, key)); acct.rev = r.rev;
+        }
+        await acctUse(id, raw); acct.keep = el.keep.checked; acct.dirty = false; writeSession();
+        scr.hidden = true; document.body.classList.remove('locked'); f.onsubmit = null; el.lpw.value = el.lpw2.value = '';
+        lastActive = Date.now(); setSync('saved'); resolve({ fresh });
+      } catch (x) {
+        el.lpw.value = ''; el.lpw2.value = '';
+        err(x && x.code === 'invalid' ? '아이디 또는 비밀번호가 맞지 않아요'
+          : x && x.code === 'locked' ? '여러 번 틀려서 잠겼어요 · 5분 뒤에 다시 시도해 주세요'
+          : x && x.code === 'exists' ? '이미 사용 중인 아이디예요'
+          : x && x.code === 'full' ? '더 이상 계정을 만들 수 없어요'
+          : x && x.setup ? '서버 설정이 아직 끝나지 않았어요 (setup.sql 실행 필요)'
+          : x && x.code ? '요청을 처리하지 못했어요' : '서버에 연결할 수 없어요 · 인터넷 연결을 확인해 주세요');
+        el.lpw.focus();
+      }
+      $('#lockSubmit').disabled = false; $('#lockSubmit').textContent = label;
+    };
+  });
+}
+async function cloudLogout(skipSave = false) {
+  if (!acct.key) return;
+  if (!skipSave && acct.dirty) { setSync('saving'); await pushNow(); if (acct.dirty && !(await confirmDlg('아직 저장되지 않았어요', '인터넷 연결이 없어 마지막 변경 내용이 서버에 저장되지 않았어요. 그래도 로그아웃할까요?', '로그아웃', '취소', true))) return; }
+  clearTimeout(pushTimer); clearSession(); Object.assign(acct, { id: null, key: null, auth: null, raw: null, rev: 0, dirty: false, busy: false, keep: false });
+  state = emptyState(); render(); setSync('saved');
+  const r = await cloudAuth(); render(); route(); if (r.fresh) welcome();
+}
+function renderAccount(el) {
+  $('#dataDesc').textContent = '데이터는 비밀번호로 암호화되어 서버에 저장되고, 로그인한 모든 기기에서 같은 내용을 볼 수 있어요.';
+  if (!acct.key) { el.innerHTML = ''; return; }
+  const a = +state.settings.autolock || 0;
+  el.innerHTML = `<div class="card-h"><div><h2>계정</h2><p><b style="color:var(--text)">${esc(acct.id)}</b> 로 로그인됨 · 수정하면 바로 서버에 저장돼요</p></div><span class="status-pill">연결됨</span></div>
+    ${acct.keep ? '<p class="hint" style="margin:0 0 4px">이 기기는 로그인 유지 중이라 자동 로그아웃을 하지 않아요.</p>'
+      : `<label class="f">자동 로그아웃<select id="autolockSel">${[[1, '1분'], [5, '5분'], [10, '10분'], [30, '30분'], [60, '1시간'], [0, '사용 안 함']].map(([v, l]) => `<option value="${v}" ${v === a ? 'selected' : ''}>${v ? l + ' 동안 사용하지 않으면' : l}</option>`).join('')}</select></label>`}
+    <div class="btn-row"><button class="btn" data-lock="now">로그아웃</button><button class="btn" data-lock="cloudpw">비밀번호 변경</button><button class="btn danger" data-lock="delete">계정 삭제</button></div>`;
+}
+async function cloudChangePw(f, err) {
+  const pw = f.npw.value;
+  if (!f.cpw.value) return err('현재 비밀번호를 입력하세요');
+  if (pw.length < 6) return err('새 비밀번호는 6자 이상으로 정해 주세요');
+  if (pw !== f.npw2.value) return err('비밀번호 확인이 일치하지 않아요');
+  $('#ldSubmit').disabled = true; $('#ldSubmit').textContent = '변경 중…';
+  try {
+    if (authOf(await acctDerive(acct.id, f.cpw.value)) !== acct.auth) { f.cpw.value = ''; f.cpw.focus(); throw { msg: '현재 비밀번호가 맞지 않아요' }; }
+    if (acct.dirty || acct.busy) { await pushNow(); if (acct.dirty) throw { msg: '저장되지 않은 변경이 있어요 · 인터넷 연결을 확인해 주세요' }; }
+    const raw = await acctDerive(acct.id, pw), key = await aesKey(raw);
+    const r = await rpc('vault_change', { p_id: acct.id, p_auth: acct.auth, p_new_auth: authOf(raw), p_data: await seal(state, key), p_rev: acct.rev });
+    if (!r.ok) throw { msg: r.error === 'conflict' ? '다른 기기에서 내용이 바뀌었어요 · 화면을 새로 고친 뒤 다시 시도해 주세요' : '비밀번호를 바꾸지 못했어요' };
+    await acctUse(acct.id, raw); acct.rev = r.rev; writeSession();
+    $('#lockDlg').close(); toast('비밀번호를 바꿨어요 · 다른 기기에서는 새 비밀번호로 다시 로그인해 주세요');
+  } catch (x) { err(x && x.msg ? x.msg : '서버에 연결할 수 없어요'); }
+  $('#ldSubmit').disabled = false; $('#ldSubmit').textContent = '변경';
+}
+async function cloudDelete() {
+  if (!(await confirmDlg('계정 삭제', `'${acct.id}' 계정과 서버에 저장된 모든 데이터를 삭제해요. 되돌릴 수 없으니 필요하면 먼저 백업 파일을 저장하세요.`, '계정 삭제', '취소', true))) return;
+  try { const r = await rpc('vault_delete', { p_id: acct.id, p_auth: acct.auth }); if (!r.ok) throw 0; } catch { return toast('계정을 삭제하지 못했어요 · 잠시 후 다시 시도해 주세요'); }
+  acct.dirty = false; toast('계정을 삭제했어요'); cloudLogout(true);
+}
+function welcome() {
+  confirmDlg('반가워요! 내 자산을 한눈에 정리해 볼까요?', `예시 데이터로 먼저 둘러보거나, 바로 내 자산을 입력할 수 있어요. ${cloudOn ? '데이터는 암호화되어 내 계정에 저장돼요.' : '데이터는 이 기기에만 저장돼요.'}`, '예시로 둘러보기', '직접 입력하기')
+    .then(ok => { if (ok) { state = sampleState(); commit(); toast('예시 데이터예요 · 설정에서 언제든 초기화할 수 있어요'); } else { location.hash = '#assets'; openEdit(); } });
+}
 
 /* ============ Share link (snapshot in URL fragment, never sent to the server) ============ */
 function blocked() { if (viewOnly) { toast('공유 보기에서는 수정할 수 없어요 · 내 기기에 저장하면 수정할 수 있어요'); return true; } return false; }
@@ -1930,6 +2162,7 @@ async function loadShared() {
 }
 $('#shareClose').addEventListener('click', () => { sessionStorage.removeItem(SHARE_KEY); location.replace(location.pathname + location.search + '#home'); location.reload(); });
 $('#shareImport').addEventListener('click', async () => {
+  if (cloudOn) return toast('닫고 로그인한 뒤, 보낸 사람에게 백업 파일을 받아 복원해 주세요');
   if (lock.enabled && !lock.key) return toast('이 기기에 잠긴 내 데이터가 있어요 · 닫고 로그인한 뒤에 다시 시도해 주세요');
   const mine = lock.key ? lockedPlainState : JSON.parse(localStorage.getItem(KEY) || 'null');
   const hasMine = mine && ((mine.holdings || []).length || ((mine.kids || {}).children || []).length);
@@ -1957,15 +2190,25 @@ function enterShare(shared) {
     });
     if (p) enterShare(p);
   } else if (shared) enterShare(shared);
-  if (!viewOnly && lock.enabled && !lock.key) {
+  if (cloudOn && !viewOnly) {
+    localSeed = isLockedBlob(readStored()) ? null : state; state = emptyState(); firstRun = false;
+    const sess = readSession(); let ok = false, msg = '';
+    if (sess && sess.id && sess.raw) {
+      try {
+        const raw = unb64u(sess.raw), r = await rpc('vault_load', { p_id: sess.id, p_auth: authOf(raw) });
+        if (r.ok) { await acctUse(sess.id, raw); acct.keep = !!sess.keep; state = normalize(await unseal(r.data, acct.key)); acct.rev = r.rev; ok = true; setSync('saved'); }
+        else { clearSession(); msg = r.error === 'locked' ? '여러 번 틀려서 잠겼어요 · 5분 뒤에 다시 시도해 주세요' : '다시 로그인해 주세요'; }
+      } catch (x) { msg = x && x.setup ? '서버 설정이 아직 끝나지 않았어요 (setup.sql 실행 필요)' : '서버에 연결할 수 없어요 · 인터넷 연결을 확인해 주세요'; }
+    }
+    if (!ok) { const r = await cloudAuth(msg); firstRun = r.fresh; }
+  } else if (!viewOnly && lock.enabled && !lock.key) {
     const r = await loginOwn();
     if (r === 'reset') firstRun = true;
   }
-  save(); render(); route();
-  if (firstRun && !viewOnly) {
-    confirmDlg('반가워요! 내 자산을 한눈에 정리해 볼까요?', '예시 데이터로 먼저 둘러보거나, 바로 내 자산을 입력할 수 있어요. 데이터는 이 기기에만 저장돼요.', '예시로 둘러보기', '직접 입력하기')
-      .then(ok => { if (ok) { state = sampleState(); commit(); toast('예시 데이터예요 · 설정에서 언제든 초기화할 수 있어요'); } else { location.hash = '#assets'; openEdit(); } });
-  }
+  if (cloudOn && viewOnly) $('#shareImport').hidden = true;
+  if (!cloudOn) save(); // with an account, only real edits are written (opening the app must not bump the revision)
+  render(); route(); document.body.classList.remove('booting');
+  if (firstRun && !viewOnly) welcome();
 })();
 </script>
 </body>
