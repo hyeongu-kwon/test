@@ -45,6 +45,7 @@
 
 **다른 Supabase 프로젝트에 연결하려면**
 1. SQL Editor에 `supabase/setup.sql` 내용을 붙여넣고 실행합니다.
+   시세 조회 함수는 [`supabase/functions/quote/README.md`](supabase/functions/quote/README.md)대로 Edge Functions에 배포합니다.
 2. Project Settings → API에서 Project URL과 **publishable(anon) 공개 키**를 복사해 `CLOUD`에 넣습니다.
 3. `service_role`(secret) 키는 절대 넣지 마세요.
 4. 값을 비워 두면 서버 없이 기기 안에서만 동작합니다.

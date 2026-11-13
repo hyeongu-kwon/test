@@ -45,6 +45,7 @@ Sign up with an ID and password to view and edit the same data from a PC or a ph
 
 **To use a different Supabase project**
 1. Paste the contents of `supabase/setup.sql` into the SQL Editor and run it.
+   Deploy the quote function as described in [`supabase/functions/quote/README.md`](supabase/functions/quote/README.md).
 2. In Project Settings → API, copy the Project URL and the **publishable (anon) public key** into `CLOUD`.
 3. Never put the `service_role` (secret) key in the app.
 4. Leave the values empty to run without a server, with data kept only on the device.
