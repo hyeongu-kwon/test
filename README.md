@@ -9,6 +9,8 @@
 
 수정 사항은 작업 브랜치 → PR → `master` Merge 순서로 반영되며, Merge 후 1~2분 안에 사이트에 나타납니다.
 
+🇺🇸 English documentation: [README.en.md](README.en.md)
+
 ![자산관리 홈 화면](docs/screenshots/desktop-home.png)
 
 ---
