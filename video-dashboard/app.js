@@ -476,32 +476,20 @@ function openUpload() {
 $('#btn-upload').addEventListener('click', openUpload);
 
 function renderQueue() {
-  // 다시 그려도 입력 중이던 제목 칸의 커서가 사라지지 않도록 기억해 둡니다.
-  const active = document.activeElement;
-  const focused = active && active.closest && active.closest('#queue li') && active.tagName === 'INPUT'
-    ? { i: active.closest('li').dataset.i, start: active.selectionStart, end: active.selectionEnd } : null;
-
-  queueEl.innerHTML = state.queue.map((q, i) => {
-    const locked = q.status === 'uploading' || q.status === 'done';
-    return `
+  queueEl.innerHTML = state.queue.map((q, i) => `
     <li data-i="${i}">
       <div class="q-thumb"></div>
       <div class="q-main">
-        <label>제목<input value="${esc(q.title)}" maxlength="120" placeholder="영상 제목을 입력하세요" enterkeyhint="done" ${locked ? 'disabled' : ''}></label>
+        <input value="${esc(q.title)}" maxlength="120" aria-label="제목" ${q.status !== 'ready' ? 'disabled' : ''}>
         ${q.status === 'uploading' ? `<progress max="1" value="${q.progress}"></progress>` : ''}
         <span class="q-status ${q.status === 'error' ? 'bad' : q.status === 'done' ? 'ok' : ''}">${esc(q.message)}</span>
       </div>
-      ${locked ? '<span></span>' : '<button class="icon-btn" type="button" data-remove aria-label="목록에서 빼기">✕</button>'}
-    </li>`;
-  }).join('');
+      ${q.status === 'ready' || q.status === 'error' ? '<button class="icon-btn" type="button" data-remove aria-label="목록에서 빼기">✕</button>' : '<span></span>'}
+    </li>`).join('');
   $$('li', queueEl).forEach((li, i) => {
     const q = state.queue[i];
     if (q.thumbUrl) $('.q-thumb', li).style.backgroundImage = `url("${q.thumbUrl}")`;
   });
-  if (focused) {
-    const input = $(`li[data-i="${focused.i}"] input`, queueEl);
-    if (input && !input.disabled) { input.focus(); try { input.setSelectionRange(focused.start, focused.end); } catch {} }
-  }
   $('#upload-submit').disabled = state.uploading || !state.queue.some((q) => q.status === 'ready');
 }
 async function addFiles(files) {
@@ -528,7 +516,6 @@ $('#file-input').addEventListener('change', (e) => { addFiles([...e.target.files
 ['dragenter', 'dragover'].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add('over'); }));
 ['dragleave', 'drop'].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.remove('over'); }));
 drop.addEventListener('drop', (e) => addFiles([...e.dataTransfer.files]));
-queueEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); e.target.blur(); } });
 queueEl.addEventListener('input', (e) => { const li = e.target.closest('li'); if (li) state.queue[li.dataset.i].title = e.target.value; });
 queueEl.addEventListener('click', (e) => {
   const li = e.target.closest('li');
