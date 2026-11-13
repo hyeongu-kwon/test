@@ -292,6 +292,7 @@
   .tab { white-space: nowrap; }
   .top-actions { display: flex; gap: 8px; align-items: center; }
   .sync { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+  .quote-note { color: var(--muted); font-size: 12.5px; }
   .sync::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--good); }
   .sync[data-s=saving]::before { background: var(--warn); }
   .sync[data-s=offline]::before, .sync[data-s=error]::before { background: var(--bad); }
@@ -633,9 +634,13 @@
           <label><input type="radio" name="mode" value="qty"><span class="c">수량 × 현재가</span></label></div></fieldset>
       </div>
       <div id="amountWrap"><label class="f"><span id="amountLabel">평가금액</span><input type="text" inputmode="decimal" name="amount" class="money" autocomplete="off" placeholder="0"><span class="hint" data-hint="amount"></span></label></div>
+      <div id="tickerWrap" class="row2" hidden>
+        <label class="f">종목코드 · 심볼<input type="text" name="ticker" maxlength="10" autocomplete="off" autocapitalize="characters" placeholder="005930 · VOO · BTC"><span class="hint" id="tickerHint">국내 6자리 코드, 미국 티커, 코인 심볼을 넣으면 현재가를 자동으로 가져와요</span></label>
+        <label class="f">평균 매수 단가<input type="text" inputmode="decimal" name="avg" class="money" autocomplete="off" placeholder="내가 산 평균 가격"><span class="hint" data-hint="avg"></span></label>
+      </div>
       <div id="qtyWrap" class="row2" hidden>
         <label class="f">수량<input type="text" inputmode="decimal" name="qty" autocomplete="off" placeholder="0"></label>
-        <label class="f"><span id="priceLabel">현재가</span><input type="text" inputmode="decimal" name="price" class="money" autocomplete="off" placeholder="0"></label>
+        <label class="f"><span id="priceLabel">현재가</span><input type="text" inputmode="decimal" name="price" class="money" autocomplete="off" placeholder="자동 조회 실패 시 직접 입력"></label>
       </div>
       <label class="f" id="costWrap"><span id="costLabel">투자 원금 (선택)</span><input type="text" inputmode="decimal" name="cost" class="money" autocomplete="off" placeholder="입력하면 수익률을 계산해요"><span class="hint" data-hint="cost"></span></label>
       <label class="f">메모 (선택)<input type="text" name="memo" maxlength="80" autocomplete="off" placeholder="예: 키움증권, 만기 2027.03"></label>
@@ -845,7 +850,50 @@ const KTYPES = [{ id: 'deposit', name: '예·적금' }, { id: 'stock', name: '�
 
 /* ============ Calculations ============ */
 const fxOf = (h, s) => (h.cur === 'USD' ? (+s.settings.fx || 0) : 1);
-const rawValue = h => (h.mode === 'qty' ? (+h.qty || 0) * (+h.price || 0) : +h.amount || 0);
+/* Live quotes: fetched from public endpoints, cached on this device only (never part of the synced data). */
+const QUOTE_KEY = 'asset-dashboard-quotes';
+let quotes = (() => { try { return JSON.parse(localStorage.getItem(QUOTE_KEY) || '{}'); } catch { return {}; } })();
+let quoteState = null; // { ok, fail, at } after the last refresh
+const kindOf = (cat, t) => (cat === 'crypto' ? 'crypto' : /^\d{6}$/.test(t) ? 'kr' : 'us');
+const quoteKey = h => (h.ticker ? kindOf(h.cat, h.ticker) + ':' + h.ticker : null);
+const liveOf = h => { const k = quoteKey(h); return k && quotes[k] ? quotes[k] : null; };
+const unitPrice = h => { const q = liveOf(h); return q ? q.p : (+h.price || 0); };
+async function fetchQuote(key) {
+  const i = key.indexOf(':'), kind = key.slice(0, i), sym = key.slice(i + 1), signal = AbortSignal.timeout(8000);
+  let p;
+  if (kind === 'crypto') { // Upbit public ticker, KRW markets
+    const j = await (await fetch('https://api.upbit.com/v1/ticker?markets=KRW-' + encodeURIComponent(sym), { signal })).json();
+    p = +j[0].trade_price;
+  } else if (kind === 'kr') { // Naver Finance realtime (KRX codes)
+    const j = await (await fetch('https://polling.finance.naver.com/api/realtime?query=SERVICE_ITEM:' + encodeURIComponent(sym), { signal })).json();
+    p = +j.result.areas[0].datas[0].nv;
+  } else { // Stooq CSV (US tickers, USD)
+    const lines = (await (await fetch('https://stooq.com/q/l/?s=' + encodeURIComponent(sym.toLowerCase()) + '.us&f=sd2t2ohlcv&h&e=csv', { signal })).text()).trim().split(/\r?\n/);
+    p = +lines[1].split(',')[6];
+  }
+  if (!(p > 0)) throw new Error('no price');
+  return { p, t: Date.now() };
+}
+let quoteBusy = false;
+async function refreshQuotes() {
+  if (quoteBusy || viewOnly) return;
+  const keys = [...new Set(state.holdings.filter(h => h.mode === 'qty' && h.ticker).map(quoteKey))];
+  if (!keys.length) { quoteState = null; return; }
+  quoteBusy = true;
+  try {
+    const res = await Promise.allSettled(keys.map(fetchQuote));
+    res.forEach((r, i) => { if (r.status === 'fulfilled') quotes[keys[i]] = r.value; });
+    quoteState = { ok: res.filter(r => r.status === 'fulfilled').length, fail: res.filter(r => r.status === 'rejected').length, at: Date.now() };
+    try { localStorage.setItem(QUOTE_KEY, JSON.stringify(quotes)); } catch { /* storage full: keep in memory */ }
+    if (!document.querySelector('dialog[open]')) render();
+  } finally { quoteBusy = false; }
+}
+const quoteNote = () => {
+  if (!quoteState) return '';
+  const t = new Date(quoteState.at).toTimeString().slice(0, 5);
+  return `<span class="quote-note">시세 ${quoteState.ok}개 자동 갱신${quoteState.fail ? ` · ${quoteState.fail}개 실패(직접 입력 가격 사용)` : ''} · ${t}</span>`;
+};
+const rawValue = h => (h.mode === 'qty' ? (+h.qty || 0) * unitPrice(h) : +h.amount || 0);
 const valueKRW = (h, s = state) => rawValue(h) * fxOf(h, s);
 const costKRW = (h, s = state) => (h.cost == null ? null : h.cost * fxOf(h, s));
 function totalsOf(s) {
@@ -927,6 +975,7 @@ function normalize(s) {
     cur: h.cur === 'USD' ? 'USD' : 'KRW', mode: h.mode === 'qty' ? 'qty' : 'amount',
     amount: +h.amount || 0, qty: h.qty == null ? null : +h.qty, price: h.price == null ? null : +h.price,
     cost: h.cost == null || h.cost === '' ? null : +h.cost, memo: String(h.memo || ''),
+    ticker: h.ticker ? String(h.ticker).trim().toUpperCase() : null, avg: h.avg == null || h.avg === '' ? null : +h.avg,
     pType: PTYPES.some(p => p.id === h.pType) ? h.pType : 'savings',
     contrib: h.contrib == null || h.contrib === '' ? null : +h.contrib, monthly: +h.monthly || 0,
   }));
@@ -1214,7 +1263,7 @@ function renderAssets() {
   const counts = Object.fromEntries(ALL.map(c => [c.id, state.holdings.filter(h => h.cat === c.id).length]));
   $('#catChips').innerHTML = [`<a class="chip" href="#assets" ${filterCat === 'all' ? 'aria-current="page"' : ''}>전체 <span class="n">${state.holdings.length}</span></a>`,
     ...ALL.map(c => `<a class="chip" href="#assets/${c.id}" ${filterCat === c.id ? 'aria-current="page"' : ''}><span class="swatch" style="background:var(${c.color})"></span>${c.short}${counts[c.id] ? ` <span class="n">${counts[c.id]}</span>` : ''}</a>`)].join('');
-  $('#assetSummary').innerHTML = filterCat === 'all' && state.holdings.length ? `<span>자산 <b>${short(t.assets, { won: true })}</b></span><span>부채 <b>${short(t.debt, { won: true })}</b></span><span>순자산 <b>${short(t.net, { won: true })}</b></span>` : '';
+  $('#assetSummary').innerHTML = filterCat === 'all' && state.holdings.length ? `<span>자산 <b>${short(t.assets, { won: true })}</b></span><span>부채 <b>${short(t.debt, { won: true })}</b></span><span>순자산 <b>${short(t.net, { won: true })}</b></span>${quoteNote()}` : '';
   if (!state.holdings.length && filterCat === 'all') {
     $('#assetList').innerHTML = `<div class="card empty"><h3>아직 등록된 자산이 없어요</h3><p>통장, 주식, 부동산, 대출까지 하나씩 추가해 보세요.</p>
       <div class="btns"><button class="btn primary" data-act="add">${plusIcon}자산 추가</button><button class="btn" data-act="paste"><svg aria-hidden="true"><use href="#i-paste"/></svg>엑셀 붙여넣기</button><button class="btn ghost" data-act="sample">예시 보기</button></div></div>`;
@@ -1308,7 +1357,12 @@ function renderPension() {
 
 function itemRow(h, isDebt) {
   const v = valueKRW(h), c = costKRW(h), meta = [];
-  if (h.mode === 'qty') meta.push(`${(+h.qty).toLocaleString('ko-KR', { maximumFractionDigits: 8 })}${h.cat === 'stock' || h.cat === 'isa' || h.type === 'stock' ? '주' : '개'} × ${h.cur === 'USD' ? '$' + (+h.price).toLocaleString('en-US') : (hidden() ? MASK : (+h.price).toLocaleString('ko-KR') + '원')}`);
+  if (h.mode === 'qty') {
+    const up = unitPrice(h), live = liveOf(h), unit = h.cat === 'stock' || h.cat === 'isa' || h.type === 'stock' ? '주' : '개';
+    const money = x => (h.cur === 'USD' ? '$' + x.toLocaleString('en-US', { maximumFractionDigits: 2 }) : (hidden() ? MASK : x.toLocaleString('ko-KR') + '원'));
+    meta.push(`${(+h.qty).toLocaleString('ko-KR', { maximumFractionDigits: 8 })}${unit} × ${money(up)}${live ? ' · 자동 시세' : h.ticker ? ' · 직접 입력' : ''}`);
+    if (h.avg) meta.push(`평단 ${money(+h.avg)}`);
+  }
   else if (h.cur === 'USD') meta.push(hidden() ? MASK : '$' + (+h.amount).toLocaleString('en-US'));
   if (h.cat === 'pension') {
     meta.unshift(ptName(h.pType));
@@ -1567,12 +1621,13 @@ $('#catRadios').innerHTML = ALL.map((c, i) => `<label><input type="radio" name="
 function openEdit(id = null, cat = ctxCat()) {
   if (blocked()) return; 
   editingId = id;
-  const f = EF(), h = id ? state.holdings.find(x => x.id === id) : { name: '', cat, cur: 'KRW', mode: cat === 'crypto' ? 'qty' : 'amount', amount: null, qty: null, price: null, cost: null, memo: '', pType: 'savings', contrib: null, monthly: 0 };
+  const f = EF(), h = id ? state.holdings.find(x => x.id === id) : { name: '', cat, cur: 'KRW', mode: cat === 'crypto' ? 'qty' : 'amount', amount: null, qty: null, price: null, cost: null, memo: '', ticker: null, avg: null, pType: 'savings', contrib: null, monthly: 0 };
   if (!h) return;
   $('#editTitle').textContent = id ? '자산 수정' : '자산 추가';
   f.title.value = h.name; f.cat.value = h.cat; f.cur.value = h.cur; f.mode.value = h.mode;
   f.amount.value = h.mode === 'amount' ? fmtInput(h.amount) : ''; f.qty.value = fmtInput(h.qty); f.price.value = fmtInput(h.price);
   f.cost.value = fmtInput(h.cost); f.memo.value = h.memo;
+  f.ticker.value = h.ticker || ''; f.avg.value = fmtInput(h.avg);
   f.pType.value = h.pType || 'savings'; f.contrib.value = fmtInput(h.contrib); f.monthly.value = fmtInput(h.monthly || '');
   $('#editTitle').textContent = (h.cat === 'pension' ? (id ? '연금 계좌 수정' : '연금 계좌 추가') : (id ? '자산 수정' : '자산 추가'));
   $('#editDelete').hidden = !id;
@@ -1581,15 +1636,23 @@ function openEdit(id = null, cat = ctxCat()) {
 }
 function syncEdit() {
   const f = EF(), usd = f.cur.value === 'USD', qty = f.mode.value === 'qty', debt = f.cat.value === 'debt', rate = +state.settings.fx || 0;
-  $('#amountWrap').hidden = qty; $('#qtyWrap').hidden = !qty; $('#costWrap').hidden = debt;
+  $('#amountWrap').hidden = qty; $('#qtyWrap').hidden = !qty; $('#tickerWrap').hidden = !qty; $('#costWrap').hidden = debt || qty;
+  const tk = f.ticker.value.trim().toUpperCase(), q = tk ? quotes[kindOf(f.cat.value, tk) + ':' + tk] : null;
+  $('#priceLabel').textContent = q ? '현재가 · 자동' : '현재가 (직접 입력)';
+  f.price.placeholder = q ? '' : '자동 조회 실패 시 직접 입력';
+  $('#tickerHint').textContent = !tk ? '국내 6자리 코드, 미국 티커, 코인 심볼을 넣으면 현재가를 자동으로 가져와요'
+    : q ? '시세를 자동으로 가져왔어요' : '아직 시세를 가져오지 못했어요 · 현재가를 직접 입력할 수 있어요';
+  $('[data-hint=avg]').textContent = usd ? '' : unitHint(parseNum(f.avg.value));
+  if (q) { f.price.value = fmtInput(q.p); f.price.readOnly = true; } else f.price.readOnly = false;
   const pen = f.cat.value === 'pension'; $('#pensionWrap').hidden = !pen; $('#contribWrap').hidden = f.pType.value === 'db';
   $('[data-hint=contrib]').textContent = unitHint(parseNum(f.contrib.value)) || '세액공제 계산용';
   $('[data-hint=monthly]').textContent = unitHint(parseNum(f.monthly.value)) || '자동이체·회사 적립 · 은퇴 예상용';
   $('#amountLabel').textContent = (debt ? '남은 금액' : '평가금액') + (usd ? ' ($)' : ' (원)');
-  $('#priceLabel').textContent = '현재가' + (usd ? ' ($)' : ' (원)');
+  if (!q) $('#priceLabel').textContent = '현재가 (직접 입력)' + (usd ? ' ($)' : ' (원)'); else $('#priceLabel').textContent = '현재가 · 자동' + (usd ? ' ($)' : ' (원)');
   $('#costLabel').textContent = '투자 원금 (선택' + (usd ? ', $' : '') + ')';
-  const amount = qty ? (parseNum(f.qty.value) || 0) * (parseNum(f.price.value) || 0) : parseNum(f.amount.value) || 0;
-  const krw = amount * (usd ? rate : 1), cost = parseNum(f.cost.value);
+  const unit = q ? q.p : parseNum(f.price.value) || 0, avg = parseNum(f.avg.value);
+  const amount = qty ? (parseNum(f.qty.value) || 0) * unit : parseNum(f.amount.value) || 0;
+  const krw = amount * (usd ? rate : 1), cost = qty ? (avg ? (parseNum(f.qty.value) || 0) * avg : null) : parseNum(f.cost.value);
   $('[data-hint=amount]').textContent = usd ? '' : unitHint(parseNum(f.amount.value));
   $('[data-hint=cost]').textContent = usd ? '' : unitHint(cost);
   let html = `<div class="pr"><span style="color:var(--text-2)">${debt ? '부채' : '평가금액'}${usd ? ` <span class="hint">$${amount.toLocaleString('en-US', { maximumFractionDigits: 2 })} × ${rate.toLocaleString()}원</span>` : ''}</span><b class="num">${korPlain(krw)}</b></div>`;
@@ -1612,13 +1675,14 @@ $('#editForm').addEventListener('submit', e => {
   const h = {
     id: editingId || uid(), name, cat: f.cat.value, cur: f.cur.value, mode: f.mode.value,
     amount: qty ? 0 : parseNum(f.amount.value) || 0, qty: qty ? parseNum(f.qty.value) || 0 : null, price: qty ? parseNum(f.price.value) || 0 : null,
-    cost: f.cat.value === 'debt' ? null : parseNum(f.cost.value), memo: f.memo.value.trim(),
+    cost: f.cat.value === 'debt' ? null : qty ? (parseNum(f.avg.value) ? (parseNum(f.qty.value) || 0) * parseNum(f.avg.value) : null) : parseNum(f.cost.value), memo: f.memo.value.trim(),
+    ticker: qty && f.ticker.value.trim() ? f.ticker.value.trim().toUpperCase() : null, avg: qty ? parseNum(f.avg.value) || null : null,
     pType: f.pType.value || 'savings', contrib: f.cat.value === 'pension' && f.pType.value !== 'db' ? parseNum(f.contrib.value) : null,
     monthly: f.cat.value === 'pension' ? parseNum(f.monthly.value) || 0 : 0,
   };
   const wasEdit = !!editingId;
   if (wasEdit) state.holdings = state.holdings.map(x => x.id === editingId ? h : x); else state.holdings.push(h);
-  $('#editDlg').close(); commit(); toast(wasEdit ? `'${name}' 수정했어요` : `'${name}' 추가했어요`);
+  $('#editDlg').close(); commit(); toast(wasEdit ? `'${name}' 수정했어요` : `'${name}' 추가했어요`); refreshQuotes();
 });
 $('#editDelete').addEventListener('click', () => { const id = editingId; $('#editDlg').close(); removeHolding(id); });
 function removeHolding(id) {
@@ -2124,6 +2188,7 @@ async function decodeShare(code, pw = '') {
 function sharePayload(withKids, withMemo) {
   const c = JSON.parse(JSON.stringify(state));
   c.settings.hide = false;
+  c.holdings.forEach(h => { if (h.mode === 'qty') { h.price = unitPrice(h); delete h.ticker; } }); // freeze prices in the snapshot
   if (!withKids) c.kids = emptyKids();
   if (!withMemo) { c.holdings.forEach(h => (h.memo = '')); c.kids.holdings.forEach(h => (h.memo = '')); c.kids.gifts.forEach(g => (g.memo = '')); }
   c.holdings.forEach(h => { for (const k in h) if (h[k] === null || h[k] === '' || h[k] === 0 && k !== 'amount') delete h[k]; });
@@ -2208,6 +2273,9 @@ function enterShare(shared) {
   if (cloudOn && viewOnly) $('#shareImport').hidden = true;
   if (!cloudOn) save(); // with an account, only real edits are written (opening the app must not bump the revision)
   render(); route(); document.body.classList.remove('booting');
+  refreshQuotes();
+  setInterval(refreshQuotes, 5 * 60 * 1000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshQuotes(); });
   if (firstRun && !viewOnly) welcome();
 })();
 </script>
