@@ -867,6 +867,13 @@ const liveOf = h => { const k = quoteKey(h); return k && quotes[k] ? quotes[k] :
 const unitPrice = h => { const q = liveOf(h); return q ? q.p : (+h.price || 0); };
 async function fetchQuote(key) {
   const i = key.indexOf(':'), kind = key.slice(0, i), sym = key.slice(i + 1), signal = AbortSignal.timeout(8000);
+  if (cloudOn) { // account mode: the Supabase Edge Function looks the price up server-side (supabase/functions/quote)
+    const r = await fetch(CLOUD.url.replace(/\/+$/, '') + '/functions/v1/quote?kind=' + kind + '&sym=' + encodeURIComponent(sym),
+      { signal, headers: { apikey: CLOUD.key, Authorization: 'Bearer ' + CLOUD.key } });
+    const j = await r.json();
+    if (!j.ok || !(j.p > 0)) throw new Error('quote unavailable');
+    return { p: +j.p, t: Date.now() };
+  }
   let p;
   if (kind === 'crypto') { // Upbit public ticker, KRW markets
     const j = await (await fetch('https://api.upbit.com/v1/ticker?markets=KRW-' + encodeURIComponent(sym), { signal })).json();
