@@ -233,7 +233,7 @@ function render() {
 
   // 카드
   const list = filtered();
-  $('#grid').innerHTML = list.map((v) => `
+  const gridHtml = list.map((v) => `
     <div class="card" role="button" tabindex="0" data-id="${v.id}">
       <div class="card-thumb">
         ${v.thumb ? `<img src="${thumbUrl(v)}" alt="" loading="lazy">` : '<div class="placeholder">▶</div>'}
@@ -246,6 +246,12 @@ function render() {
       </div>
       ${isAdmin() ? '<button class="card-edit" type="button" data-edit>수정</button>' : ''}
     </div>`).join('');
+  // 내용이 그대로면 다시 만들지 않습니다. (재생 중인 카드 영상이 끊기지 않도록)
+  if (gridHtml !== lastGridHtml) {
+    lastGridHtml = gridHtml;
+    $('#grid').innerHTML = gridHtml;
+    watchCards();
+  }
 
   const empty = $('#empty');
   empty.hidden = list.length > 0;
@@ -259,17 +265,12 @@ function render() {
 
 // 첫 화면 배경에서 대표 영상을 소리 없이 반복 재생합니다. (재생이 막히면 썸네일이 그대로 보입니다)
 async function startHeroVideo(v, key) {
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (reduceMotion) return;
   const src = await mediaUrl(v).catch(() => null);
   const hero = $('#hero'), bg = $('.hero-bg', hero);
   if (!src || !bg || hero.dataset.key !== key) return;
-  const el = document.createElement('video');
-  el.className = 'hero-video';
-  el.muted = true; el.defaultMuted = true; el.loop = true; el.playsInline = true; el.autoplay = true;
-  el.setAttribute('muted', ''); el.setAttribute('playsinline', ''); el.setAttribute('aria-hidden', 'true');
-  el.addEventListener('playing', () => el.classList.add('on'), { once: true });
-  el.addEventListener('error', () => el.remove());
-  el.src = src;
+  const el = makeSilentVideo(src, 'hero-video');
+  el.dataset.visible = '1';
   bg.after(el);
   if (!player.open) el.play().catch(() => {});
 }
@@ -297,35 +298,59 @@ grid.addEventListener('keydown', (e) => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('card')) { e.preventDefault(); activateCard(e); }
 });
 
-// 마우스를 올리면 소리 없이 미리보기
-let previewTimer;
-const canHover = matchMedia('(hover: hover)').matches;
-function stopPreview() {
-  clearTimeout(previewTimer); previewTimer = null;
-  const el = $('.card-thumb video', grid);
+// 화면에 보이는 영상은 소리 없이 자동 재생하고, 화면 밖으로 나가면 멈춥니다.
+let lastGridHtml = null;
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const backgroundVideos = () => $$('#hero .hero-video, #grid .card-thumb video');
+const pauseBackground = () => backgroundVideos().forEach((el) => el.pause());
+function resumeBackground() {
+  backgroundVideos().forEach((el) => { if (el.dataset.visible === '1') el.play().catch(() => {}); });
+}
+function makeSilentVideo(src, className) {
+  const el = document.createElement('video');
+  el.className = className;
+  el.muted = true; el.defaultMuted = true; el.loop = true; el.playsInline = true;
+  el.setAttribute('muted', ''); el.setAttribute('playsinline', ''); el.setAttribute('aria-hidden', 'true');
+  el.addEventListener('playing', () => el.classList.add('on'), { once: true });
+  el.addEventListener('error', () => el.remove());
+  el.src = src;
+  return el;
+}
+async function startCardVideo(thumb) {
+  const card = thumb.closest('.card');
+  const v = state.videos.find((x) => x.id === card.dataset.id);
+  if (!v || !v.file || $('video', thumb)) return;
+  const src = await mediaUrl(v).catch(() => null);
+  if (!src || !thumb.isConnected || thumb.dataset.visible !== '1' || $('video', thumb)) return;
+  const el = makeSilentVideo(src, '');
+  el.dataset.visible = '1';
+  thumb.append(el);
+  if (!player.open) el.play().catch(() => {});
+}
+function stopCardVideo(thumb) {
+  const el = $('video', thumb);
   if (el) { el.pause(); el.removeAttribute('src'); el.load(); el.remove(); }
 }
-grid.addEventListener('mouseover', (e) => {
-  if (!canHover) return;
-  const card = e.target.closest('.card');
-  if (!card || card.contains(e.relatedTarget)) return;
-  stopPreview();
-  const v = state.videos.find((x) => x.id === card.dataset.id);
-  if (!v || !v.file) return;
-  previewTimer = setTimeout(async () => {
-    const timer = previewTimer;
-    const src = await mediaUrl(v).catch(() => null);
-    if (!src || timer !== previewTimer || !card.isConnected) return;
-    const el = document.createElement('video');
-    el.muted = true; el.loop = true; el.playsInline = true; el.src = src;
-    $('.card-thumb', card).append(el);
-    el.play().catch(() => el.remove());
-  }, 600);
-});
-grid.addEventListener('mouseout', (e) => {
-  const card = e.target.closest('.card');
-  if (card && !card.contains(e.relatedTarget)) stopPreview();
-});
+const cardObserver = reduceMotion ? null : new IntersectionObserver((entries) => {
+  for (const entry of entries) {
+    const thumb = entry.target;
+    thumb.dataset.visible = entry.isIntersecting ? '1' : '';
+    if (entry.isIntersecting) startCardVideo(thumb); else stopCardVideo(thumb);
+  }
+}, { threshold: 0.6 });
+function watchCards() {
+  if (!cardObserver) return;
+  cardObserver.disconnect();
+  $$('#grid .card-thumb').forEach((thumb) => cardObserver.observe(thumb));
+}
+// 대표 영상은 화면 밖으로 나가면 잠시 멈춥니다.
+if (!reduceMotion) {
+  new IntersectionObserver(([entry]) => {
+    const el = heroVideo(); if (!el) return;
+    el.dataset.visible = entry.isIntersecting ? '1' : '';
+    if (entry.isIntersecting && !player.open) el.play().catch(() => {}); else el.pause();
+  }, { threshold: 0.25 }).observe($('#hero'));
+}
 
 /* ---------- 대화상자 공통 ---------- */
 $$('dialog').forEach((d) => {
@@ -355,8 +380,7 @@ function fillPlayer(v) {
 async function openPlayer(id) {
   const v = state.videos.find((x) => x.id === id);
   if (!v || !v.file) return;
-  stopPreview();
-  if (heroVideo()) heroVideo().pause();
+  pauseBackground();
   state.currentId = id;
   fillPlayer(v);
   pv.poster = thumbUrl(v);
@@ -386,7 +410,7 @@ pv.addEventListener('ended', () => { if (autoNext.checked) step('next'); });
 player.addEventListener('close', () => {
   pv.pause(); pv.removeAttribute('src'); pv.load();
   state.currentId = null; render();
-  if (heroVideo()) heroVideo().play().catch(() => {});
+  resumeBackground();
 });
 $('#player-edit').addEventListener('click', () => { const id = state.currentId; player.close(); openEdit(id); });
 $('#player-thumb').addEventListener('click', async () => {

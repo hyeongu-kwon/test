@@ -144,6 +144,8 @@ body:not(.is-admin) .admin-only { display: none !important; }
 }
 .card:hover .card-thumb, .card:focus-visible .card-thumb { transform: translateY(-3px); box-shadow: 0 14px 36px rgba(0,0,0,0.5); }
 .card-thumb img, .card-thumb video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.card-thumb video { opacity: 0; transition: opacity .5s ease; pointer-events: none; }
+.card-thumb video.on { opacity: 1; }
 .card-thumb .placeholder { position: absolute; inset: 0; display: grid; place-items: center; font-size: 30px; color: rgba(255,255,255,0.5); }
 .badge {
   position: absolute; right: 8px; bottom: 8px; background: rgba(0,0,0,0.72); border-radius: 6px; padding: 2px 6px;
