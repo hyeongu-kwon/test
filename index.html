@@ -398,13 +398,15 @@
   .lock-err { color: var(--bad); font-size: 13.5px; font-weight: 600; min-height: 1.2em; margin: -4px 0 -6px; }
   .lock-card .btn.primary { min-height: 46px; font-size: 15px; }
   .lock-card .alt { justify-self: center; }
-  body.locked > :not(.lock):not(script):not(svg):not(.toast):not(dialog) { visibility: hidden; }
+  body.locked > :not(.lock):not(script):not(svg):not(.toast):not(dialog),
+  body.booting > :not(.lock):not(script):not(svg):not(.toast):not(dialog) { visibility: hidden; }
+  #lockBtn.btn { flex: none; }
   .status-pill { white-space: nowrap; flex: none; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 650; padding: 4px 10px; border-radius: 999px; background: color-mix(in srgb, var(--good) 16%, transparent); color: var(--good); }
   .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 </style>
 </head>
-<body>
+<body class="booting">
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></symbol>
   <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="3"/><path d="M3 9h18M8 14h4"/></symbol>
@@ -1860,8 +1862,8 @@ $('#lockBtn').addEventListener('click', lockNow);
 
 function renderSecurity() {
   const el = $('#securityCard'); if (!el) return;
-  $('#lockBtn').hidden = !signedIn() || viewOnly;
-  if (cloudOn) return renderAccount(el);
+  const lb = $('#lockBtn'); lb.hidden = !signedIn() || viewOnly;
+  if (cloudOn) { lb.className = 'btn sm'; lb.textContent = '로그아웃'; lb.title = `${acct.id || ''} 로그아웃 (L)`; lb.removeAttribute('aria-label'); return renderAccount(el); }
   if (!lock.enabled) {
     el.innerHTML = `<div class="card-h"><div><h2>로그인 잠금</h2><p>아이디·비밀번호를 정하면 앱을 열 때마다 로그인해야 내용을 볼 수 있어요. 데이터는 비밀번호로 암호화돼 이 기기에 저장돼요.</p></div></div>
       <button class="btn primary" data-lock="enable"><svg aria-hidden="true"><use href="#i-lock"/></svg>로그인 잠금 켜기</button>`;
@@ -1952,7 +1954,7 @@ function clearSession() { sessionStorage.removeItem(SESSION_KEY); localStorage.r
 function setSync(s) {
   const el = $('#syncStat'); el.hidden = !cloudOn || !acct.key; el.dataset.s = s;
   const label = { saved: '저장됨', saving: '저장 중…', offline: '오프라인 · 연결되면 저장', error: '저장 실패' }[s];
-  el.querySelector('.lbl').textContent = label; el.title = label;
+  el.querySelector('.lbl').textContent = (acct.id ? acct.id + ' · ' : '') + label; el.title = label;
 }
 let pushTimer;
 function schedulePush() { acct.dirty = true; setSync('saving'); clearTimeout(pushTimer); pushTimer = setTimeout(pushNow, 700); }
@@ -2058,7 +2060,6 @@ async function cloudLogout(skipSave = false) {
   const r = await cloudAuth(); render(); route(); if (r.fresh) welcome();
 }
 function renderAccount(el) {
-  $('#lockBtn').setAttribute('aria-label', '로그아웃'); $('#lockBtn').title = '로그아웃 (L)';
   $('#dataDesc').textContent = '데이터는 비밀번호로 암호화되어 서버에 저장되고, 로그인한 모든 기기에서 같은 내용을 볼 수 있어요.';
   if (!acct.key) { el.innerHTML = ''; return; }
   const a = +state.settings.autolock || 0;
@@ -2206,7 +2207,7 @@ function enterShare(shared) {
   }
   if (cloudOn && viewOnly) $('#shareImport').hidden = true;
   if (!cloudOn) save(); // with an account, only real edits are written (opening the app must not bump the revision)
-  render(); route();
+  render(); route(); document.body.classList.remove('booting');
   if (firstRun && !viewOnly) welcome();
 })();
 </script>
