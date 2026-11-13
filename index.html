@@ -1359,7 +1359,7 @@ function itemRow(h, isDebt) {
   const v = valueKRW(h), c = costKRW(h), meta = [];
   if (h.mode === 'qty') {
     const up = unitPrice(h), live = liveOf(h), unit = h.cat === 'stock' || h.cat === 'isa' || h.type === 'stock' ? '주' : '개';
-    const money = x => (h.cur === 'USD' ? '$' + x.toLocaleString('en-US', { maximumFractionDigits: 2 }) : (hidden() ? MASK : x.toLocaleString('ko-KR') + '원'));
+    const money = x => (h.cur === 'USD' ? '$' + x.toLocaleString('en-US', { maximumFractionDigits: 4 }) : (hidden() ? MASK : x.toLocaleString('ko-KR', { maximumFractionDigits: 8 }) + '원'));
     meta.push(`${(+h.qty).toLocaleString('ko-KR', { maximumFractionDigits: 8 })}${unit} × ${money(up)}${live ? ' · 자동 시세' : h.ticker ? ' · 직접 입력' : ''}`);
     if (h.avg) meta.push(`평단 ${money(+h.avg)}`);
   }
