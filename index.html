@@ -373,6 +373,8 @@
   .note { font-size: 12px; color: var(--muted); margin: 12px 0 0; line-height: 1.55; }
   .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
   .form-grid .span2 { grid-column: span 2; }
+  .form-grid > *, .form-grid input, .form-grid select { min-width: 0; }
+  input[type=date], input[type=month] { min-width: 0; max-width: 100%; }
   a.alloc-row { text-decoration: none; color: inherit; border-radius: 8px; margin: 0 -6px; padding: 7px 6px; }
   a.alloc-row:hover { background: var(--hover); }
   @media (max-width: 900px) { .g-2 { grid-template-columns: 1fr; } }
@@ -552,14 +554,28 @@
           <label class="f">연금 개시 나이<input type="number" inputmode="numeric" id="pnStart" min="55" max="100"></label>
           <label class="f">수령 기간 (년)<input type="number" inputmode="numeric" id="pnYears" min="1" max="40"></label>
           <label class="f">예상 연수익률 (%)<input type="number" inputmode="decimal" id="pnRate" min="0" max="20" step="0.5"></label>
-          <label class="f span2">국민연금 예상 월액 (원)<input type="text" inputmode="numeric" class="money" id="pnNps" autocomplete="off" placeholder="국민연금공단 ‘내 연금 알아보기’에서 확인"><span class="hint" id="pnNpsHint"></span></label>
-          <label class="f">국민연금 개시 나이<input type="number" inputmode="numeric" id="pnNpsStart" min="55" max="100"></label>
         </div>
         <fieldset style="margin-top:14px"><legend class="f">총급여 (세액공제율)</legend><div class="radio-chips">
           <label><input type="radio" name="pnSalary" value="low"><span class="c">5,500만원 이하 · 16.5%</span></label>
           <label><input type="radio" name="pnSalary" value="high"><span class="c">5,500만원 초과 · 13.2%</span></label></div></fieldset>
         <p class="note">연금저축·IRP는 55세부터 연금으로 받을 수 있고, 10년 이상 나눠 받으면 세금이 줄어들어요.</p>
       </div>
+    </div>
+    <div class="card" id="pnNpsCard" style="margin-top:14px">
+      <div class="card-h"><div><h2 id="pnNpsTitle">국민연금</h2><p>국민연금공단 ‘가입내역 안내서’의 내용을 옮겨 적어 두세요</p></div></div>
+      <div id="pnNpsSum"></div>
+      <div class="form-grid" style="margin-top:16px">
+        <label class="f">기준일<input type="date" id="pnNpsAsOf"></label>
+        <label class="f">최초 가입일<input type="date" id="pnNpsJoined"></label>
+        <label class="f">가입자 종류<select id="pnNpsKind"><option value="">선택</option><option>사업장가입자</option><option>지역가입자</option><option>임의가입자</option><option>임의계속가입자</option></select></label>
+        <label class="f">월 연금보험료 (원)<input type="text" inputmode="numeric" class="money" id="pnNpsPremium" autocomplete="off" placeholder="0"></label>
+        <label class="f">납부 총액 (원)<input type="text" inputmode="numeric" class="money" id="pnNpsPaid" autocomplete="off" placeholder="0"></label>
+        <label class="f">납부 월수<input type="number" inputmode="numeric" id="pnNpsMonths" min="0" placeholder="0"></label>
+        <label class="f">예상 연금월액 (원)<input type="text" inputmode="numeric" class="money" id="pnNps" autocomplete="off" placeholder="안내서의 ‘예상연금월액’"><span class="hint" id="pnNpsHint"></span></label>
+        <label class="f">수령 개시 나이<input type="number" inputmode="numeric" id="pnNpsStart" min="55" max="100"></label>
+        <label class="f">수령 개시 연월<input type="month" id="pnNpsStartYm"></label>
+      </div>
+      <p class="note">안내서의 예상 연금월액은 현재가치·세전 기준이에요. 사업장가입자의 연금보험료와 납부 총액에는 회사 부담분이 함께 들어 있어요.</p>
     </div>
     <div style="margin-top:14px" id="pnList"></div>
   </section>
@@ -978,7 +994,7 @@ function sampleState() {
     CATS.forEach(c => (byCat[c.id] = Math.round(t.byCat[c.id] * ratio * (c.id === 'pension' ? Math.pow(0.988, i) : 1) / 1e4) * 1e4));
     s.history.push({ month: monthsAgo(i), assets: Object.values(byCat).reduce((x, y) => x + y, 0), debt: Math.round(d / 1e4) * 1e4, byCat });
   }
-  s.pension = { ...defaultPension(), age: 38, nps: 1100000 };
+  s.pension = { ...defaultPension(), age: 38, nps: 1100000, npsAsOf: ymd(new Date()), npsJoined: '2014-03-01', npsKind: '사업장가입자', npsPremium: 520000, npsPaid: 48000000, npsMonths: 128, npsStartYm: `${new Date().getFullYear() + 27}-04` };
   s.pensionSpouse = { ...defaultPension(), age: 36, startAge: 60, nps: 800000, npsStart: 65 };
   { // sample child (independent space)
     const now = new Date(), kid = { id: uid(), name: '첫째', birth: `${now.getFullYear() - 7}-04-12` };
@@ -1432,6 +1448,32 @@ function renderPerson(who) {
 }
 
 let pView = 'all';
+const ymText = ym => (ym && /^\d{4}-\d{2}$/.test(ym) ? `${ym.slice(0, 4)}년 ${+ym.slice(5)}월` : '');
+function npsSummary(P) {
+  const W = { won: true };
+  if (!P.nps && !P.npsPaid && !P.npsJoined && !P.npsPremium) return '<p class="hint" style="margin:0">아직 입력한 국민연금 정보가 없어요. 아래 칸에 안내서 내용을 옮겨 적어 주세요.</p>';
+  const ref = P.npsAsOf ? new Date(P.npsAsOf + 'T00:00:00') : new Date();
+  let period = '—';
+  if (P.npsJoined) {
+    const j = new Date(P.npsJoined + 'T00:00:00');
+    let m = (ref.getFullYear() - j.getFullYear()) * 12 + ref.getMonth() - j.getMonth();
+    if (ref.getDate() < j.getDate()) m--;
+    if (m >= 0) period = `${Math.floor(m / 12)}년 ${m % 12}개월`;
+  }
+  const start = `${P.npsStart || 65}세부터${P.npsStartYm ? ` · ${ymText(P.npsStartYm)}` : ''}`;
+  let html = `<div class="kv" style="margin-top:0;padding-top:0;border-top:0">
+      <div><div class="k">예상 연금월액</div><div class="v num">${P.nps ? short(P.nps, W) : '—'}</div><div class="k">${start}</div></div>
+      <div><div class="k">가입 기간</div><div class="v num">${period}</div><div class="k">${P.npsJoined ? `${dot(P.npsJoined)} 가입` : ''}${P.npsKind ? ` · ${esc(P.npsKind)}` : ''}</div></div>
+      <div><div class="k">납부 총액</div><div class="v num">${P.npsPaid ? short(P.npsPaid, W) : '—'}</div><div class="k">${P.npsMonths ? `${(+P.npsMonths).toLocaleString('ko-KR')}개월` : ''}</div></div>
+      <div><div class="k">월 연금보험료</div><div class="v num">${P.npsPremium ? short(P.npsPremium, W) : '—'}</div><div class="k">${P.npsAsOf ? `${dot(P.npsAsOf)} 기준` : ''}</div></div>
+    </div>`;
+  if (P.nps && P.npsPaid) {
+    const mo = Math.ceil(P.npsPaid / P.nps);
+    html += `<div class="callout" style="margin-top:14px">지금까지 낸 보험료(${short(P.npsPaid, W)})만큼 받으려면 연금을 약 <b>${Math.floor(mo / 12)}년 ${mo % 12}개월</b> 받아야 해요<div class="sub">예상 연금월액 기준 단순 계산 · 앞으로 낼 보험료와 물가 상승은 반영하지 않았어요</div></div>`;
+  }
+  if (P.npsAsOf && Date.now() - ref > 365 * 864e5) html += '<div class="callout warnbox" style="margin-top:10px">기준일이 1년 넘게 지났어요. 국민연금공단에서 새 안내서를 확인해 금액을 바꿔 주세요.</div>';
+  return html;
+}
 const settingsOwner = () => (pView === 'spouse' ? 'spouse' : 'me');
 function renderHousehold() {
   const W = { won: true }, A = pensionCalc('me'), B = pensionCalc('spouse'), all = pensionCalc('all');
@@ -1465,6 +1507,7 @@ function renderHousehold() {
         ${row('수령 나이', `${A.startAge}~${A.endAge}세`, `${B.startAge}~${B.endAge}세`, '—')}
         ${row('개인연금 월', sumW(A.payout), sumW(B.payout), sumW(A.payout + B.payout))}
         ${row('국민연금 월', A.nps ? sumW(A.nps) : '미입력', B.nps ? sumW(B.nps) : '미입력', sumW(A.nps + B.nps))}
+        ${row('국민연금 개시', `${A.npsStart}세${P_of('me').npsStartYm ? ` (${ymText(P_of('me').npsStartYm)})` : ''}`, `${B.npsStart}세${P_of('spouse').npsStartYm ? ` (${ymText(P_of('spouse').npsStartYm)})` : ''}`, '—')}
         ${row('총 수령액', sumW(A.total), sumW(B.total), sumW(A.total + B.total))}
       </tbody></table></div>
     <p class="note">물가는 반영하지 않은 단순 계산이에요. 사람마다 개시 나이를 따로 설정할 수 있어요.</p>`;
@@ -1477,6 +1520,9 @@ function renderPension() {
   const ae = document.activeElement, setv = (id, v) => { if ($(id) !== ae) $(id).value = v; };
   $('#pnSettingsFor').textContent = (so === 'spouse' ? '배우자' : '나') + ' 연금 설정';
   setv('#pnAge', P.age); setv('#pnStart', P.startAge); setv('#pnYears', P.years); setv('#pnRate', P.rate); setv('#pnNps', fmtInput(P.nps || '')); setv('#pnNpsStart', P.npsStart || 65);
+  setv('#pnNpsAsOf', P.npsAsOf || ''); setv('#pnNpsJoined', P.npsJoined || ''); setv('#pnNpsKind', P.npsKind || ''); setv('#pnNpsPremium', fmtInput(P.npsPremium || ''));
+  setv('#pnNpsPaid', fmtInput(P.npsPaid || '')); setv('#pnNpsMonths', P.npsMonths || ''); setv('#pnNpsStartYm', P.npsStartYm || '');
+  $('#pnNpsTitle').textContent = (so === 'spouse' ? '배우자' : '나') + ' 국민연금'; $('#pnNpsSum').innerHTML = npsSummary(P);
   $('#pnNpsHint').textContent = unitHint(P.nps);
   $$('input[name=pnSalary]').forEach(r => (r.checked = r.value === P.salary));
   const t = totals(), hs = pensionHoldings(pView);
@@ -1905,6 +1951,9 @@ const pnBind = (id, key, parse = v => +v) => $(id).addEventListener('input', e =
   if (e.target.value === '') return; const v = parse(e.target.value);
   if (v != null && isFinite(v) && v >= 0) { P_of(settingsOwner())[key] = v; save(); renderPension(); renderInsights(totals()); }
 });
+const pnBindText = (id, key) => $(id).addEventListener('change', e => { P_of(settingsOwner())[key] = e.target.value; save(); renderPension(); });
+pnBindText('#pnNpsAsOf', 'npsAsOf'); pnBindText('#pnNpsJoined', 'npsJoined'); pnBindText('#pnNpsKind', 'npsKind'); pnBindText('#pnNpsStartYm', 'npsStartYm');
+pnBind('#pnNpsPremium', 'npsPremium', parseNum); pnBind('#pnNpsPaid', 'npsPaid', parseNum); pnBind('#pnNpsMonths', 'npsMonths');
 pnBind('#pnAge', 'age'); pnBind('#pnStart', 'startAge'); pnBind('#pnYears', 'years'); pnBind('#pnRate', 'rate'); pnBind('#pnNps', 'nps', parseNum); pnBind('#pnNpsStart', 'npsStart');
 $$('input[name=pnSalary]').forEach(r => r.addEventListener('change', e => { P_of(settingsOwner()).salary = e.target.value; save(); renderPension(); renderInsights(totals()); }));
 $('#q').addEventListener('input', renderAssets);
