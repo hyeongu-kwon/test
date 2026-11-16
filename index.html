@@ -296,7 +296,11 @@
   .view-bar .chips { margin-bottom: 6px; }
   .view-bar .hint { margin: 0 2px; }
   table.compare th, table.compare td { padding: 9px 8px; }
+  .scen { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .scen-h { font-size: 13.5px; font-weight: 650; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+  .scen-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; font-size: 13.5px; color: var(--text-2); }
   table.compare th:first-child, table.compare td:first-child { padding-left: 0; }
+  table.compare td:first-child { white-space: normal; }
   table.compare th:last-child, table.compare td:last-child { padding-right: 0; }
   .quote-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; background: var(--surface-2); border-radius: 10px; padding: 9px 12px; margin-bottom: 12px; font-size: 13px; color: var(--text-2); }
   .quote-bar.ok { color: var(--good); }
@@ -1380,19 +1384,27 @@ function pensionCalc(who = 'me') {
   const mS = sum(h => h.monthly, h => h.pType === 'savings'), mI = sum(h => h.monthly, h => h.pType === 'irp');
   const projEligible = elig(savings + mS * left, irp + mI * left);
   const monthlyAll = sum(h => h.monthly);
-  const n = Math.max(0, (+P.startAge || 0) - (+P.age || 0)), r = (+P.rate || 0) / 100, g = Math.pow(1 + r, n);
-  const fv = value * g + monthlyAll * 12 * (r ? (g - 1) / r : n);
-  const months = Math.max(1, +P.years || 1) * 12, mr = r / 12;
-  const payout = mr ? fv * mr / (1 - Math.pow(1 + mr, -months)) : fv / months;
-  const payoutAt = S => { // monthly payout if the personal savings start at age S (same method as above)
-    const n2 = Math.max(0, S - (+P.age || 0)), g2 = Math.pow(1 + r, n2);
-    const fv2 = value * g2 + monthlyAll * 12 * (r ? (g2 - 1) / r : n2);
-    const m2 = Math.max(1, +P.years || 1) * 12;
-    return { pm: mr ? fv2 * mr / (1 - Math.pow(1 + mr, -m2)) : fv2 / m2, fv: fv2 };
+  const age = +P.age || 0, r = (+P.rate || 0) / 100, mr = r / 12, months = Math.max(1, +P.years || 1) * 12, S0 = +P.startAge || 60;
+  const CONT_END = 60; // "60세까지 납부" stops contributions at this age
+  const inGroup = { personal: h => h.pType !== 'dc' && h.pType !== 'db', work: h => h.pType === 'dc' || h.pType === 'db' };
+  const G = {};
+  ['personal', 'work'].forEach(k => (G[k] = { value: sum(h => valueKRW(h), inGroup[k]), monthly: sum(h => h.monthly, inGroup[k]) }));
+  const scen = { personal: P.contPersonal === 'stop' ? 'stop' : 'until60', work: P.contWork === 'stop' ? 'stop' : 'until60' };
+  const grow = y => Math.pow(1 + r, y);
+  const fvOf = (g, how, S) => { // balance at start age S: today's balance grows; contributions run until 60 (or not at all) and then keep growing
+    const n2 = Math.max(0, S - age), k = how === 'stop' ? 0 : Math.max(0, Math.min(CONT_END, S) - age);
+    return g.value * grow(n2) + g.monthly * 12 * (r ? (grow(k) - 1) / r : k) * grow(n2 - k);
   };
-  const privShare = value ? sum(h => valueKRW(h), h => h.pType === 'savings' || h.pType === 'irp') / value : 0;
+  const annuity = f => (mr ? f * mr / (1 - Math.pow(1 + mr, -months)) : f / months);
+  const scenarios = {};
+  ['personal', 'work'].forEach(k => (scenarios[k] = { stop: annuity(fvOf(G[k], 'stop', S0)), until60: annuity(fvOf(G[k], 'until60', S0)) }));
+  const n = Math.max(0, S0 - age);
+  const fv = fvOf(G.personal, scen.personal, S0) + fvOf(G.work, scen.work, S0);
+  const payout = annuity(fv);
+  const payoutAt = S => { const f = fvOf(G.personal, scen.personal, S) + fvOf(G.work, scen.work, S); return { pm: annuity(f), fv: f }; };
+  const privPayoutCalc = annuity(fvOf(G.personal, scen.personal, S0));
   return { who, hs, value, cost, valueWithCost, savings, irp, eligible, refund: eligible * rate, rate, room: LIM_T - eligible, savingsRoom: Math.max(0, LIM_S - savings),
-    projEligible, projRefund: projEligible * rate, monthlyAll, n, fv, payout, payoutAt, privPayout: payout * privShare, nps: +P.nps || 0, npsStart: +P.npsStart || 65,
+    projEligible, projRefund: projEligible * rate, monthlyAll, n, fv, payout, payoutAt, privPayout: privPayoutCalc, G, scen, scenarios, contEnd: CONT_END, months, nps: +P.nps || 0, npsStart: +P.npsStart || 65,
     startAge: +P.startAge || 60, endAge: (+P.startAge || 60) + Math.max(1, +P.years || 1), total: payout * Math.max(1, +P.years || 1) * 12 + (+P.nps || 0) * Math.max(0, ((+P.startAge || 60) + Math.max(1, +P.years || 1)) - Math.max(+P.npsStart || 65, +P.startAge || 60)) * 12, hasContrib: hs.some(h => h.contrib != null && h.pType !== 'db') };
 }
 function renderPerson(who) {
@@ -1440,14 +1452,39 @@ function renderPerson(who) {
       <div><div class="k">${S}세 예상 적립금</div><div class="v num">${wonS(c.fv)}</div></div>
       <div><div class="k">수령 기간</div><div class="v num">${S}세 ~ ${E}세</div></div>
     </div>
+    ${scenarioBlock(c)}
     <div class="table-wrap" style="margin:16px 0 0"><table>
       <thead><tr><th>수령 시작</th><th class="r">개인연금 월</th><th class="r">총 수령액</th></tr></thead>
       <tbody>${rows.map(r => `<tr style="${r.a === S ? 'font-weight:650' : ''}"><td>${r.a}세 ~ ${r.a + Y}세${r.a === S ? ' <span class="badge">선택</span>' : ''}</td><td class="r">${wonS(r.pm)}</td><td class="r">${wonS(r.tot)}</td></tr>`).join('')}</tbody></table></div>
-    <p class="note">${c.n ? `앞으로 ${c.n}년 동안 월 ${short(c.monthlyAll, W)}씩 적립하고 ` : ''}연 ${P.rate}% 수익을 가정한 단순 계산이에요. 국민연금 금액은 입력한 값을 그대로 쓰고 물가는 반영하지 않았어요.</p>
+    <p class="note">${scenText(c)} · 연 ${P.rate}% 수익을 가정한 단순 계산이에요. 국민연금 금액은 입력한 값을 그대로 쓰고 물가는 반영하지 않았어요.</p>
     ${c.privPayout * 12 > 15e6 ? '<div class="callout warnbox">연금저축·IRP 연 수령액이 1,500만원을 넘을 것 같아요. 넘으면 분리과세(16.5%)와 종합과세 중 골라야 하니, 수령 기간을 늘리는 것도 고려해 보세요.</div>' : ''}`;
 }
 
 let pView = 'all';
+const SCEN_LABEL = { stop: '지금 중단', until60: '60세까지 납부' };
+const scenText = c => `개인연금 ${SCEN_LABEL[c.scen.personal]} · 퇴직연금 ${SCEN_LABEL[c.scen.work]}`;
+function scenarioBlock(c) {
+  const W = { won: true }, months = c.months;
+  const cell = (k, how) => {
+    const g = c.G[k];
+    if (!g.value && !g.monthly) return '<td class="r" style="color:var(--muted)">계좌 없음</td>';
+    const pm = c.scenarios[k][how], sel = c.scen[k] === how;
+    return `<td class="r" style="${sel ? 'font-weight:650;color:var(--text)' : 'color:var(--text-2)'}">월 ${short(pm, W)}<div class="k">총 ${short(pm * months, W)}</div></td>`;
+  };
+  const seg = (key, k) => `<div class="seg" data-scen="${key}" role="group" aria-label="${k === 'personal' ? '개인연금' : '퇴직연금'} 납입">
+      <button data-v="stop" aria-pressed="${c.scen[k] === 'stop'}">지금 중단</button><button data-v="until60" aria-pressed="${c.scen[k] === 'until60'}">60세까지 납부</button></div>`;
+  const label = k => `${k === 'personal' ? '개인연금' : '퇴직연금'}<div class="k">${k === 'personal' ? '연금저축·IRP' : 'DC·DB'} · 월 ${short(c.G[k].monthly, W)} 적립</div>`;
+  return `<div class="scen">
+      <div class="scen-h">납입 시나리오 <span class="k">선택한 쪽이 위 금액에 반영돼요</span></div>
+      <div class="scen-row"><span>개인연금</span>${seg('contPersonal', 'personal')}</div>
+      <div class="scen-row"><span>퇴직연금</span>${seg('contWork', 'work')}</div>
+      <div class="table-wrap" style="margin:10px 0 0"><table class="compare">
+        <thead><tr><th></th><th class="r">중단 시</th><th class="r">${c.contEnd}세까지</th></tr></thead>
+        <tbody><tr><td>${label('personal')}</td>${cell('personal', 'stop')}${cell('personal', 'until60')}</tr>
+        <tr><td>${label('work')}</td>${cell('work', 'stop')}${cell('work', 'until60')}</tr></tbody></table></div>
+      ${(+P_of(c.who).age || 0) >= c.contEnd ? '<p class="note" style="margin-top:8px">이미 60세 이상이라 두 경우의 결과가 같아요.</p>' : ''}
+    </div>`;
+}
 const ymText = ym => (ym && /^\d{4}-\d{2}$/.test(ym) ? `${ym.slice(0, 4)}년 ${+ym.slice(5)}월` : '');
 function npsSummary(P) {
   const W = { won: true };
@@ -1505,7 +1542,8 @@ function renderHousehold() {
       <thead><tr><th></th><th class="r">나</th><th class="r">배우자</th><th class="r">합계</th></tr></thead>
       <tbody>
         ${row('수령 나이', `${A.startAge}~${A.endAge}세`, `${B.startAge}~${B.endAge}세`, '—')}
-        ${row('개인연금 월', sumW(A.payout), sumW(B.payout), sumW(A.payout + B.payout))}
+        ${row('납입 가정', `개인 ${SCEN_LABEL[A.scen.personal]}<br>퇴직 ${SCEN_LABEL[A.scen.work]}`, `개인 ${SCEN_LABEL[B.scen.personal]}<br>퇴직 ${SCEN_LABEL[B.scen.work]}`, '—')}
+        ${row('개인·퇴직연금 월', sumW(A.payout), sumW(B.payout), sumW(A.payout + B.payout))}
         ${row('국민연금 월', A.nps ? sumW(A.nps) : '미입력', B.nps ? sumW(B.nps) : '미입력', sumW(A.nps + B.nps))}
         ${row('국민연금 개시', `${A.npsStart}세${P_of('me').npsStartYm ? ` (${ymText(P_of('me').npsStartYm)})` : ''}`, `${B.npsStart}세${P_of('spouse').npsStartYm ? ` (${ymText(P_of('spouse').npsStartYm)})` : ''}`, '—')}
         ${row('총 수령액', sumW(A.total), sumW(B.total), sumW(A.total + B.total))}
@@ -1941,6 +1979,10 @@ $('#assetList').addEventListener('click', e => {
   const item = e.target.closest('.item'); if (item) return openEdit(item.dataset.id);
   const act = e.target.closest('[data-act]')?.dataset.act;
   if (act === 'add') openEdit(); else if (act === 'paste') openPaste(); else if (act === 'sample') loadSample();
+});
+$('#pnRetire').addEventListener('click', e => {
+  const b = e.target.closest('[data-scen] [data-v]'); if (!b || viewOnly) return;
+  P_of(settingsOwner())[b.parentElement.dataset.scen] = b.dataset.v; save(); renderPension(); renderInsights(totals());
 });
 $('#pnView').addEventListener('click', e => { const b = e.target.closest('[data-pv]'); if (b) { pView = b.dataset.pv; renderPension(); } });
 $('#view-pension').addEventListener('click', e => {
