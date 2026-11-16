@@ -302,6 +302,19 @@
   table.compare th:first-child, table.compare td:first-child { padding-left: 0; }
   table.compare td:first-child { white-space: normal; }
   table.compare th:last-child, table.compare td:last-child { padding-right: 0; }
+  .insights.one { grid-template-columns: 1fr; }
+  .news { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .news li { font-size: 14px; color: var(--text-2); line-height: 1.55; }
+  .news li b { color: var(--text); }
+  .news a { font-size: 12.5px; }
+  .ideas { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+  .idea { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--text-2); min-width: 0; }
+  .idea p { margin: 6px 0 0; line-height: 1.55; }
+  .idea b { color: var(--text); }
+  .idea-h { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; font-size: 15px; }
+  .idea-tags { display: flex; gap: 6px; margin-top: 6px; }
+  .idea-tags .badge { margin-left: 0; }
+  .idea .risk { color: var(--muted); }
   .quote-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; background: var(--surface-2); border-radius: 10px; padding: 9px 12px; margin-bottom: 12px; font-size: 13px; color: var(--text-2); }
   .quote-bar.ok { color: var(--good); }
   .quote-bar.warn { color: var(--warn); }
@@ -350,7 +363,7 @@
     dialog { width: 100vw; max-width: 100vw; margin: auto 0 0; border-radius: 20px 20px 0 0; max-height: 92dvh; padding-bottom: env(safe-area-inset-bottom); border-bottom: 0; }
     @keyframes pop { from { transform: translateY(40px); opacity: .6; } to { transform: none; opacity: 1; } }
     .bottom-nav {
-      display: grid; grid-template-columns: repeat(6, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+      display: grid; grid-template-columns: repeat(7, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
       background: color-mix(in srgb, var(--surface) 90%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
       border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom);
     }
@@ -400,7 +413,7 @@
   body.viewonly #addBtn, body.viewonly #fab, body.viewonly #addChildBtn, body.viewonly #addHistBtn, body.viewonly #pasteBtn2,
   body.viewonly [data-act=add], body.viewonly [data-kact^=add], body.viewonly [data-kact=edit-child], body.viewonly [data-gift],
   body.viewonly [data-month], body.viewonly [data-tab=settings], body.viewonly #matchTargets { display: none !important; }
-  body.viewonly .bottom-nav { grid-template-columns: repeat(5, 1fr); }
+  body.viewonly .bottom-nav { grid-template-columns: repeat(6, 1fr); }
   .check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; cursor: pointer; }
   .check input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--accent); flex: none; }
   .check small { display: block; color: var(--muted); font-size: 12.5px; }
@@ -432,6 +445,7 @@
   <symbol id="i-gift" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8M12 8v13M12 8S10.5 3 8 4s.5 4 4 4zM12 8s1.5-5 4-4-.5 4-4 4z"/></symbol>
   <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></symbol>
   <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14.5v2.5"/></symbol>
+  <symbol id="i-grow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
   <symbol id="i-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6M3 3l18 18M9.9 9.9a3 3 0 0 0 4.2 4.2"/></symbol>
@@ -453,6 +467,7 @@
     <nav class="tabs" aria-label="메뉴">
       <a class="tab" href="#home" data-tab="home"><svg aria-hidden="true"><use href="#i-home"/></svg>홈</a>
       <a class="tab" href="#assets" data-tab="assets"><svg aria-hidden="true"><use href="#i-list"/></svg>자산</a>
+      <a class="tab" href="#up" data-tab="up"><svg aria-hidden="true"><use href="#i-grow"/></svg>자산UP</a>
       <a class="tab" href="#pension" data-tab="pension"><svg aria-hidden="true"><use href="#i-pension"/></svg>연금</a>
       <a class="tab" href="#kids" data-tab="kids"><svg aria-hidden="true"><use href="#i-kid"/></svg>아이자산</a>
       <a class="tab" href="#history" data-tab="history"><svg aria-hidden="true"><use href="#i-chart"/></svg>기록</a>
@@ -534,6 +549,22 @@
     </div>
     <div class="summary-strip num" id="assetSummary"></div>
     <div id="assetList"></div>
+  </section>
+
+  <!-- ASSET UP -->
+  <section class="view" id="view-up" aria-label="자산UP">
+    <div class="grid g-2">
+      <div class="card" id="upScore"></div>
+      <div class="card" id="upReturns"></div>
+    </div>
+    <div class="grid g-2" style="margin-top:14px">
+      <div class="card" id="upShort"></div>
+      <div class="card" id="upLong"></div>
+    </div>
+    <div class="card" id="upHoldings" style="margin-top:14px"></div>
+    <div class="card" id="upAi" style="margin-top:14px"></div>
+    <div class="card" id="upEstate" style="margin-top:14px"></div>
+    <div class="card" id="upTips" style="margin-top:14px"></div>
   </section>
 
   <!-- PENSION -->
@@ -637,7 +668,7 @@
           <button id="resetAll" class="danger"><span class="ai"><svg aria-hidden="true"><use href="#i-trash"/></svg></span><span><b>전체 초기화</b><small>모든 자산 · 기록 · 설정 삭제</small></span></button>
         </div>
         <input type="file" id="importFile" accept="application/json,.json" hidden>
-        <p class="hint hide-sm" style="margin:16px 0 0">단축키 · <kbd class="kbd">N</kbd> 자산 추가 · <kbd class="kbd">/</kbd> 검색 · <kbd class="kbd">H</kbd> 금액 숨기기 · <kbd class="kbd">1</kbd>–<kbd class="kbd">6</kbd> 탭 이동 · <kbd class="kbd">L</kbd> 잠그기</p>
+        <p class="hint hide-sm" style="margin:16px 0 0">단축키 · <kbd class="kbd">N</kbd> 자산 추가 · <kbd class="kbd">/</kbd> 검색 · <kbd class="kbd">H</kbd> 금액 숨기기 · <kbd class="kbd">1</kbd>–<kbd class="kbd">7</kbd> 탭 이동 · <kbd class="kbd">L</kbd> 잠그기</p>
       </div>
       </div>
     </div>
@@ -649,6 +680,7 @@
 <nav class="bottom-nav" aria-label="메뉴">
   <a href="#home" data-tab="home"><svg aria-hidden="true"><use href="#i-home"/></svg>홈</a>
   <a href="#assets" data-tab="assets"><svg aria-hidden="true"><use href="#i-list"/></svg>자산</a>
+  <a href="#up" data-tab="up"><svg aria-hidden="true"><use href="#i-grow"/></svg>자산UP</a>
   <a href="#pension" data-tab="pension"><svg aria-hidden="true"><use href="#i-pension"/></svg>연금</a>
   <a href="#kids" data-tab="kids"><svg aria-hidden="true"><use href="#i-kid"/></svg>아이자산</a>
   <a href="#history" data-tab="history"><svg aria-hidden="true"><use href="#i-chart"/></svg>기록</a>
@@ -1106,7 +1138,7 @@ function save() {
 }
 
 /* ============ Router ============ */
-const TABS = ['home', 'assets', 'pension', 'kids', 'history', 'settings'];
+const TABS = ['home', 'assets', 'up', 'pension', 'kids', 'history', 'settings'];
 function parseHash() { const [t, sub = ''] = location.hash.slice(1).split('/'); return { tab: TABS.includes(t) ? t : 'home', sub }; }
 function ctxCat() { const { tab, sub } = parseHash(); if (tab === 'pension') return 'pension'; if (tab === 'assets' && ALL.some(c => c.id === sub)) return sub; return 'cash'; }
 let lastTab = null;
@@ -1115,8 +1147,8 @@ function route() {
   $$('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + tab));
   $$('[data-tab]').forEach(a => (a.dataset.tab === tab ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')));
   filterCat = tab === 'assets' && ALL.some(c => c.id === sub) ? sub : 'all';
-  document.title = '내 자산 · ' + (tab === 'assets' && filterCat !== 'all' ? catOf(filterCat).name : { home: '홈', assets: '자산', pension: '연금', kids: '아이자산', history: '기록', settings: '설정' }[tab]);
-  if (tab === 'home') renderTrend(); else if (tab === 'assets') renderAssets(); else if (tab === 'pension') renderPension(); else if (tab === 'kids') renderKids();
+  document.title = '내 자산 · ' + (tab === 'assets' && filterCat !== 'all' ? catOf(filterCat).name : { home: '홈', assets: '자산', up: '자산UP', pension: '연금', kids: '아이자산', history: '기록', settings: '설정' }[tab]);
+  if (tab === 'home') renderTrend(); else if (tab === 'assets') renderAssets(); else if (tab === 'pension') renderPension(); else if (tab === 'kids') renderKids(); else if (tab === 'up') { renderUp(); loadInsight(); }
   if (tab !== lastTab) window.scrollTo({ top: 0 });
   lastTab = tab;
 }
@@ -1785,6 +1817,221 @@ $('#view-kids').addEventListener('click', e => {
 $('#addChildBtn').addEventListener('click', () => openChild());
 function openAdd() { parseHash().tab === 'kids' ? openKidItem() : openEdit(); }
 
+/* ============ 자산UP: analysis, recommendations, AI briefing, tips ============ */
+const INSIGHT_KEY = 'asset-dashboard-insight';
+const normInsight = x => (x && typeof x === 'object' ? { ...x, market: [].concat(x.market || []), trends: [].concat(x.trends || []), stocks: [].concat(x.stocks || []), realestate: [].concat(x.realestate || []), sources: [].concat(x.sources || []) } : null);
+let insight = (() => { try { return normInsight(JSON.parse(localStorage.getItem(INSIGHT_KEY) || 'null')); } catch { return null; } })();
+let insightState = { loading: false, status: insight ? 'cached' : 'none', error: '' };
+const WN = { won: true };
+const safeUrl = u => (/^https?:\/\//i.test(String(u || '')) ? esc(u) : '');
+const iconLi = (kind, icon, html, sub = '') => `<li><span class="ic ${kind}" aria-hidden="true">${icon}</span><div><div>${html}</div>${sub ? `<div class="sub">${sub}</div>` : ''}</div></li>`;
+
+function upMetrics() {
+  const t = totals(), A = t.assets || 0, exp = +state.settings.expense || 0;
+  const hs = state.holdings.filter(h => h.cat !== 'debt');
+  const withCost = hs.filter(h => h.cost > 0).map(h => { const v = valueKRW(h), c = costKRW(h); return { h, v, c, r: (v - c) / c * 100 }; });
+  const inv = withCost.reduce((a, x) => a + x.c, 0), val = withCost.reduce((a, x) => a + x.v, 0);
+  const byCatRet = CATS.map(c => {
+    const xs = withCost.filter(x => x.h.cat === c.id), cc = xs.reduce((a, x) => a + x.c, 0), vv = xs.reduce((a, x) => a + x.v, 0);
+    return { c, cost: cc, value: vv, r: cc ? (vv - cc) / cc * 100 : null, n: xs.length };
+  }).filter(x => x.n);
+  const share = id => (A ? t.byCat[id] / A * 100 : 0);
+  const risky = share('stock') + share('isa') + share('crypto');
+  const liquid = share('cash') + share('stock') + share('isa') + share('bond') + share('crypto');
+  const usd = A ? hs.filter(h => h.cur === 'USD').reduce((a, h) => a + valueKRW(h), 0) / A * 100 : 0;
+  const top = CATS.map(c => ({ c, p: share(c.id) })).sort((a, b) => b.p - a.p)[0] || { p: 0 };
+  const emergency = exp ? t.byCat.cash / exp : null;
+  const debtRatio = A ? t.debt / A * 100 : 0;
+  const sumT = CATS.reduce((a, c) => a + (+state.targets[c.id] || 0), 0);
+  const drift = Math.abs(sumT - 100) < 0.01 ? CATS.reduce((a, c) => a + Math.abs(share(c.id) - (+state.targets[c.id] || 0)), 0) / 2 : 0;
+  return { t, A, exp, withCost, inv, val, byCatRet, share, risky, liquid, usd, top, emergency, debtRatio, drift };
+}
+
+function healthScore(m) {
+  let s = 100; const why = [];
+  const hit = (cond, pts, text) => { if (cond) { s -= pts; why.push(text); } };
+  if (m.emergency != null) { hit(m.emergency < 3, 20, '비상금 3개월 미만'); hit(m.emergency >= 3 && m.emergency < 6, 10, '비상금 6개월 미만'); }
+  hit(m.debtRatio > 60, 20, '부채비율 60% 초과'); hit(m.debtRatio > 40 && m.debtRatio <= 60, 10, '부채비율 40% 초과');
+  hit(m.top.p > 60, 15, `${m.top.c?.name || ''} 쏠림 60% 초과`); hit(m.top.p > 45 && m.top.p <= 60, 8, `${m.top.c?.name || ''} 비중 45% 초과`);
+  hit(m.share('crypto') > 10, 10, '비트코인 비중 10% 초과');
+  hit(m.drift > 10, Math.min(15, Math.round(m.drift / 2)), `목표 비중과 ${m.drift.toFixed(0)}%p 차이`);
+  hit(m.liquid < 20, 10, '현금화 쉬운 자산 20% 미만');
+  hit(m.A > 0 && m.usd < 5, 5, '해외(달러) 자산 거의 없음');
+  return { score: Math.max(0, Math.min(100, s)), why };
+}
+
+function upShortTerm(m) {
+  const out = [], W = WN;
+  if (m.emergency != null && m.emergency < 6) {
+    out.push(iconLi(m.emergency < 3 ? 'bad' : 'warn', '!', `비상금 <b>${m.emergency.toFixed(1)}개월</b>치예요 · 6개월치까지 <b>${short(6 * m.exp - m.t.byCat.cash, W)}</b> 더 모으기`, '월 생활비 기준 · 파킹통장이나 CMA처럼 바로 꺼낼 수 있는 곳에'));
+  }
+  ['me', 'spouse'].forEach(who => {
+    const c = pensionCalc(who);
+    if (c.hasContrib && c.room > 0) out.push(iconLi('info', '₩', `${who === 'spouse' ? '배우자' : '나'} 연금 세액공제 한도 <b>${short(c.room, W)}</b> 남음`, `연말까지 채우면 최대 ${short(c.room * c.rate, W)} 더 환급 · 연금 탭에서 확인`));
+  });
+  if (m.debtRatio > 40) out.push(iconLi('warn', '!', `부채비율 <b>${m.debtRatio.toFixed(1)}%</b> · 금리가 높은 대출부터 상환 계획 세우기`, '변동금리라면 금리 재산정 시점도 확인'));
+  CATS.forEach(c => {
+    const p = m.share(c.id), tg = +state.targets[c.id] || 0, gap = p - tg;
+    if (m.A && Math.abs(gap) >= 5) out.push(iconLi('warn', gap > 0 ? '↓' : '↑', `<b>${c.name}</b> ${p.toFixed(1)}% → 목표 ${tg}% · 약 ${short(Math.abs(gap) / 100 * m.A, W)} ${gap > 0 ? '줄이기' : '늘리기'}`, '새로 모으는 돈을 부족한 쪽에 넣으면 팔지 않고도 맞출 수 있어요'));
+  });
+  m.withCost.filter(x => x.r <= -20).sort((a, b) => a.r - b.r).slice(0, 3).forEach(x => out.push(iconLi('bad', '↘', `<b>${esc(x.h.name)}</b> ${pct(x.r)} · 처음 산 이유가 아직 유효한지 점검`, '손실 확정과 계속 보유 중 기준을 미리 정해 두세요')));
+  m.withCost.filter(x => x.r >= 50).sort((a, b) => b.r - a.r).slice(0, 3).forEach(x => out.push(iconLi('good', '↗', `<b>${esc(x.h.name)}</b> ${pct(x.r)} · 일부 차익 실현이나 비중 조절 검토`, '한 종목 비중이 커졌다면 리밸런싱 기회예요')));
+  if (m.emergency != null && m.emergency >= 6 && m.share('cash') > 20) out.push(iconLi('info', 'i', `현금 비중 <b>${m.share('cash').toFixed(1)}%</b> · 비상금 6개월치를 넘는 ${short(m.t.byCat.cash - 6 * m.exp, W)}은 단기채·예금·목표 비중으로`, '물가보다 낮은 이자에 오래 두지 않기'));
+  if (m.share('crypto') > 10) out.push(iconLi('warn', '!', `비트코인 비중 <b>${m.share('crypto').toFixed(1)}%</b> · 감당할 수 있는 손실 범위인지 점검`, '하루 10% 넘게 움직일 수 있는 자산이에요'));
+  return out.length ? out : [iconLi('good', '✓', '지금 바로 손볼 곳은 없어요', '매달 기록하고 목표 비중을 유지해 보세요')];
+}
+
+function upLongTerm(m) {
+  const out = [], W = WN, A = pensionCalc('me'), B = pensionCalc('spouse'), P = state.pension;
+  // retirement income vs living cost
+  if (m.exp) {
+    const income = A.payout + B.payout + A.nps + B.nps, gap = m.exp - income;
+    if (gap > 0) {
+      const r = (+P.rate || 0) / 100, n = Math.max(1, (+P.startAge || 60) - (+P.age || 0)), months = Math.max(1, +P.years || 1) * 12, mr = r / 12;
+      const needFv = mr ? gap * (1 - Math.pow(1 + mr, -months)) / mr : gap * months;
+      const perMonth = r ? needFv * r / (Math.pow(1 + r, n) - 1) / 12 : needFv / n / 12;
+      out.push(iconLi('warn', '!', `은퇴 후 월 소득 예상 <b>${short(income, W)}</b> · 생활비 대비 <b>${short(gap, W)}</b> 부족`, `지금부터 연금에 월 약 ${short(perMonth, W)}을 더 적립하면 메울 수 있어요 (수익률 ${P.rate}% 가정) · 개시 나이를 늦추는 것도 방법`));
+    } else out.push(iconLi('good', '✓', `은퇴 후 월 소득 예상 <b>${short(income, W)}</b> · 지금 생활비를 넘어요`, '물가 상승을 생각하면 여유를 더 두는 편이 좋아요'));
+  }
+  if (m.share('real') > 60) out.push(iconLi('warn', '!', `부동산 비중 <b>${m.share('real').toFixed(1)}%</b> · 앞으로 모으는 돈은 금융자산 위주로`, '부동산은 급할 때 나눠 팔기 어려워요'));
+  if (m.A && m.usd < 10) out.push(iconLi('info', '$', `달러 자산 <b>${m.usd.toFixed(1)}%</b> · 해외 지수 ETF 등으로 10~30% 분산 검토`, '원화 가치 하락과 국내 경기 둔화에 대비'));
+  const age = +P.age || 0;
+  if (age && m.A) {
+    const guide = Math.max(20, 100 - age);
+    if (Math.abs(m.risky - guide) >= 15) out.push(iconLi('info', 'i', `주식·코인 비중 <b>${m.risky.toFixed(0)}%</b> · 나이 기준 참고치(100−나이)는 약 ${guide}%`, m.risky > guide ? '은퇴가 가까워질수록 변동성을 줄여 가세요' : '시간이 길게 남았다면 성장 자산을 조금 늘릴 여지가 있어요'));
+  }
+  const s = series(), avg = avgMonthly(s), goal = +state.settings.goal || 0;
+  if (goal && avg && avg > 0 && m.t.net < goal) {
+    const months = Math.ceil((goal - m.t.net) / avg);
+    out.push(iconLi('info', '◎', `목표 순자산 ${short(goal, W)}까지 약 <b>${Math.floor(months / 12)}년 ${months % 12}개월</b>`, `최근 월평균 ${short(avg, W)}씩 늘고 있어요 · 저축을 늘리면 앞당길 수 있어요`));
+  }
+  state.kids.children.forEach(ch => {
+    const g = giftCalc(ch);
+    if (g.left > 0) out.push(iconLi('info', '♡', `${esc(ch.name)} 증여 공제 한도 <b>${short(g.left, W)}</b> 남음`, '10년 단위로 나눠 미리 증여하면 세금 없이 아이 자산을 키울 수 있어요 · 증여세 신고로 기록 남기기'));
+  });
+  return out.length ? out : [iconLi('good', '✓', '장기 계획에 큰 공백은 없어요', '연 1회 목표와 비중을 다시 점검해 보세요')];
+}
+
+function upTips() {
+  const hs = state.holdings, has = f => hs.some(f), nm = h => (h.name + ' ' + (h.memo || '')).toLowerCase();
+  const tips = [
+    { miss: !has(h => h.cat === 'isa'), t: 'ISA(개인종합자산관리계좌)', why: '계좌 안에서 생긴 수익 일부가 비과세(일반 200만원, 서민형 400만원)이고 넘는 부분은 9.9% 분리과세예요.', how: '연 2,000만원(총 1억원)까지 납입 · 3년 의무 보유 · 만기 때 연금계좌로 옮기면 옮긴 금액의 10%(최대 300만원) 추가 세액공제', care: '중도 인출하면 혜택이 줄어요' },
+    { miss: !has(h => h.cat === 'pension' && h.pType === 'savings'), t: '연금저축', why: '연 600만원까지 납입액의 13.2~16.5%를 세액공제로 돌려받아요.', how: '증권사 연금저축펀드 계좌에서 ETF로 운용 · 55세 이후 연금으로 받기', care: '중도 해지하면 공제받은 세금을 다시 내요' },
+    { miss: !has(h => h.cat === 'pension' && h.pType === 'irp'), t: 'IRP(개인형 퇴직연금)', why: '연금저축과 합쳐 연 900만원까지 세액공제돼요. 연금저축만으로는 600만원까지예요.', how: '연금저축 600만원 + IRP 300만원 조합이 흔해요 · 퇴직금 수령 계좌로도 써요', care: '위험자산은 70%까지만 담을 수 있어요' },
+    { miss: !has(h => h.cat === 'bond'), t: '채권', why: '주식과 반대로 움직일 때가 많아 하락장 완충 역할을 하고, 금리가 내리면 가격이 올라요.', how: '국채 ETF, 개인투자용 국채, 단기채 ETF', care: '금리가 오르면 장기채 가격은 떨어져요' },
+    { miss: !has(h => h.cur === 'USD'), t: '달러 자산', why: '원화가 약해질 때 자산 가치를 지켜 주는 분산 효과가 있어요.', how: '미국 지수 ETF(예: S&P500), 달러 예금·RP, 국내 상장 미국 ETF', care: '환율이 내리면 원화 기준 수익이 줄어요' },
+    { miss: !has(h => /금|gold/.test(nm(h)) && h.cat === 'alt'), t: '금', why: '물가 상승과 금융 위기 때 가치를 지키는 경우가 많아요.', how: 'KRX 금시장(매매차익 비과세), 금 ETF, 골드뱅킹', care: '이자·배당이 없고 오래 횡보할 수 있어요' },
+    { miss: !has(h => /리츠|reit/.test(nm(h))), t: '리츠(부동산 간접투자)', why: '소액으로 오피스·물류센터 같은 부동산에 투자하고 배당을 받아요.', how: '국내 상장 리츠, 미국 리츠 ETF', care: '금리가 오르면 약세인 경우가 많아요' },
+    { miss: !has(h => /배당|dividend|schd/.test(nm(h))), t: '배당 ETF', why: '매달·매분기 현금 흐름을 만들어 은퇴 후 생활비에 보탤 수 있어요.', how: '고배당·배당성장 ETF, 연금계좌에서 운용하면 과세 이연', care: '배당에도 세금(15.4%)이 붙어요(연금계좌 밖)' },
+    { miss: !has(h => /청약/.test(nm(h))) && !state.kids.holdings.some(h => h.type === 'housing'), t: '주택청약종합저축', why: '청약 자격을 위한 기본 통장이고, 조건이 맞으면 소득공제도 받아요.', how: '월 납입 인정 한도 안에서 꾸준히 넣기 · 아이 명의 개설도 가능', care: '수익률은 예금 수준이에요' },
+  ];
+  const list = tips.filter(x => x.miss);
+  return list.length ? list : null;
+}
+
+async function loadInsight(force = false) {
+  if (!cloudOn || !acct.key || insightState.loading || viewOnly) return;
+  const today = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
+  if (!force && insight && insight.day === today && insightState.status === 'ready') return;
+  insightState = { ...insightState, loading: true };
+  renderUp();
+  try {
+    const r = await fetch(CLOUD.url.replace(/\/+$/, '') + '/functions/v1/insight', { headers: { apikey: CLOUD.key, Authorization: 'Bearer ' + CLOUD.key }, signal: AbortSignal.timeout(20000) });
+    if (r.status === 404) { insightState = { loading: false, status: 'missing', error: '' }; return renderUp(); }
+    const j = await r.json();
+    if (j.briefing) { insight = normInsight(j.briefing); try { localStorage.setItem(INSIGHT_KEY, JSON.stringify(insight)); } catch { /* keep in memory */ } }
+    insightState = { loading: false, status: j.status || 'error', error: '' };
+  } catch {
+    insightState = { loading: false, status: 'offline', error: '' };
+  }
+  renderUp();
+}
+
+function aiStatusNote() {
+  const s = insightState.status;
+  if (!cloudOn) return '<div class="callout">AI 브리핑은 계정 모드(로그인)에서 사용할 수 있어요.</div>';
+  if (insightState.loading) return '<p class="hint">브리핑을 불러오는 중…</p>';
+  if (s === 'missing') return '<div class="callout warnbox">AI 브리핑 함수가 아직 배포되지 않았어요. <code>supabase/functions/insight/README.md</code>의 순서대로 설정해 주세요.</div>';
+  if (s === 'pending') return `<div class="callout">오늘 브리핑을 만드는 중이에요(보통 1~3분). 잠시 후 <b>새로 고침</b>을 눌러 주세요.${insight ? ' 아래는 가장 최근 브리핑이에요.' : ''}</div>`;
+  if (s === 'error') return `<div class="callout warnbox">오늘 브리핑을 만들지 못했어요. 30분 뒤 다시 시도돼요.${insight ? ' 아래는 가장 최근 브리핑이에요.' : ''}</div>`;
+  if (s === 'offline') return '<div class="callout warnbox">브리핑 서버에 연결하지 못했어요. 인터넷 연결을 확인해 주세요.</div>';
+  return '';
+}
+
+function renderUp() {
+  const el = $('#view-up'); if (!el) return;
+  const m = upMetrics(), hs = healthScore(m), W = WN;
+  const grade = hs.score >= 85 ? '탄탄해요' : hs.score >= 70 ? '양호해요' : hs.score >= 50 ? '손볼 곳이 있어요' : '점검이 필요해요';
+  $('#upScore').innerHTML = `
+    <div class="card-h"><div><h2>자산 건강 점수</h2><p>비상금 · 부채 · 쏠림 · 분산 · 목표 비중을 종합한 점수예요</p></div></div>
+    <div style="display:flex;align-items:baseline;gap:10px"><div class="big num">${hs.score}<span style="font-size:.5em">점</span></div><span class="pill">${grade}</span></div>
+    <div class="meter" role="progressbar" aria-label="자산 건강 점수" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${hs.score}"><div style="width:${hs.score}%"></div></div>
+    <div class="kv">
+      <div><div class="k">비상금</div><div class="v num">${m.emergency == null ? '—' : m.emergency.toFixed(1) + '개월'}</div></div>
+      <div><div class="k">부채비율</div><div class="v num">${m.debtRatio.toFixed(1)}%</div></div>
+      <div><div class="k">주식·코인</div><div class="v num">${m.risky.toFixed(0)}%</div></div>
+      <div><div class="k">현금화 쉬운 자산</div><div class="v num">${m.liquid.toFixed(0)}%</div></div>
+      <div><div class="k">달러 자산</div><div class="v num">${m.usd.toFixed(1)}%</div></div>
+    </div>
+    ${hs.why.length ? `<p class="note">감점 요인: ${hs.why.join(' · ')}</p>` : ''}`;
+
+  const totalR = m.inv ? (m.val - m.inv) / m.inv * 100 : null;
+  $('#upReturns').innerHTML = `
+    <div class="card-h"><div><h2>수익률 현황</h2><p>투자 원금(또는 평단)을 입력한 ${m.withCost.length}개 자산 기준</p></div></div>
+    ${totalR == null ? '<p class="hint" style="margin:0">자산에 투자 원금이나 평균 매수 단가를 넣으면 수익률을 계산해요.</p>' : `
+    <div class="k">전체 수익률</div>
+    <div class="big num ${totalR >= 0 ? 'up' : 'down'}">${pct(totalR)}</div>
+    <div class="goal-meta" style="margin-top:6px"><span>원금 <b class="num">${short(m.inv, W)}</b> → 평가 <b class="num">${short(m.val, W)}</b> · 손익 <b class="num ${m.val >= m.inv ? 'up' : 'down'}">${short(m.val - m.inv, { sign: true, won: true })}</b></span></div>
+    <div class="table-wrap" style="margin:14px 0 0"><table class="compare">
+      <thead><tr><th>분류</th><th class="r">원금</th><th class="r">평가</th><th class="r">수익률</th></tr></thead>
+      <tbody>${m.byCatRet.sort((a, b) => b.r - a.r).map(x => `<tr><td><span class="swatch" style="background:var(${x.c.color})"></span> ${x.c.name}</td><td class="r">${short(x.cost, W)}</td><td class="r">${short(x.value, W)}</td><td class="r ${x.r >= 0 ? 'up' : 'down'}">${pct(x.r)}</td></tr>`).join('')}</tbody></table></div>`}`;
+
+  const ranked = m.withCost.slice().sort((a, b) => b.r - a.r);
+  const row = x => `<tr><td>${esc(x.h.name)}<div class="k">${catOf(x.h.cat).name}</div></td><td class="r">${short(x.v, W)}</td><td class="r ${x.r >= 0 ? 'up' : 'down'}"><b>${pct(x.r)}</b><div class="k">${short(x.v - x.c, { sign: true, won: true })}</div></td></tr>`;
+  $('#upHoldings').innerHTML = `
+    <div class="card-h"><div><h2>자산별 수익률</h2><p>높은 순 · 원금을 입력한 자산만</p></div></div>
+    ${ranked.length ? `<div class="table-wrap" style="margin:0"><table class="compare"><thead><tr><th>자산</th><th class="r">평가금액</th><th class="r">수익률</th></tr></thead><tbody>${ranked.map(row).join('')}</tbody></table></div>` : '<p class="hint" style="margin:0">아직 원금을 입력한 자산이 없어요.</p>'}`;
+
+  $('#upShort').innerHTML = `<div class="card-h"><div><h2>단기 개선 (3~12개월)</h2><p>지금 데이터로 바로 해 볼 수 있는 것</p></div></div><ul class="insights one">${upShortTerm(m).join('')}</ul>`;
+  $('#upLong').innerHTML = `<div class="card-h"><div><h2>장기 방향 (3년 이상)</h2><p>노후 · 분산 · 목표 기준</p></div></div><ul class="insights one">${upLongTerm(m).join('')}</ul>`;
+
+  // AI briefing
+  const b = insight, held = new Set(state.holdings.filter(h => h.ticker).map(h => h.ticker.toUpperCase()));
+  const heldName = n => state.holdings.some(h => h.name && n && (h.name.includes(n) || n.includes(h.name)));
+  const conf = c => `<span class="badge" style="${c === '높음' ? '' : c === '낮음' ? 'background:var(--surface-2);color:var(--muted)' : ''}">확신 ${esc(c || '—')}</span>`;
+  const refreshBtn = cloudOn ? `<button class="btn sm" id="upRefresh" type="button" ${insightState.loading ? 'disabled' : ''}>${insightState.loading ? '불러오는 중…' : '새로 고침'}</button>` : '';
+  $('#upAi').innerHTML = `
+    <div class="card-h"><div><h2>AI 데일리 브리핑 · 주식</h2><p>${b ? `${esc(b.day || '')} 기준 · 최근 뉴스를 웹 검색해 정리했어요` : '매일 한 번 최신 뉴스로 새로 만들어요'}</p></div>${refreshBtn}</div>
+    ${aiStatusNote()}
+    ${b ? `
+      ${b.headline ? `<p style="font-size:16px;font-weight:650;margin:4px 0 12px">${esc(b.headline)}</p>` : ''}
+      ${b.market.length ? `<ul class="news">${b.market.map(x => `<li><b>${esc(x.title)}</b><div>${esc(x.summary)}</div>${safeUrl(x.source) ? `<a href="${safeUrl(x.source)}" target="_blank" rel="noopener noreferrer">출처</a>` : ''}</li>`).join('')}</ul>` : ''}
+      ${b.trends.length ? `<div class="chips" style="margin:12px 0">${b.trends.map(x => `<span class="chip" title="${esc(x.why)}">${esc(x.theme)} · ${esc(x.horizon)}</span>`).join('')}</div>` : ''}
+      <div class="ideas">${b.stocks.map(s => `<div class="idea">
+          <div class="idea-h"><b>${esc(s.name)}</b><span class="k">${esc(s.ticker || '')} · ${esc(s.market || '')}</span>${held.has(String(s.ticker || '').toUpperCase()) || heldName(s.name) ? '<span class="badge">보유 중</span>' : ''}</div>
+          <div class="idea-tags"><span class="badge">${esc(s.horizon || '')}</span>${conf(s.confidence)}</div>
+          <p><b>근거</b> ${esc(s.thesis)}</p>${s.catalysts ? `<p><b>확인할 것</b> ${esc(s.catalysts)}</p>` : ''}<p class="risk"><b>위험</b> ${esc(s.risks)}</p>
+        </div>`).join('')}</div>
+      ${b.outlook ? `<div class="callout" style="margin-top:14px"><b>앞으로 1~3개월</b><div class="sub" style="color:var(--text-2)">${esc(b.outlook)}</div></div>` : ''}` : ''}
+    <p class="note">AI가 공개 뉴스로 만든 참고 정보예요. 투자 권유가 아니며, 예측은 틀릴 수 있어요. 투자 판단과 책임은 본인에게 있어요.</p>`;
+
+  $('#upEstate').innerHTML = `
+    <div class="card-h"><div><h2>AI 데일리 브리핑 · 부동산</h2><p>최근 정책 · 금리 · 공급 뉴스 기준</p></div></div>
+    ${b && b.realestate.length ? `<div class="ideas">${b.realestate.map(x => `<div class="idea">
+        <div class="idea-h"><b>${esc(x.area)}</b><span class="k">${esc(x.type || '')}</span></div>
+        <div class="idea-tags"><span class="badge">${esc(x.horizon || '')}</span></div>
+        <p><b>근거</b> ${esc(x.thesis)}</p><p class="risk"><b>위험</b> ${esc(x.risks)}</p></div>`).join('')}</div>` : `<p class="hint" style="margin:0">${cloudOn ? '브리핑이 준비되면 여기에 표시돼요.' : 'AI 브리핑은 계정 모드(로그인)에서 사용할 수 있어요.'}</p>`}
+    ${b && b.sources.length ? `<details style="margin-top:12px"><summary class="hint" style="cursor:pointer">참고한 기사 ${b.sources.length}개</summary><ul class="news" style="margin-top:8px">${b.sources.filter(s => safeUrl(s.url)).map(s => `<li><a href="${safeUrl(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title || s.url)}</a></li>`).join('')}</ul></details>` : ''}
+    <p class="note">지역·상품 언급은 검토 후보일 뿐이에요. 실제 거래 전에는 실거래가, 대출 규제, 세금을 꼭 확인하세요.</p>`;
+
+  const tips = upTips();
+  $('#upTips').innerHTML = `
+    <div class="card-h"><div><h2>아직 없는 자산 · 늘리는 방법</h2><p>지금 보유하지 않은 자산 중 검토해 볼 만한 것</p></div></div>
+    ${tips ? `<div class="ideas">${tips.map(x => `<div class="idea"><div class="idea-h"><b>${x.t}</b></div><p>${x.why}</p><p><b>방법</b> ${x.how}</p><p class="risk"><b>주의</b> ${x.care}</p></div>`).join('')}</div>` : '<p class="hint" style="margin:0">주요 자산 유형을 모두 갖고 있어요.</p>'}
+    <p class="note">세제 혜택과 한도는 작성 시점 기준이라 바뀔 수 있어요. 가입 전에 금융사·국세청 안내를 확인하세요.</p>`;
+}
+$('#view-up').addEventListener('click', e => { if (e.target.closest('#upRefresh')) loadInsight(true); });
+
 /* ============ Render all ============ */
 function renderChrome() {
   const hb = $('#hideBtn');
@@ -1796,7 +2043,7 @@ function renderChrome() {
   $('#themeBtn').setAttribute('aria-label', dark ? '밝은 테마로 전환' : '어두운 테마로 전환');
   document.querySelector('meta[name=theme-color]').content = dark ? '#0d0e0c' : '#f3f2ec';
 }
-function render() { renderChrome(); renderHome(); renderAssets(); renderPension(); renderKids(); renderHistory(); renderSettings(); renderSecurity(); }
+function render() { renderChrome(); renderHome(); renderAssets(); renderUp(); renderPension(); renderKids(); renderHistory(); renderSettings(); renderSecurity(); }
 function commit() { save(); render(); }
 
 /* ============ Toast ============ */
@@ -2065,7 +2312,7 @@ document.addEventListener('keydown', e => {
   else if (e.key === '/') { e.preventDefault(); location.hash = '#assets'; setTimeout(() => $('#q').focus(), 0); }
   else if (e.key === 'h' || e.key === 'H') $('#hideBtn').click();
   else if ((e.key === 'l' || e.key === 'L') && signedIn()) lockNow();
-  else if ('123456'.includes(e.key) && e.key.length === 1) location.hash = '#' + TABS[+e.key - 1];
+  else if ('1234567'.includes(e.key) && e.key.length === 1) location.hash = '#' + TABS[+e.key - 1];
 });
 let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(route, 150); });
 
