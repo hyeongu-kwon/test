@@ -2161,7 +2161,7 @@ function cloudAuth(initialError = '') {
       } catch (x) {
         el.lpw.value = ''; el.lpw2.value = '';
         err(x && x.code === 'invalid' ? '아이디 또는 비밀번호가 맞지 않아요'
-          : x && x.code === 'locked' ? '여러 번 틀려서 잠겼어요 · 5분 뒤에 다시 시도해 주세요'
+          : x && x.code === 'locked' ? '시도가 너무 많아요 · 잠시 후 다시 시도해 주세요'
           : x && x.code === 'exists' ? '이미 사용 중인 아이디예요'
           : x && x.code === 'full' ? '더 이상 계정을 만들 수 없어요'
           : x && x.setup ? '서버 설정이 아직 끝나지 않았어요 (setup.sql 실행 필요)'
@@ -2318,7 +2318,7 @@ function enterShare(shared) {
       try {
         const raw = unb64u(sess.raw), r = await rpc('vault_load', { p_id: sess.id, p_auth: authOf(raw) });
         if (r.ok) { await acctUse(sess.id, raw); acct.keep = !!sess.keep; state = normalize(await unseal(r.data, acct.key)); acct.rev = r.rev; ok = true; setSync('saved'); }
-        else { clearSession(); msg = r.error === 'locked' ? '여러 번 틀려서 잠겼어요 · 5분 뒤에 다시 시도해 주세요' : '다시 로그인해 주세요'; }
+        else { clearSession(); msg = r.error === 'locked' ? '시도가 너무 많아요 · 잠시 후 다시 시도해 주세요' : '다시 로그인해 주세요'; }
       } catch (x) { msg = x && x.setup ? '서버 설정이 아직 끝나지 않았어요 (setup.sql 실행 필요)' : '서버에 연결할 수 없어요 · 인터넷 연결을 확인해 주세요'; }
     }
     if (!ok) { const r = await cloudAuth(msg); firstRun = r.fresh; }

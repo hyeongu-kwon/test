@@ -40,7 +40,7 @@ Sign up with an ID and password to view and edit the same data from a PC or a ph
 **How it works**
 - Opening the app shows a sign-in screen. The first time, choose "Create account" to set an ID and password. Data already on that device is moved into the account.
 - Each change is saved to the server right away. Other devices load the latest version when you return to the app. If two devices change data at the same time, you are asked which version to keep.
-- After 5 wrong passwords the account is locked for 5 minutes. Change password, sign out and delete account are in the Settings tab.
+- 10 wrong passwords from one IP within 10 minutes block that IP for 10 minutes (others cannot lock you out). 50 failures on one account within an hour lock the account for an hour. Change password, sign out and delete account are in the Settings tab.
 - Data is encrypted in the browser before it is uploaded, so the server cannot read it. The password is never stored on the server. **If you forget the password, the data cannot be recovered.**
 
 **To use a different Supabase project**
