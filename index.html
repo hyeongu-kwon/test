@@ -1929,32 +1929,37 @@ function upTips() {
   return list.length ? list : null;
 }
 
+// The daily briefing is written by a scheduled Claude session (briefing/PROMPT.md) to the
+// briefing-data branch of this public repository, so reading it needs no account or API key.
+const BRIEFING_URL = 'https://raw.githubusercontent.com/hyeongu-kwon/test/briefing-data/briefing.json';
+const kstToday = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
+const daysOld = day => Math.round((Date.parse(kstToday()) - Date.parse(day)) / 864e5);
 async function loadInsight(force = false) {
-  if (!cloudOn || !acct.key || insightState.loading || viewOnly) return;
-  const today = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
-  if (!force && insight && insight.day === today && insightState.status === 'ready') return;
+  if (insightState.loading || viewOnly) return;
+  if (!force && insight && insight.day === kstToday() && insightState.status === 'ready') return;
   insightState = { ...insightState, loading: true };
   renderUp();
   try {
-    const r = await fetch(CLOUD.url.replace(/\/+$/, '') + '/functions/v1/insight', { headers: { apikey: CLOUD.key, Authorization: 'Bearer ' + CLOUD.key }, signal: AbortSignal.timeout(20000) });
-    if (r.status === 404) { insightState = { loading: false, status: 'missing', error: '' }; return renderUp(); }
-    const j = await r.json();
-    if (j.briefing) { insight = normInsight(j.briefing); try { localStorage.setItem(INSIGHT_KEY, JSON.stringify(insight)); } catch { /* keep in memory */ } }
-    insightState = { loading: false, status: j.status || 'error', error: '' };
+    const r = await fetch(BRIEFING_URL + '?t=' + Math.floor(Date.now() / 300000), { signal: AbortSignal.timeout(15000), cache: 'no-store' });
+    if (r.status === 404) { insightState = { loading: false, status: insight ? 'stale' : 'none' }; return renderUp(); }
+    if (!r.ok) throw new Error('http ' + r.status);
+    const data = normInsight(await r.json());
+    if (!data || !data.day) throw new Error('bad file');
+    insight = data;
+    try { localStorage.setItem(INSIGHT_KEY, JSON.stringify(insight)); } catch { /* keep in memory */ }
+    insightState = { loading: false, status: daysOld(insight.day) <= 1 ? 'ready' : 'stale' };
   } catch {
-    insightState = { loading: false, status: 'offline', error: '' };
+    insightState = { loading: false, status: 'offline' };
   }
   renderUp();
 }
 
 function aiStatusNote() {
   const s = insightState.status;
-  if (!cloudOn) return '<div class="callout">AI 브리핑은 계정 모드(로그인)에서 사용할 수 있어요.</div>';
   if (insightState.loading) return '<p class="hint">브리핑을 불러오는 중…</p>';
-  if (s === 'missing') return '<div class="callout warnbox">AI 브리핑 함수가 아직 배포되지 않았어요. <code>supabase/functions/insight/README.md</code>의 순서대로 설정해 주세요.</div>';
-  if (s === 'pending') return `<div class="callout">오늘 브리핑을 만드는 중이에요(보통 1~3분). 잠시 후 <b>새로 고침</b>을 눌러 주세요.${insight ? ' 아래는 가장 최근 브리핑이에요.' : ''}</div>`;
-  if (s === 'error') return `<div class="callout warnbox">오늘 브리핑을 만들지 못했어요. 30분 뒤 다시 시도돼요.${insight ? ' 아래는 가장 최근 브리핑이에요.' : ''}</div>`;
-  if (s === 'offline') return '<div class="callout warnbox">브리핑 서버에 연결하지 못했어요. 인터넷 연결을 확인해 주세요.</div>';
+  if (s === 'none') return '<div class="callout">아직 첫 브리핑이 올라오지 않았어요. 매일 아침 자동으로 만들어져요.</div>';
+  if (s === 'stale' && insight) return `<div class="callout warnbox">가장 최근 브리핑이 ${daysOld(insight.day)}일 전 것이에요. 매일 자동 작성이 멈췄을 수 있어요.</div>`;
+  if (s === 'offline') return `<div class="callout warnbox">브리핑을 불러오지 못했어요. 인터넷 연결을 확인해 주세요.${insight ? ' 아래는 저장해 둔 최근 브리핑이에요.' : ''}</div>`;
   return '';
 }
 
@@ -1999,9 +2004,9 @@ function renderUp() {
   const b = insight, held = new Set(state.holdings.filter(h => h.ticker).map(h => h.ticker.toUpperCase()));
   const heldName = n => state.holdings.some(h => h.name && n && (h.name.includes(n) || n.includes(h.name)));
   const conf = c => `<span class="badge" style="${c === '높음' ? '' : c === '낮음' ? 'background:var(--surface-2);color:var(--muted)' : ''}">확신 ${esc(c || '—')}</span>`;
-  const refreshBtn = cloudOn ? `<button class="btn sm" id="upRefresh" type="button" ${insightState.loading ? 'disabled' : ''}>${insightState.loading ? '불러오는 중…' : '새로 고침'}</button>` : '';
+  const refreshBtn = viewOnly ? '' : `<button class="btn sm" id="upRefresh" type="button" ${insightState.loading ? 'disabled' : ''}>${insightState.loading ? '불러오는 중…' : '새로 고침'}</button>`;
   $('#upAi').innerHTML = `
-    <div class="card-h"><div><h2>AI 데일리 브리핑 · 주식</h2><p>${b ? `${esc(b.day || '')} 기준 · 최근 뉴스를 웹 검색해 정리했어요` : '매일 한 번 최신 뉴스로 새로 만들어요'}</p></div>${refreshBtn}</div>
+    <div class="card-h"><div><h2>AI 데일리 브리핑 · 주식</h2><p>${b ? `${esc(b.day || '')} 기준 · Claude가 최근 뉴스를 웹 검색해 정리했어요` : '매일 아침 최신 뉴스로 자동으로 만들어요'}</p></div>${refreshBtn}</div>
     ${aiStatusNote()}
     ${b ? `
       ${b.headline ? `<p style="font-size:16px;font-weight:650;margin:4px 0 12px">${esc(b.headline)}</p>` : ''}
@@ -2020,7 +2025,7 @@ function renderUp() {
     ${b && b.realestate.length ? `<div class="ideas">${b.realestate.map(x => `<div class="idea">
         <div class="idea-h"><b>${esc(x.area)}</b><span class="k">${esc(x.type || '')}</span></div>
         <div class="idea-tags"><span class="badge">${esc(x.horizon || '')}</span></div>
-        <p><b>근거</b> ${esc(x.thesis)}</p><p class="risk"><b>위험</b> ${esc(x.risks)}</p></div>`).join('')}</div>` : `<p class="hint" style="margin:0">${cloudOn ? '브리핑이 준비되면 여기에 표시돼요.' : 'AI 브리핑은 계정 모드(로그인)에서 사용할 수 있어요.'}</p>`}
+        <p><b>근거</b> ${esc(x.thesis)}</p><p class="risk"><b>위험</b> ${esc(x.risks)}</p></div>`).join('')}</div>` : `<p class="hint" style="margin:0">브리핑이 준비되면 여기에 표시돼요.</p>`}
     ${b && b.sources.length ? `<details style="margin-top:12px"><summary class="hint" style="cursor:pointer">참고한 기사 ${b.sources.length}개</summary><ul class="news" style="margin-top:8px">${b.sources.filter(s => safeUrl(s.url)).map(s => `<li><a href="${safeUrl(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title || s.url)}</a></li>`).join('')}</ul></details>` : ''}
     <p class="note">지역·상품 언급은 검토 후보일 뿐이에요. 실제 거래 전에는 실거래가, 대출 규제, 세금을 꼭 확인하세요.</p>`;
 
