@@ -22,6 +22,7 @@ A personal asset dashboard that runs in the browser without installation. On a p
 ### Screens
 - **Home**: net worth (vs. last month and a year ago), total assets, total debt and debt ratio, goal progress with a projected date, net worth trend (6 months / 1 year / all), allocation vs. target, automatic checkpoints
 - **Assets**: one tab per category (cash, stocks, ISA, bonds, real estate, pensions, Bitcoin, other, debt) with totals, shares, returns and trend charts; search; tap an item to edit
+- **자산UP (growth)**: portfolio health score, returns overall / by category / by holding, short- and long-term suggestions, tips for asset types you don't hold, and an AI daily briefing (stock and real-estate trends from recent news, see [`supabase/functions/insight/`](supabase/functions/insight/README.md))
 - **Pensions**: pension savings, IRP and retirement accounts; estimated tax credit this year and the remaining limit; estimated monthly income after retirement (including the national pension)
 - **Kids' assets**: a separate space that is not included in your net worth. Per-child holdings and trends, gift records, and tracking of the 10-year combined gift deduction (₩20M for minors, ₩50M for adults)
 - **History**: monthly totals for assets, debt and net worth (the current month is recorded automatically; past months can be added or edited)
