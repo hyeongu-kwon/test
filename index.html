@@ -543,6 +543,7 @@
           <label class="f">수령 기간 (년)<input type="number" inputmode="numeric" id="pnYears" min="1" max="40"></label>
           <label class="f">예상 연수익률 (%)<input type="number" inputmode="decimal" id="pnRate" min="0" max="20" step="0.5"></label>
           <label class="f span2">국민연금 예상 월액 (원)<input type="text" inputmode="numeric" class="money" id="pnNps" autocomplete="off" placeholder="국민연금공단 ‘내 연금 알아보기’에서 확인"><span class="hint" id="pnNpsHint"></span></label>
+          <label class="f">국민연금 개시 나이<input type="number" inputmode="numeric" id="pnNpsStart" min="55" max="100"></label>
         </div>
         <fieldset style="margin-top:14px"><legend class="f">총급여 (세액공제율)</legend><div class="radio-chips">
           <label><input type="radio" name="pnSalary" value="low"><span class="c">5,500만원 이하 · 16.5%</span></label>
@@ -856,7 +857,7 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 
 const defaultSettings = () => ({ fx: 1400, expense: 3000000, goal: 1000000000, hide: false, range: 12, autolock: 10, homeHide: [] });
 const defaultTargets = () => ({ cash: 10, stock: 25, isa: 5, bond: 10, real: 40, pension: 8, crypto: 0, alt: 2 });
-const defaultPension = () => ({ age: 40, startAge: 60, years: 20, rate: 4, nps: 0, salary: 'low' });
+const defaultPension = () => ({ age: 40, startAge: 60, years: 20, rate: 4, nps: 0, npsStart: 65, salary: 'low' });
 const emptyKids = () => ({ children: [], holdings: [], gifts: [], history: [] });
 const emptyState = () => ({ version: 2, holdings: [], targets: defaultTargets(), settings: defaultSettings(), pension: defaultPension(), kids: emptyKids(), history: [] });
 const KTYPES = [{ id: 'deposit', name: '예·적금' }, { id: 'stock', name: '주식·ETF' }, { id: 'fund', name: '펀드' }, { id: 'housing', name: '청약통장' }, { id: 'insurance', name: '보험' }, { id: 'cash', name: '현금·용돈' }, { id: 'other', name: '기타' }];
@@ -1349,9 +1350,15 @@ function pensionCalc() {
   const fv = value * g + monthlyAll * 12 * (r ? (g - 1) / r : n);
   const months = Math.max(1, +P.years || 1) * 12, mr = r / 12;
   const payout = mr ? fv * mr / (1 - Math.pow(1 + mr, -months)) : fv / months;
+  const payoutAt = S => { // monthly payout if the personal savings start at age S (same method as above)
+    const n2 = Math.max(0, S - (+P.age || 0)), g2 = Math.pow(1 + r, n2);
+    const fv2 = value * g2 + monthlyAll * 12 * (r ? (g2 - 1) / r : n2);
+    const m2 = Math.max(1, +P.years || 1) * 12;
+    return { pm: mr ? fv2 * mr / (1 - Math.pow(1 + mr, -m2)) : fv2 / m2, fv: fv2 };
+  };
   const privShare = value ? sum(h => valueKRW(h), h => h.pType === 'savings' || h.pType === 'irp') / value : 0;
   return { hs, value, cost, valueWithCost, savings, irp, eligible, refund: eligible * rate, rate, room: LIM_T - eligible, savingsRoom: Math.max(0, LIM_S - savings),
-    projEligible, projRefund: projEligible * rate, monthlyAll, n, fv, payout, privPayout: payout * privShare, nps: +P.nps || 0, hasContrib: hs.some(h => h.contrib != null && h.pType !== 'db') };
+    projEligible, projRefund: projEligible * rate, monthlyAll, n, fv, payout, payoutAt, privPayout: payout * privShare, nps: +P.nps || 0, npsStart: +P.npsStart || 65, hasContrib: hs.some(h => h.contrib != null && h.pType !== 'db') };
 }
 function renderPension() {
   const c = pensionCalc(), P = state.pension, ser = catSeries('pension'), prev = ser.length > 1 ? ser[ser.length - 2] : null, W = { won: true };
@@ -1383,20 +1390,28 @@ function renderPension() {
     <div class="goal-meta" style="margin-top:12px"><span>연금저축 <b class="num">${short(c.savings, W)}</b> / 600만원</span><span>IRP·DC 본인 추가납입 <b class="num">${short(c.irp, W)}</b></span></div>
     <div class="callout">${msg}</div>`}
     <p class="note">세법 기준(2026년): 연금저축 연 600만원, IRP 포함 합산 900만원까지 공제 · 총급여 5,500만원 이하 16.5%, 초과 13.2%. 실제 환급액은 결정세액 등에 따라 달라질 수 있어요.</p>`;
-  const total = c.payout + c.nps;
+  const S = +P.startAge || 60, Y = Math.max(1, +P.years || 1), E = S + Y, NS = c.npsStart;
+  const npsMonthsFrom = a => Math.max(0, (a + Y) - Math.max(NS, a)) * 12; // national pension paid from its own start age to the end age
+  const total = c.payout * Y * 12 + c.nps * npsMonthsFrom(S);
+  const rows = [55, 60, 65, 70].map(a => ({ a, pm: c.payoutAt(a).pm, tot: c.payoutAt(a).pm * Y * 12 + c.nps * npsMonthsFrom(a) }));
+  const wonS = x => short(x, { won: true });
   $('#pnRetire').innerHTML = `
-    <div class="card-h"><div><h2>은퇴 후 연금 예상</h2><p>${P.startAge}세부터 ${P.years}년 수령 · 연 ${P.rate}% 가정 · 물가 미반영</p></div></div>
-    <div class="k">예상 월 수령액${c.nps ? ' (국민연금 포함)' : ''}</div>
-    <div class="big num">${kor(total)}</div>
+    <div class="card-h"><div><h2>은퇴 후 예상 수령액</h2><p>${S}세부터 ${E}세까지 ${Y}년 수령 · 연 ${P.rate}% 가정 · 물가 미반영</p></div></div>
+    <div class="k">${S}세부터 매월 받는 금액</div>
+    <div class="big num">${wonS(c.payout)}</div>
+    ${c.nps ? `<div class="goal-meta" style="margin-top:8px"><span>국민연금 <b class="num">${wonS(c.nps)}</b> · ${NS}세부터</span><span>${NS <= S ? `${S}세부터 합계 <b class="num">${wonS(c.payout + c.nps)}</b>` : `${S}세~${NS - 1}세 ${wonS(c.payout)} → ${NS}세부터 합계 <b class="num">${wonS(c.payout + c.nps)}</b>`}</span></div>` : '<p class="note" style="margin:8px 0 0">국민연금을 입력하면 개시 나이부터 함께 더해 계산해요.</p>'}
     <div class="kv">
-      <div><div class="k">개인·퇴직연금</div><div class="v num">${short(c.payout, W)}<span class="k"> /월</span></div></div>
-      <div><div class="k">국민연금</div><div class="v num">${c.nps ? short(c.nps, W) + '<span class="k"> /월</span>' : '<span class="k">미입력</span>'}</div></div>
-      <div><div class="k">${P.startAge}세 예상 적립금</div><div class="v num">${short(c.fv, W)}</div></div>
+      <div><div class="k">총 수령액 (${E}세까지)</div><div class="v num">${wonS(total)}</div></div>
+      <div><div class="k">${S}세 예상 적립금</div><div class="v num">${wonS(c.fv)}</div></div>
+      <div><div class="k">수령 기간</div><div class="v num">${S}세 ~ ${E}세</div></div>
     </div>
-    <p class="note">${c.n ? `앞으로 ${c.n}년 동안 월 ${short(c.monthlyAll, W)}씩 적립하고 ` : ''}연 ${P.rate}% 수익을 가정한 단순 계산이에요.</p>
+    <div class="table-wrap" style="margin:16px 0 0"><table>
+      <thead><tr><th>수령 시작</th><th class="r">개인연금 월</th><th class="r">총 수령액</th></tr></thead>
+      <tbody>${rows.map(r => `<tr style="${r.a === S ? 'font-weight:650' : ''}"><td>${r.a}세 ~ ${r.a + Y}세${r.a === S ? ' <span class="badge">선택</span>' : ''}</td><td class="r">${wonS(r.pm)}</td><td class="r">${wonS(r.tot)}</td></tr>`).join('')}</tbody></table></div>
+    <p class="note">${c.n ? `앞으로 ${c.n}년 동안 월 ${short(c.monthlyAll, W)}씩 적립하고 ` : ''}연 ${P.rate}% 수익을 가정한 단순 계산이에요. 국민연금 금액은 입력한 값을 그대로 쓰고 물가는 반영하지 않았어요.</p>
     ${c.privPayout * 12 > 15e6 ? '<div class="callout warnbox">연금저축·IRP 연 수령액이 1,500만원을 넘을 것 같아요. 넘으면 분리과세(16.5%)와 종합과세 중 골라야 하니, 수령 기간을 늘리는 것도 고려해 보세요.</div>' : ''}`;
   const ae = document.activeElement, setv = (id, v) => { if ($(id) !== ae) $(id).value = v; };
-  setv('#pnAge', P.age); setv('#pnStart', P.startAge); setv('#pnYears', P.years); setv('#pnRate', P.rate); setv('#pnNps', fmtInput(P.nps || ''));
+  setv('#pnAge', P.age); setv('#pnStart', P.startAge); setv('#pnYears', P.years); setv('#pnRate', P.rate); setv('#pnNps', fmtInput(P.nps || '')); setv('#pnNpsStart', P.npsStart || 65);
   $('#pnNpsHint').textContent = unitHint(P.nps);
   $$('input[name=pnSalary]').forEach(r => (r.checked = r.value === P.salary));
   const t = totals();
@@ -1822,7 +1837,7 @@ const pnBind = (id, key, parse = v => +v) => $(id).addEventListener('input', e =
   if (e.target.value === '') return; const v = parse(e.target.value);
   if (v != null && isFinite(v) && v >= 0) { state.pension[key] = v; save(); renderPension(); renderInsights(totals()); }
 });
-pnBind('#pnAge', 'age'); pnBind('#pnStart', 'startAge'); pnBind('#pnYears', 'years'); pnBind('#pnRate', 'rate'); pnBind('#pnNps', 'nps', parseNum);
+pnBind('#pnAge', 'age'); pnBind('#pnStart', 'startAge'); pnBind('#pnYears', 'years'); pnBind('#pnRate', 'rate'); pnBind('#pnNps', 'nps', parseNum); pnBind('#pnNpsStart', 'npsStart');
 $$('input[name=pnSalary]').forEach(r => r.addEventListener('change', e => { state.pension.salary = e.target.value; save(); renderPension(); renderInsights(totals()); }));
 $('#q').addEventListener('input', renderAssets);
 $('#viewChips').addEventListener('click', e => {
