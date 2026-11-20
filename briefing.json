@@ -1,36 +1,31 @@
 {
-  "day": "2026-11-20",
-  "generated_at": "2026-11-20T07:50:00+09:00",
-  "headline": "뉴욕증시 AI주 매도로 이틀째 하락(S&P500 7,340), 엔비디아 실적은 아직 미확인 — 국내 최신 마감은 12일 자료",
+  "day": "2026-11-21",
+  "generated_at": "2026-11-21T07:50:00+09:00",
+  "headline": "엔비디아 매출 1,158억달러로 예상 상회, 코스피 18일 5,067로 5천선 회복 — 19~20일 마감은 미확인",
   "market": [
     {
-      "title": "뉴욕증시, AI주 중심 이틀 연속 하락",
-      "summary": "16일 S&P500은 1.9% 내린 7,416.59, 17일에는 1% 더 내린 7,340.53에 마감했습니다. 17일 다우는 1.6%, 나스닥은 0.7% 떨어졌고 엔비디아 등 AI주가 하락을 이끌었습니다. 18일 마감은 확인하지 못했습니다.",
-      "source": "https://www.lanacion.com.ar/usa/how-major-us-stock-indexes-fared-tuesday-11172026-nid17112026/"
+      "title": "엔비디아 3분기 매출 1,158억달러, 전망 상회",
+      "summary": "엔비디아는 회계연도 2027년 3분기 매출 1,158억달러(전년 대비 103% 증가)를 발표했고, 데이터센터 매출은 1,076억달러였습니다. 다음 분기 매출 전망은 약 1,300억달러입니다. 다만 18일 정규장에서 주가는 2.89% 내린 150.96달러로 마감했습니다.",
+      "source": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-Third-Quarter-Fiscal-2027/default.aspx"
     },
     {
-      "title": "엔비디아 실적, 발표일·결과 모두 확인 필요",
-      "summary": "엔비디아 3분기 실적 발표일은 17일과 18일(미국 시간)로 자료가 엇갈리고, 실제 실적과 주가 반응은 검색으로 확인되지 않았습니다. 발표 전 회사 가이던스는 매출 1,080억달러(±2%), Visible Alpha 컨센서스는 1,093억달러였습니다.",
-      "source": "https://www.spglobal.com/market-intelligence/en/news-insights/research/2026/11/nvidia-earnings-preview-q3-2027"
+      "title": "코스피, 4일 하락 뒤 18일 5,067로 반등",
+      "summary": "코스피는 12~17일 4거래일 연속 하락해 17일 4,968.48(-2.59%)로 9개월여 만에 5,000선 아래에서 마감했고, 이날 외국인은 1조4천억원 넘게 팔았습니다. 18일에는 1.99% 오른 5,067.44로 5,000선을 회복했습니다. 19~20일 마감은 확인하지 못했습니다.",
+      "source": "https://inews24.com/view/2027779"
     },
     {
-      "title": "코스피 12일 5,342 하락 마감",
-      "summary": "코스피는 10~11일 이틀간 급등해 5,375.36까지 오른 뒤 12일 0.61% 내린 5,342선에서 마감했습니다. 옵션만기와 엔비디아 관련 악재 보도가 겹치며 양 지수가 하락했습니다. 13일 이후 마감은 검색으로 확인하지 못했습니다.",
-      "source": "https://kbthink.com/investment/today-pick/2611/261112-2.html"
+      "title": "뉴욕증시, 다우 약세·나스닥 소폭 반등",
+      "summary": "18일 S&P500은 0.2% 내린 7,323.63, 다우는 1.1% 내린 50,198.17에 마감했고 나스닥은 0.4% 오른 24,429.88이었습니다. 이번 주 수요일까지 S&P500은 3.1%, 다우는 4.1% 하락했습니다.",
+      "source": "https://www.lanacion.com.ar/usa/how-major-us-stock-indexes-fared-wednesday-11182026-nid18112026/"
     },
     {
-      "title": "원/달러 1333.6원, 2주 만에 최저",
-      "summary": "11일 원/달러 환율은 전일보다 3.9원 내린 1333.6원에 마감해 지난달 27일 이후 최저를 기록했습니다. 기사는 당분간 원화 강세 흐름이 이어질 수 있다고 봤습니다. 이후 환율은 확인하지 못했습니다.",
-      "source": "https://etoday.co.kr/news/view/2646954"
+      "title": "한국은행 기준금리 연 3.00%, 11월 인상 여부 주목",
+      "summary": "한국은행은 7·8월 연속 인상 뒤 10월 기준금리를 연 3.00%로 동결했습니다. 증권가 일부는 11월 추가 인상 가능성을 열어 두고 있지만, 최근 주가 조정으로 인상 전망이 흔들린다는 분석도 나옵니다.",
+      "source": "https://www.koreancenter.or.kr/news/articleView.html?idxno=1428068"
     },
     {
-      "title": "10월 코스피 16% 가까이 급락",
-      "summary": "코스피는 10월 한 달간 16% 가까이 떨어져 역대 일곱 번째로 큰 월간 낙폭을 기록했습니다. 시장에서는 반도체 주도주 저가 매수와 조선·방산·바이오로의 재편을 두고 의견이 갈립니다.",
-      "source": "https://biz.sbs.co.kr/amp/article/20000343632"
-    },
-    {
-      "title": "서울 아파트값 92주 연속 상승, 약세 한강벨트로 확산",
-      "summary": "11월 둘째 주(9일 기준) 서울 아파트값은 0.07% 올라 전주와 같은 폭을 유지했습니다. 강남3구 약세가 이어지는 가운데 성동·강동 등 한강벨트 일부도 하락 전환한 것으로 보도됐습니다.",
+      "title": "서울 아파트값 92주 연속 상승, 강남3구는 하락 지속",
+      "summary": "11월 둘째 주(9일 기준) 서울 아파트값은 0.07% 올라 전주와 같은 폭을 유지했습니다. 서초·강남구는 14주, 송파구는 10주 연속 하락했고 성동·강동 등 한강벨트 일부도 하락 전환했습니다.",
       "source": "https://www.seoul.co.kr/news/newsView.php?id=20261113032001"
     }
   ],
@@ -56,8 +51,8 @@
       "name": "삼성전자",
       "ticker": "005930",
       "market": "KR",
-      "thesis": "코스피 주도주인 반도체 대표주로, 10월 급락 뒤 저가 매수 논의 대상입니다.",
-      "catalysts": "엔비디아 실적, 메모리 가격 흐름, 외국인 수급",
+      "thesis": "코스피 급락 구간에서 외국인 매도가 집중된 반도체 대표주로, 18일 2.31% 오른 19만4,700원에 마감하며 반등을 시도했습니다.",
+      "catalysts": "엔비디아 호실적 이후 메모리 수요 확인, 외국인 수급 전환 여부",
       "risks": "AI 투자 둔화 우려 재부각 시 추가 하락 가능",
       "horizon": "장기",
       "confidence": "보통"
@@ -66,8 +61,8 @@
       "name": "SK하이닉스",
       "ticker": "000660",
       "market": "KR",
-      "thesis": "AI용 메모리 수요의 직접 수혜주로 반도체 반등 시나리오의 핵심입니다.",
-      "catalysts": "엔비디아 실적과 가이던스, 빅테크 설비투자 발표",
+      "thesis": "AI용 메모리 수요의 직접 수혜주로, 18일 4.19% 오른 114만4,000원에 마감했습니다.",
+      "catalysts": "엔비디아 다음 분기 매출 전망(약 1,300억달러)이 시사하는 HBM 수요, 빅테크 설비투자",
       "risks": "AI 관련주 변동성이 커 단기 급등락 가능",
       "horizon": "단기",
       "confidence": "보통"
@@ -96,9 +91,9 @@
       "name": "엔비디아",
       "ticker": "NVDA",
       "market": "US",
-      "thesis": "AI 투자 사이클의 바로미터로, 16~17일 AI주 하락을 이끈 만큼 실적이 투자심리 방향을 가를 수 있습니다.",
-      "catalysts": "3분기 실적 결과(가이던스 1,080억달러 대비)와 4분기 매출 전망 — 발표일·수치 확인 필요",
-      "risks": "옵션시장이 ±10%대 주가 변동을 반영할 만큼 실적 직후 변동성이 크고, 보도된 경영진 관련 조사 이슈 등 지배구조 우려가 있음",
+      "thesis": "3분기 매출이 1,158억달러로 컨센서스(약 1,090억달러대)를 넘었고 다음 분기 약 1,300억달러를 제시했지만, 18일 주가는 2.89% 내렸습니다.",
+      "catalysts": "실적 후 주가 방향, 중국 데이터센터 매출 제외 전망의 변화, 경영진 교체 이후 사업 계획",
+      "risks": "호실적에도 주가가 하락할 만큼 AI 투자 사이클 우려가 크고, CEO 사임 보도 등 경영진 변화에 따른 불확실성이 있음",
       "horizon": "단기",
       "confidence": "보통"
     }
@@ -114,7 +109,7 @@
     {
       "area": "강남3구·한강벨트(성동·강동)",
       "type": "아파트",
-      "thesis": "11월 둘째 주 강남3구 약세가 이어졌고, 성동구가 32주 만에 하락 전환하는 등 한강벨트 일부로 약세가 번졌습니다. 가격 조정 폭과 거래량을 지켜볼 구간입니다.",
+      "thesis": "서초·강남구는 14주, 송파구는 10주 연속 하락했고 성동·강동 등 한강벨트 일부도 하락 전환했습니다. 가격 조정 폭과 거래량을 지켜볼 구간입니다.",
       "risks": "'지수 착시' 논쟁이 있어 일부 지역 하락만으로 시장 전체 안정을 판단하기 어렵고, 규제·금리 변화에 반등할 수 있음",
       "horizon": "단기"
     },
@@ -126,71 +121,51 @@
       "horizon": "장기"
     }
   ],
-  "outlook": "앞으로 1~3개월은 10월 급락 뒤 반등이 이어질지 확인하는 구간으로 보입니다. 엔비디아 실적과 4분기 전망이 AI 우려를 덜면 반도체 중심 회복 가능성이 있고, 실망스러우면 조선·방산 등으로 순환이 강해질 수 있습니다. 금리: TheStreet는 연준이 9월 16일 금리를 인상한 뒤 완만한 인상 사이클 패턴을 따르고 있다고 전했지만 단일 출처라 연준 발표로 확인이 필요합니다. 확인할 지표: 엔비디아 실적 수치와 주가 반응, 외국인 순매수 지속 여부, 11월 말 한국은행 금통위, 연준 12월 회의, 서울 아파트 주간 상승률(한강벨트 하락 확산 여부). 주의: 국내 증시 최신 마감은 12일, 환율은 11일 자료(1주일 이상 지남)이며, 13일 이후 국내 수치·미국 18일 마감·현재 한국 기준금리·엔비디아 실제 실적은 검색으로 확인하지 못했습니다.",
+  "outlook": "엔비디아가 예상을 웃도는 실적과 전망을 냈지만 주가가 하락해, 앞으로 1~3개월은 AI 투자 우려가 실적으로 진정되는지 확인하는 구간으로 보입니다. 외국인 매도가 멈추면 반도체 중심 반등 가능성이 있고, 이어지면 코스피 5,000선 공방이 길어질 수 있습니다. 확인할 지표: 외국인 순매수 전환 여부, 11월 말 한국은행 금통위(연 3.00%, 추가 인상 여부)와 3분기 GDP 속보치, 연준 12월 회의, 서울 아파트 주간 상승률(한강벨트 하락 확산 여부). 주의: 국내 19~20일 마감, 미국 19~20일 마감, 최근 원/달러 환율(최신 확인치는 11일 1333.6원)은 검색으로 확인하지 못했습니다. 연준 금리 경로도 9월 인상 보도(TheStreet) 외에는 확인되지 않았습니다.",
   "sources": [
     {
-      "title": "KB Think: 옵션만기·엔비디아 악재, 양 지수 하락 (11/12)",
-      "url": "https://kbthink.com/investment/today-pick/2611/261112-2.html"
+      "title": "NVIDIA Announces Financial Results for Third Quarter Fiscal 2027",
+      "url": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-Third-Quarter-Fiscal-2027/default.aspx"
     },
     {
-      "title": "이투데이 환율마감: 원·달러 사흘째 하락해 2주일만 최저 (11/11)",
-      "url": "https://etoday.co.kr/news/view/2646954"
+      "title": "아이뉴스24: 코스피, 하루 만에 '5000피' 회복 (11/18)",
+      "url": "https://inews24.com/view/2027779"
+    },
+    {
+      "title": "Korea JoongAng Daily: Kospi drops for 4th day amid lingering AI woes (11/17)",
+      "url": "https://www.koreajoongangdaily.com/business/kospi-drops-for-4th-day-amid-lingering-ai-woes/12977416"
+    },
+    {
+      "title": "MTN 마감시황: 코스피 0.98% 내린 5290.53 (11/13)",
+      "url": "https://news.mtn.co.kr/article/2026111315370634191"
+    },
+    {
+      "title": "How major US stock indexes fared Wednesday 11/18/2026",
+      "url": "https://www.lanacion.com.ar/usa/how-major-us-stock-indexes-fared-wednesday-11182026-nid18112026/"
     },
     {
       "title": "How major US stock indexes fared Tuesday 11/17/2026",
       "url": "https://www.lanacion.com.ar/usa/how-major-us-stock-indexes-fared-tuesday-11172026-nid17112026/"
     },
     {
-      "title": "How major US stock indexes fared Monday 11/16/2026",
-      "url": "https://www.lanacion.com.ar/usa/how-major-us-stock-indexes-fared-monday-11162026-nid16112026/"
+      "title": "코리안센터: 연속 인상 뒤 연 3.00% 유지…11월 추가 인상 가능성",
+      "url": "https://www.koreancenter.or.kr/news/articleView.html?idxno=1428068"
     },
     {
-      "title": "Another wipeout hits Wall Street as Nvidia, other jittery AI stocks swing lower (11/17)",
-      "url": "https://www.valleynewslive.com/2026/11/17/another-wipeout-hits-wall-street-nvidia-other-jittery-ai-stocks-swing-lower/"
-    },
-    {
-      "title": "서플: 강남발 아파트값 약세 한강벨트까지…성동·강동 하락 전환",
-      "url": "https://supple.kr/news/cmwd3mprxfq8gal9pqk17k2ki"
-    },
-    {
-      "title": "MTN 마감시황: 외인 '사자'에 코스피 5300선 (11/11)",
-      "url": "https://news.mtn.co.kr/article/2026111115573998013"
-    },
-    {
-      "title": "MTN 마감시황: 반도체주 급등에 코스피 5200선 복귀 (11/10)",
-      "url": "https://news.mtn.co.kr/article/2026111015452578240"
-    },
-    {
-      "title": "SBS Biz: 코스피 6천선 재도전 가능할까? 여전히 주도주는 반도체",
-      "url": "https://biz.sbs.co.kr/amp/article/20000343632"
-    },
-    {
-      "title": "S&P Global: Nvidia earnings preview Q3 FY2027 (11/12)",
-      "url": "https://www.spglobal.com/market-intelligence/en/news-insights/research/2026/11/nvidia-earnings-preview-q3-2027"
+      "title": "이투데이 환율마감: 원·달러 2주일만 최저 (11/11)",
+      "url": "https://etoday.co.kr/news/view/2646954"
     },
     {
       "title": "서울신문: 강동·성동 집값도 하락 전환… 한강벨트까지 번졌다",
       "url": "https://www.seoul.co.kr/news/newsView.php?id=20261113032001"
     },
     {
-      "title": "MarketPulse: Nvidia Q3 earnings preview",
-      "url": "https://www.marketpulse.com/markets/nvidia-nvda-q3-earnings-preview-ai-spending-risks-and-governance-concerns-threaten-major-uptrend/"
+      "title": "비즈워치: 서울 아파트 주간 동향 (11/13)",
+      "url": "https://news.bizwatch.co.kr/article/real_estate/2026/11/13/0054"
     },
     {
-      "title": "SBS Biz: 강남 3구 떨어지고 강북 뛰고…서울 집값 엇갈려",
-      "url": "https://biz.sbs.co.kr/amp/article/20000344516"
-    },
-    {
-      "title": "비즈워치: 강남 집값 떨어지자 주택사업자 분양 전망도 비관",
-      "url": "https://news.bizwatch.co.kr/article/real_estate/2026/11/06/0040"
-    },
-    {
-      "title": "비즈워치: 11월 반도체주 전망 (2026/11/02)",
-      "url": "https://news.bizwatch.co.kr/article/market/2026/11/02/0003/"
-    },
-    {
-      "title": "Rabobank: Federal Reserve policy to remain on hold through 2027",
-      "url": "https://www.tmgm.com/de/analysis/market-news/article/federal-reserve-policy-to-remain-on-hold-through-2027-rabobank-202610011342"
+      "title": "SBS Biz: 코스피 6천선 재도전 가능할까? 여전히 주도주는 반도체",
+      "url": "https://biz.sbs.co.kr/amp/article/20000343632"
     },
     {
       "title": "TheStreet: Two months after the Fed's first hike",
