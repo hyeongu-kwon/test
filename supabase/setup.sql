@@ -37,11 +37,11 @@ alter table public.vault_throttle enable row level security;
 revoke all on public.vault_throttle from public, anon, authenticated;
 
 create or replace function public.vault_hash(p_auth text) returns text
-language sql immutable as $$ select encode(sha256(convert_to(p_auth, 'utf8')), 'hex') $$;
+language sql immutable set search_path = public as $$ select encode(sha256(convert_to(p_auth, 'utf8')), 'hex') $$;
 
 -- 요청한 사람의 IP (Supabase API가 넘겨주는 헤더). 알 수 없으면 null → IP 제한은 건너뛰고 계정 제한만 적용
 create or replace function public.vault_client_ip() returns text
-language plpgsql stable as $$
+language plpgsql stable set search_path = public as $$
 declare h json;
 begin
   h := nullif(current_setting('request.headers', true), '')::json;

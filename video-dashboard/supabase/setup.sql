@@ -21,6 +21,8 @@ end $$;
 drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created after insert on auth.users
   for each row execute function public.handle_new_user();
+-- 트리거 전용 함수라 API로 직접 호출할 필요가 없습니다.
+revoke execute on function public.handle_new_user() from public, anon, authenticated;
 
 -- 이미 만들어 둔 계정도 프로필을 채웁니다.
 insert into public.profiles (id, email) select id, email from auth.users on conflict (id) do nothing;
@@ -30,6 +32,9 @@ create or replace function public.my_role() returns text
 language sql stable security definer set search_path = public as $$
   select role from public.profiles where id = auth.uid()
 $$;
+-- 로그인한 사용자의 권한 규칙에서만 씁니다.
+revoke execute on function public.my_role() from public, anon;
+grant execute on function public.my_role() to authenticated;
 
 -- ============ 2. 영상 정보 ============
 create table if not exists public.videos (
@@ -51,7 +56,7 @@ create table if not exists public.videos (
 );
 
 create or replace function public.touch_updated_at() returns trigger
-language plpgsql as $$
+language plpgsql set search_path = public as $$
 begin
   -- 조회수만 바뀐 경우는 수정 시각을 건드리지 않습니다.
   if new.views is not distinct from old.views then new.updated_at = now(); end if;
@@ -190,7 +195,7 @@ grant execute on function public.admin_create_user(text, text, text), public.adm
 
 -- 관리자가 자기 권한을 스스로 내려 관리자가 없어지는 일을 막습니다.
 create or replace function public.protect_own_role() returns trigger
-language plpgsql as $$
+language plpgsql set search_path = public as $$
 begin
   if new.role is distinct from old.role and old.id = auth.uid() then raise exception 'cannot change own role'; end if;
   return new;
