@@ -1,32 +1,27 @@
 {
-  "day": "2026-11-27",
-  "generated_at": "2026-11-27T07:50:00+09:00",
-  "headline": "어제 금통위 결과는 아직 검색으로 미확인(직전 연 3.00%), 인상 여부 확인 필요 — 20일 이후 증시 마감도 미확인",
+  "day": "2026-11-28",
+  "generated_at": "2026-11-28T07:50:00+09:00",
+  "headline": "한은 기준금리 연 3.25%로 인상, 코스피는 27일 4.34% 급등한 4,915·뉴욕증시는 주간 5%대 반등",
   "market": [
+    {
+      "title": "한국은행, 기준금리 연 3.25%로 인상",
+      "summary": "금통위는 26일 기준금리를 연 3.00%에서 3.25%로 0.25%포인트 올렸습니다(7·8월에 이어 올해 세 번째 인상). 성장세 강화, 목표를 웃도는 물가 전망, 금융안정 리스크를 이유로 들었고, 위원 7명 중 2명은 동결 의견을 냈습니다.",
+      "source": "https://www.bok.or.kr/portal/bbs/P0000559/view.do?depth=200690&menuNo=200690&nttId=11067084&programType=newsData&relate=Y"
+    },
+    {
+      "title": "코스피 27일 4.34% 급등, 4,915 마감",
+      "summary": "코스피는 27일 4.34% 오른 4,915.68, 코스닥은 8.13% 뛴 708.99에 마감했습니다. 외국인이 1조1천억원 넘게 순매수했고, 미국 무역대표부가 한국에 기존 합의 수준인 15% 관세율을 제시해 불확실성이 줄었다는 분석이 나왔습니다.",
+      "source": "https://www.hankyung.com/article/202611275045i"
+    },
+    {
+      "title": "뉴욕증시 주간 5%대 반등, 반도체 주도",
+      "summary": "27일(추수감사절 다음 날 단축 거래) S&P500은 1.60% 오른 7,297.49, 나스닥은 2.31% 오른 24,129.50, 다우는 1.18% 오른 50,774.94에 마감했습니다. 이번 주 S&P500은 5.60%, 나스닥은 6.68% 올랐지만, 11월 전체로는 2008년 이후 가장 부진한 달로 보도됐습니다.",
+      "source": "https://journalarta.com/en/2026/11/28/nasdaq-jumps-2-31-and-sp-500-gains-1-61-as-chipmakers-lead-black-friday-rally/"
+    },
     {
       "title": "엔비디아 3분기 매출 1,158억달러, 전망 상회",
       "summary": "엔비디아는 회계연도 2027년 3분기 매출 1,158억달러(전년 대비 103% 증가)를 발표했고, 데이터센터 매출은 1,076억달러였습니다. 다음 분기 매출 전망은 약 1,300억달러입니다. 다만 18일 정규장에서 주가는 2.89% 내린 150.96달러로 마감했습니다.",
       "source": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-Third-Quarter-Fiscal-2027/default.aspx"
-    },
-    {
-      "title": "코스피 18~19일 이틀 반등, 5,137 마감",
-      "summary": "코스피는 17일 4,968.48까지 밀린 뒤 18일 5,067.44, 19일 1.39% 오른 5,137.89로 마감했고 코스닥도 3%대 올랐습니다. 앤트로픽 상장을 앞두고 외국인이 자금을 회수했다는 관측이 나왔습니다. 20일 마감은 확인하지 못했습니다.",
-      "source": "https://news.mtn.co.kr/article/2026111916452697472"
-    },
-    {
-      "title": "앤트로픽, 공모가 83달러로 나스닥 상장",
-      "summary": "앤트로픽은 공모가를 희망 범위(70~78달러)보다 높은 83달러로 정해 기업가치 약 1조5천억달러로 평가받았고, 19일 티커 ANT로 거래를 시작해 111.50달러에 출발했습니다. 같은 날 나스닥은 1.4% 내리고 반도체주가 흔들렸다는 분석이 있습니다. 상장 자금 마련을 위한 외국인 매도가 일단락될지 주목됩니다.",
-      "source": "https://www.koreajoongangdaily.com/business/anthropic-prices-its-ipo-at-83-per-share-valuing-the-ai-giant-at-15-trillion/12980374"
-    },
-    {
-      "title": "뉴욕증시, 다우 약세·나스닥 소폭 반등",
-      "summary": "18일 S&P500은 0.2% 내린 7,323.63, 다우는 1.1% 내린 50,198.17에 마감했고 나스닥은 0.4% 오른 24,429.88이었습니다. 이번 주 수요일까지 S&P500은 3.1%, 다우는 4.1% 하락했습니다. S&P500은 18일까지 5거래일 연속 하락해 6월 이후 최장 하락을 기록했고, 연준의 추가 금리 인상 전망이 부담으로 꼽혔습니다. 10월 미국 산업생산은 0.4% 감소해 예상(0.1% 증가)을 밑돌았습니다.",
-      "source": "https://www.lanacion.com.ar/usa/how-major-us-stock-indexes-fared-wednesday-11182026-nid18112026/"
-    },
-    {
-      "title": "금통위 결과 확인 필요, 직전 연 3.00%",
-      "summary": "한국은행은 26일 기준금리를 결정했지만 결과는 검색으로 확인하지 못했습니다. 10월 동결 당시 모건스탠리는 11월 연 3.25% 인상, 내년 1분기 3.5%를 예상했습니다. 한은의 8월 전망은 올해 성장률 3.3%, 소비자물가 2.7%였습니다.",
-      "source": "https://www.koreatimes.co.kr/economy/20261022/bok-keeps-rate-steady-at-3-but-further-hikes-remain-on-table"
     },
     {
       "title": "서울 아파트값 상승폭 0.03%로 축소, 약세 확산",
@@ -56,9 +51,9 @@
       "name": "삼성전자",
       "ticker": "005930",
       "market": "KR",
-      "thesis": "코스피 급락 구간에서 외국인 매도가 집중된 반도체 대표주로, 18일 2.31% 오른 19만4,700원에 마감하며 반등을 시도했습니다.",
+      "thesis": "코스피 급락 구간에서 외국인 매도가 집중된 반도체 대표주로, 18일 19만4,700원으로 반등했고 27일 외국인 대규모 순매수로 시장이 급반등했습니다.",
       "catalysts": "엔비디아 호실적 이후 메모리 수요 확인, 외국인 수급 전환 여부",
-      "risks": "AI 투자 둔화 우려 재부각 시 추가 하락 가능",
+      "risks": "기준금리 인상에 따른 투자심리 부담, AI 투자 둔화 우려 재부각 시 추가 하락 가능",
       "horizon": "장기",
       "confidence": "보통"
     },
@@ -126,91 +121,35 @@
       "horizon": "장기"
     }
   ],
-  "outlook": "엔비디아가 예상을 웃도는 실적과 전망을 냈지만 주가가 하락해, 앞으로 1~3개월은 AI 투자 우려가 실적으로 진정되는지 확인하는 구간으로 보입니다. 19일 앤트로픽 상장이 끝나 관련 외국인 자금 회수가 일단락되면(키움증권 전망) 반도체 중심 반등 가능성이 있고, 자금 회수가 이어지면 코스피 5,000선 공방이 길어질 수 있습니다. 확인할 지표: 외국인 순매수 전환 여부, 26일 한국은행 금통위 결과(검색 미확인, 직전 연 3.00%)와 수정 경제전망, 연준 12월 회의, 서울 아파트 주간 상승률(한강벨트 하락 확산 여부). 주의: 국내 20일·23일 마감, 미국 19일 이후 마감, 17일 이후 원/달러 환율(17일 1,330원대 후반)은 검색으로 확인하지 못했습니다. 연준 금리 경로도 9월 인상 보도(TheStreet) 외에는 확인되지 않았습니다.",
+  "outlook": "기준금리가 연 3.25%로 오른 가운데 국내외 증시가 주 후반 급반등해, 앞으로 1~3개월은 반등이 이어질지 확인하는 구간으로 보입니다. 외국인 순매수가 이어지고 반도체가 주도하면 회복 흐름이 강해질 수 있고, 금리 인상 부담과 AI 투자 우려가 다시 커지면 변동성이 이어질 수 있습니다. 확인할 지표: 외국인 순매수 지속 여부, 한은의 추가 인상 신호(동결 소수의견 2명), 대출금리 반영(코픽스는 통상 1~2개월 시차), 연준 12월 회의, 미국 관세 확정 내용, 서울 아파트 주간 상승률(한강벨트 하락 확산 여부). 주의: 원/달러 환율은 17일 1,330원대 후반 이후 확인하지 못했고, 서울 아파트 11월 넷째 주 통계와 한은 11월 수정 경제전망 수치도 검색으로 확인하지 못했습니다.",
   "sources": [
+    {
+      "title": "한국은행: 통화정책방향 (2026.11.26)",
+      "url": "https://www.bok.or.kr/portal/bbs/P0000559/view.do?depth=200690&menuNo=200690&nttId=11067084&programType=newsData&relate=Y"
+    },
+    {
+      "title": "서울신문: [속보] 금통위, 기준금리 연 3.25%로 인상 결정",
+      "url": "https://www.seoul.co.kr/news/economy/finance/2026/11/26/20261126500036"
+    },
+    {
+      "title": "한국경제: 외국인 1조원 넘게 샀다…코스피 4900선 회복·코스닥 8% 급등 (11/27)",
+      "url": "https://www.hankyung.com/article/202611275045i"
+    },
+    {
+      "title": "뉴스핌: 코스피 4%대 상승에 4900선 회복 (11/27)",
+      "url": "https://newspim.com/news/view/20261127001148"
+    },
+    {
+      "title": "JournalArta: Nasdaq jumps 2.31%, S&P 500 gains as chipmakers lead Black Friday rally",
+      "url": "https://journalarta.com/en/2026/11/28/nasdaq-jumps-2-31-and-sp-500-gains-1-61-as-chipmakers-lead-black-friday-rally/"
+    },
+    {
+      "title": "CNBC: Dow closes out best week since 2022",
+      "url": "https://www.cnbc.com/2026/11/26/stock-market-today-live-updates.html"
+    },
     {
       "title": "NVIDIA Announces Financial Results for Third Quarter Fiscal 2027",
       "url": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-Third-Quarter-Fiscal-2027/default.aspx"
-    },
-    {
-      "title": "Korea JoongAng Daily: Anthropic prices its IPO at $83 per share (11/19)",
-      "url": "https://www.koreajoongangdaily.com/business/anthropic-prices-its-ipo-at-83-per-share-valuing-the-ai-giant-at-15-trillion/12980374"
-    },
-    {
-      "title": "TechRepublic: Anthropic opens at $111.50 in Nasdaq debut",
-      "url": "https://www.techrepublic.com/article/news-anthropic-ipo-nasdaq-trading-debut/"
-    },
-    {
-      "title": "Korea Times: BOK keeps rate steady at 3%, but further hikes remain on table (10/22)",
-      "url": "https://www.koreatimes.co.kr/economy/20261022/bok-keeps-rate-steady-at-3-but-further-hikes-remain-on-table"
-    },
-    {
-      "title": "SBS Biz: 한은, 올해 성장률 전망치 2.6%→3.3%로 상향 (8월)",
-      "url": "https://biz.sbs.co.kr/amp/article/20000331063"
-    },
-    {
-      "title": "비즈워치: 11월 금통위 추가 인상 여지 (11/06)",
-      "url": "https://news.bizwatch.co.kr/article/finance/2026/11/06/0021"
-    },
-    {
-      "title": "메트로신문: 26일 금리 결정·수정 경제전망 예고 (11/19)",
-      "url": "https://www.metroseoul.co.kr/article/20261119500274"
-    },
-    {
-      "title": "SBS Biz: 10월엔 쉬어가도…기준금리 3.75% 전망까지 (10/18)",
-      "url": "https://biz.sbs.co.kr/amp/article/20000340587"
-    },
-    {
-      "title": "Zacks: Stock Market News for Nov 18, 2026",
-      "url": "https://www.zacks.com/stock/news/3031665/stock-market-news-for-nov-18-2026"
-    },
-    {
-      "title": "Finimize: Anthropic's IPO pops but AI stocks stay skittish",
-      "url": "https://finimize.com/content/anthropics-ipo-pops-but-ai-stocks-stay-skittish"
-    },
-    {
-      "title": "코리안센터: 엔비디아發 훈풍…달러 강세에도 1,330원대 등락 (11/17)",
-      "url": "https://www.koreancenter.or.kr/news/articleView.html?idxno=1441514"
-    },
-    {
-      "title": "코리안센터: 연속 인상 효과 점검 필요…물가 불안에 긴축 기조는 유지",
-      "url": "https://www.koreancenter.or.kr/news/articleView.html?idxno=1428073"
-    },
-    {
-      "title": "The Business Journal: S&P 500 losing streak as Nvidia slides",
-      "url": "https://thebusinessjournal.com/sp500-losing-streak-nvidia-slides/"
-    },
-    {
-      "title": "MTN 마감시황: 코스피 5100선 안착… 코스닥 3%대 상승 (11/19)",
-      "url": "https://news.mtn.co.kr/article/2026111916452697472"
-    },
-    {
-      "title": "비즈워치: 11/19 증시 마감 분석",
-      "url": "https://news.bizwatch.co.kr/article/market/2026/11/19/0028"
-    },
-    {
-      "title": "아이뉴스24: 코스피, 하루 만에 '5000피' 회복 (11/18)",
-      "url": "https://inews24.com/view/2027779"
-    },
-    {
-      "title": "Korea JoongAng Daily: Kospi drops for 4th day amid lingering AI woes (11/17)",
-      "url": "https://www.koreajoongangdaily.com/business/kospi-drops-for-4th-day-amid-lingering-ai-woes/12977416"
-    },
-    {
-      "title": "MTN 마감시황: 코스피 0.98% 내린 5290.53 (11/13)",
-      "url": "https://news.mtn.co.kr/article/2026111315370634191"
-    },
-    {
-      "title": "How major US stock indexes fared Wednesday 11/18/2026",
-      "url": "https://www.lanacion.com.ar/usa/how-major-us-stock-indexes-fared-wednesday-11182026-nid18112026/"
-    },
-    {
-      "title": "How major US stock indexes fared Tuesday 11/17/2026",
-      "url": "https://www.lanacion.com.ar/usa/how-major-us-stock-indexes-fared-tuesday-11172026-nid17112026/"
-    },
-    {
-      "title": "코리안센터: 연속 인상 뒤 연 3.00% 유지…11월 추가 인상 가능성",
-      "url": "https://www.koreancenter.or.kr/news/articleView.html?idxno=1428068"
     },
     {
       "title": "코리안센터: 강남 이어 용산·동작 등 한강벨트 약세 확산 (11월 셋째 주)",
@@ -221,28 +160,16 @@
       "url": "https://www.mt.co.kr/article/2026111920211718916"
     },
     {
-      "title": "이투데이 환율마감: 원·달러 2주일만 최저 (11/11)",
-      "url": "https://etoday.co.kr/news/view/2646954"
-    },
-    {
       "title": "서울신문: 강동·성동 집값도 하락 전환… 한강벨트까지 번졌다",
       "url": "https://www.seoul.co.kr/news/newsView.php?id=20261113032001"
     },
     {
-      "title": "비즈워치: 서울 아파트 주간 동향 (11/13)",
-      "url": "https://news.bizwatch.co.kr/article/real_estate/2026/11/13/0054"
+      "title": "코리안센터: 엔비디아發 훈풍…1,330원대 등락 (11/17)",
+      "url": "https://www.koreancenter.or.kr/news/articleView.html?idxno=1441514"
     },
     {
       "title": "SBS Biz: 코스피 6천선 재도전 가능할까? 여전히 주도주는 반도체",
       "url": "https://biz.sbs.co.kr/amp/article/20000343632"
-    },
-    {
-      "title": "TheStreet: Two months after the Fed's first hike",
-      "url": "https://pro.thestreet.com/stock-market-today/two-months-after-the-feds-first-hike-the-historical-playbook-is-holding"
-    },
-    {
-      "title": "ABC News/AP: Wall Street ends week as Nvidia cools (11/13)",
-      "url": "https://abcnews.go.com/US/wireStory/stock-market-today-asian-shares-decline-nvidia-weighs-111303842"
     }
   ]
 }
